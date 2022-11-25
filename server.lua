@@ -1,7 +1,25 @@
 MSK = {}
 
+local Callbacks = {}
+local Charset = {}
+for i = 65,  90 do table.insert(Charset, string.char(i)) end
+for i = 97, 122 do table.insert(Charset, string.char(i)) end
+
+MSK.GetRandomLetter = function(length)
+    Wait(0)
+    if length > 0 then
+        return GetRandomLetter(length - 1) .. Charset[math.random(1, #Charset)]
+    else
+        return ''
+    end
+end
+
 MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
     exports['msk_webhook']:sendDiscordLog(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
+end
+
+MSK.RegisterCallback = function(name, cb)
+    Callbacks[name] = cb
 end
 
 MSK.logging = function(code, msg, msg2, msg3)
@@ -23,6 +41,15 @@ MSK.logging = function(code, msg, msg2, msg3)
         end
 	end
 end
+
+RegisterNetEvent('msk_core:triggerCallback')
+AddEventHandler('msk_core:triggerCallback', function(name, requestId, ...)
+    if Callbacks[name] then
+        Callbacks[name](source, function(...)
+            TriggerClientEvent("msk_core:responseCallback", source, requestId, ...)
+        end, ...)
+    end
+end)
 
 loadScript = function()
     GetCurrentVersion = function()

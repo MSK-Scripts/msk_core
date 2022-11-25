@@ -1,6 +1,37 @@
 MSK = {}
 MSK.Timeouts = {}
 
+local waitingRequest = {}
+local Charset = {}
+for i = 65,  90 do table.insert(Charset, string.char(i)) end
+for i = 97, 122 do table.insert(Charset, string.char(i)) end
+
+MSK.GetRandomLetter = function(length)
+    Wait(0)
+    if length > 0 then
+        return MSK.GetRandomLetter(length - 1) .. Charset[math.random(1, #Charset)]
+    else
+        return ''
+    end
+end
+
+MSK.TriggerCallback = function(name, ...)
+    local requestId = GenerateRequestKey(waitingRequest)
+    local response
+
+    waitingRequest[requestId] = function(...)
+        response = {...}
+    end
+
+    TriggerServerEvent('msk_core:triggerCallback', name, requestId, ...)
+
+    while not response do
+        Wait(0)
+    end
+
+    return table.unpack(response)
+end
+
 MSK.AddTimeout = function(ms, cb)
     table.insert(MSK.Timeouts, {time = GetGameTimer() + ms, cb = cb})
     return #MSK.Timeouts
@@ -29,6 +60,24 @@ MSK.logging = function(code, msg, msg2, msg3)
         end
 	end
 end
+
+GenerateRequestKey = function(tbl)
+    local id = string.upper(MSK.GetRandomLetter(3)) .. math.random(000, 999) .. string.upper(MSK.GetRandomLetter(2)) .. math.random(00, 99)
+
+    if not tbl[id] then 
+        return tostring(id)
+    else
+        GenerateRequestKey(tbl)
+    end
+end
+
+RegisterNetEvent("msk_core:responseCallback")
+AddEventHandler("msk_core:responseCallback", function(requestId, ...)
+    if waitingRequest[requestId] then 
+        waitingRequest[requestId](...)
+        waitingRequest[requestId] = nil
+    end
+end)
 
 CreateThread(function()
     while true do
