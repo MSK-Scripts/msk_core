@@ -1,3 +1,3 @@
 Config = {}
 ----------------------------------------------------------------
-Config.VersionChecker = false
+Config.VersionChecker = true
