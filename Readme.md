@@ -26,12 +26,12 @@ end)
 
 MSK.DelTimeout(timeout)
 ```
+### SERVERSIDE
 * Discord Webhook *[msk_webhook is required]*
 ```lua
 -- example can be found here: https://github.com/MSK-Scripts/msk_webhook
 MSK.AddWebhook(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
 ```
-### SERVERSIDE
 
 ## Requirements
 * oxmysql
