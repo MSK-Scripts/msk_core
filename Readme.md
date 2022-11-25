@@ -6,7 +6,7 @@ More function will be coming soon...
 ## Exports
 clientside AND serverside
 ```lua
-MSK = exports["msk_core"]:getCoreObject()
+MSK = exports.msk_core:getCoreObject()
 ```
 
 ## Functions
