@@ -2,14 +2,14 @@ MSK = {}
 MSK.Timeouts = {}
 
 local callbackRequest = {}
-local Charset = {}
-for i = 65,  90 do table.insert(Charset, string.char(i)) end
-for i = 97, 122 do table.insert(Charset, string.char(i)) end
+local Letters = {}
+for i = 65,  90 do table.insert(Letters, string.char(i)) end
+for i = 97, 122 do table.insert(Letters, string.char(i)) end
 
 MSK.GetRandomLetter = function(length)
     Wait(0)
     if length > 0 then
-        return MSK.GetRandomLetter(length - 1) .. Charset[math.random(1, #Charset)]
+        return MSK.GetRandomLetter(length - 1) .. Letters[math.random(1, #Letters)]
     else
         return ''
     end

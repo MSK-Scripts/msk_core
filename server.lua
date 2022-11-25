@@ -1,14 +1,14 @@
 MSK = {}
 
 local Callbacks = {}
-local Charset = {}
-for i = 65,  90 do table.insert(Charset, string.char(i)) end
-for i = 97, 122 do table.insert(Charset, string.char(i)) end
+local Letters = {}
+for i = 65,  90 do table.insert(Letters, string.char(i)) end
+for i = 97, 122 do table.insert(Letters, string.char(i)) end
 
 MSK.GetRandomLetter = function(length)
     Wait(0)
     if length > 0 then
-        return GetRandomLetter(length - 1) .. Charset[math.random(1, #Charset)]
+        return GetRandomLetter(length - 1) .. Letters[math.random(1, #Letters)]
     else
         return ''
     end
@@ -80,7 +80,7 @@ AddEventHandler('msk_core:triggerCallback', function(name, requestId, ...)
     end
 end)
 
-loadScript = function()
+GithubUpdater = function()
     GetCurrentVersion = function()
 	    return GetResourceMetadata( GetCurrentResourceName(), "version" )
     end
@@ -105,7 +105,7 @@ loadScript = function()
         print("###############################")
     end
 end
-loadScript()
+GithubUpdater()
 
 exports('getCoreObject', function()
     return MSK
