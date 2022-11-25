@@ -41,22 +41,22 @@ MSK.DelTimeout = function(i)
     MSK.Timeouts[i] = nil
 end
 
-MSK.logging = function(code, msg, msg2, msg3)
+MSK.logging = function(script, code, msg, msg2, msg3)
     if code == 'error' then
         if msg3 then
-			print('[^1ERROR^0]', msg, msg2, msg3)
+			print(script, '[^1ERROR^0]', msg, msg2, msg3)
         elseif msg2 and not msg3 then
-            print('[^1ERROR^0]', msg, msg2)
+            print(script, '[^1ERROR^0]', msg, msg2)
         else
-		    print('[^1ERROR^0]', msg)
+		    print(script, '[^1ERROR^0]', msg)
         end
     elseif code == 'debug' then
 		if msg3 then
-			print('[^3DEBUG^0]', msg, msg2, msg3)
+			print(script, '[^3DEBUG^0]', msg, msg2, msg3)
         elseif msg2 and not msg3 then
-            print('[^3DEBUG^0]', msg, msg2)
+            print(script, '[^3DEBUG^0]', msg, msg2)
         else
-		    print('[^3DEBUG^0]', msg)
+		    print(script, '[^3DEBUG^0]', msg)
         end
 	end
 end
