@@ -1,5 +1,5 @@
 # msk_core
-Core functions for MSK Scripts [STANDALONE]
+**[STANDALONE]** Core functions for MSK Scripts
 
 More function will be coming soon...
 
