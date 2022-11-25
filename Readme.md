@@ -9,20 +9,18 @@ MSK = exports["msk_core"]:getCoreObject()
 
 ## Functions
 **CLIENTSIDE**
-<details>
-    <summary>Timeouts</summary>
+* Timeouts
+```lua
+timeout = MSK.AddTimeout(miliseconds, function()
+    -- waits miliseconds time // asyncron
+end)
 
-    This is for Timeouts.
-
-    ```lua
-    timeout = MSK.AddTimeout(miliseconds, function()
-        -- waits miliseconds time // asyncron
-    end)
-
-    MSK.DelTimeout(handcuffTimerTask)
-    ```
-
-</details>
+MSK.DelTimeout(handcuffTimerTask)
+```
+* Discord Webhook *[msk_webhook is required]*
+```lua
+MSK.AddWebhook(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
+```
 
 ## Requirements
 * oxmysql
