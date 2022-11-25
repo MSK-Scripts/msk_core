@@ -1,6 +1,8 @@
 # msk_core
 Core functions for MSK Scripts
 
+More function will be coming soon...
+
 ## Exports
 clientside AND serverside
 ```lua
