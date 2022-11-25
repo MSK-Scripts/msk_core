@@ -50,12 +50,6 @@ CreateThread(function()
     end
 end)
 
-AddEventHandler('onResourceStop', function(resourceName)
-    if resourceName == GetCurrentResourceName() then
-        MSK.Timeouts = {}
-    end
-end)
-
 exports('getCoreObject', function()
     return MSK
 end)
