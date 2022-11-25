@@ -30,10 +30,12 @@ string.upper(MSK.GetRandomLetter(3)) -- ABC
 ### CLIENTSIDE
 * Timeouts
 ```lua
+-- Add a timeout
 timeout = MSK.AddTimeout(miliseconds, function()
     -- waits miliseconds time // asyncron
 end)
 
+-- Delete the timeout
 MSK.DelTimeout(timeout)
 ```
 * Trigger Syncron Server Callback
