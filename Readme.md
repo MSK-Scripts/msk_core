@@ -13,11 +13,11 @@ MSK = exports.msk_core:getCoreObject()
 ### COMMON
 * Debug and Error Logs
 ```lua
-MSK.logging(code, msg, msg2, msg3)
+MSK.logging(script, code, msg, msg2, msg3)
 
 -- example
-MSK.logging('debug', 'Text 1', 'Text 2', 'Text 3')
-MSK.logging('error', 'Text 1', 'Text 2', 'Text 3')
+MSK.logging('[msk_testing]', 'debug', 'Text 1', 'Text 2', 'Text 3')
+MSK.logging('[msk_testing]', 'error', 'Text 1', 'Text 2', 'Text 3')
 ```
 * Generate a Random String 
 ```lua
