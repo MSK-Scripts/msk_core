@@ -72,9 +72,10 @@ end
 
 RegisterNetEvent('msk_core:triggerCallback')
 AddEventHandler('msk_core:triggerCallback', function(name, requestId, ...)
+    local src = source
     if Callbacks[name] then
-        Callbacks[name](source, function(...)
-            TriggerClientEvent("msk_core:responseCallback", source, requestId, ...)
+        Callbacks[name](src, function(...)
+            TriggerClientEvent("msk_core:responseCallback", src, requestId, ...)
         end, ...)
     end
 end)
