@@ -8,10 +8,9 @@ MSK = exports["msk_core"]:getCoreObject()
 ```
 
 ## Functions
+**CLIENTSIDE**
 <details>
-    <summary>CLIENTSIDE</summary>
-
-    * Timeouts
+    <summary>Timeouts</summary>
 
     ```lua
     timeout = MSK.AddTimeout(miliseconds, function()
@@ -20,6 +19,7 @@ MSK = exports["msk_core"]:getCoreObject()
 
     MSK.DelTimeout(handcuffTimerTask)
     ```
+    
 </details>
 
 ## Requirements
