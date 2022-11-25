@@ -28,6 +28,10 @@ MSK.GetRandomLetter(3) -- abc
 string.upper(MSK.GetRandomLetter(3)) -- ABC
 ```
 ### CLIENTSIDE
+* Trigger Syncron Server Callback
+```lua
+local data, data2 = MSK.TriggerCallback("Callback_Name", value1, value2, ...)
+```
 * Timeouts
 ```lua
 -- Add a timeout
@@ -38,21 +42,17 @@ end)
 -- Delete the timeout
 MSK.DelTimeout(timeout)
 ```
-* Trigger Syncron Server Callback
-```lua
-local data, data2 = MSK.TriggerCallback("Callback_Name", value1, value2, ...)
-```
 ### SERVERSIDE
-* Discord Webhook *[msk_webhook is required]*
-```lua
--- example can be found here: https://github.com/MSK-Scripts/msk_webhook
-MSK.AddWebhook(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
-```
 * Register Syncron Server Callback
 ```lua
 MSK.RegisterCallback("Callback_Name", function(source, cb, value1, value2)
     cb(value1, value2)
 end)
+```
+* Discord Webhook *[msk_webhook is required]*
+```lua
+-- example can be found here: https://github.com/MSK-Scripts/msk_webhook
+MSK.AddWebhook(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
 ```
 
 ## Requirements
