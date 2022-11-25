@@ -10,10 +10,6 @@ MSK.DelTimeout = function(i)
     MSK.Timeouts[i] = nil
 end
 
-MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
-    exports['msk_webhook']:sendDiscordLog(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
-end
-
 MSK.logging = function(code, msg, msg2, msg3)
     if code == 'error' then
         if msg3 then
@@ -51,6 +47,12 @@ CreateThread(function()
         end
 
         Wait(sleep)
+    end
+end)
+
+AddEventHandler('onResourceStop', function(resourceName)
+    if resourceName == GetCurrentResourceName() then
+        MSK.Timeouts = {}
     end
 end)
 
