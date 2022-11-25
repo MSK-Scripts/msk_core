@@ -27,21 +27,6 @@ MSK.GetRandomLetter(length)
 MSK.GetRandomLetter(3) -- abc
 string.upper(MSK.GetRandomLetter(3)) -- ABC
 ```
-### CLIENTSIDE
-* Trigger Syncron Server Callback
-```lua
-local data, data2 = MSK.TriggerCallback("Callback_Name", value1, value2, ...)
-```
-* Timeouts
-```lua
--- Add a timeout
-timeout = MSK.AddTimeout(miliseconds, function()
-    -- waits miliseconds time // asyncron
-end)
-
--- Delete the timeout
-MSK.DelTimeout(timeout)
-```
 * Check if a value contains in a table
 ```lua
 table = {'value_1', 'value_2'}
@@ -57,6 +42,21 @@ if contains then
 else
     -- false
 end
+```
+### CLIENTSIDE
+* Trigger Syncron Server Callback
+```lua
+local data, data2 = MSK.TriggerCallback("Callback_Name", value1, value2, ...)
+```
+* Timeouts
+```lua
+-- Add a timeout
+timeout = MSK.AddTimeout(miliseconds, function()
+    -- waits miliseconds time // asyncron
+end)
+
+-- Delete the timeout
+MSK.DelTimeout(timeout)
 ```
 ### SERVERSIDE
 * Register Syncron Server Callback
