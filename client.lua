@@ -1,7 +1,7 @@
 MSK = {}
 MSK.Timeouts = {}
 
-local waitingRequest = {}
+local callbackRequest = {}
 local Charset = {}
 for i = 65,  90 do table.insert(Charset, string.char(i)) end
 for i = 97, 122 do table.insert(Charset, string.char(i)) end
@@ -16,10 +16,10 @@ MSK.GetRandomLetter = function(length)
 end
 
 MSK.TriggerCallback = function(name, ...)
-    local requestId = GenerateRequestKey(waitingRequest)
+    local requestId = GenerateRequestKey(callbackRequest)
     local response
 
-    waitingRequest[requestId] = function(...)
+    callbackRequest[requestId] = function(...)
         response = {...}
     end
 
@@ -73,9 +73,9 @@ end
 
 RegisterNetEvent("msk_core:responseCallback")
 AddEventHandler("msk_core:responseCallback", function(requestId, ...)
-    if waitingRequest[requestId] then 
-        waitingRequest[requestId](...)
-        waitingRequest[requestId] = nil
+    if callbackRequest[requestId] then 
+        callbackRequest[requestId](...)
+        callbackRequest[requestId] = nil
     end
 end)
 
