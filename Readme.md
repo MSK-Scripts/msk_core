@@ -42,6 +42,22 @@ end)
 -- Delete the timeout
 MSK.DelTimeout(timeout)
 ```
+* Check if a value contains in a table
+```lua
+table = {'value_1', 'value_2'}
+
+-- Check if one of the values contains in the table
+local contains = MSK.Table.Contains(table, {'value_1', 'value_5'})
+
+-- Check if the value contains in the table
+local contains = MSK.Table.Contains(table, 'value_1')
+
+if contains then
+    -- true
+else
+    -- false
+end
+```
 ### SERVERSIDE
 * Register Syncron Server Callback
 ```lua

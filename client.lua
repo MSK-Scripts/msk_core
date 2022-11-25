@@ -16,6 +16,24 @@ MSK.GetRandomLetter = function(length)
     end
 end
 
+MSK.Table.Contains = function(table, value)
+    if type(value) == 'table' then
+        for k, v in pairs(table) do
+            for k2, v2 in pairs(value) do
+                if v == v2 then
+                    return true
+                end
+            end
+        end
+    else
+        for k, v in pairs(table) do
+            if v == value then
+                return true
+            end
+        end
+    end
+end
+
 MSK.TriggerCallback = function(name, ...)
     local requestId = GenerateRequestKey(callbackRequest)
     local response
