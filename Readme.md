@@ -49,7 +49,7 @@ MSK.RegisterCallback("Callback_Name", function(source, cb, value1, value2)
     cb(value1, value2)
 end)
 ```
-* Discord Webhook *[msk_webhook is required]*
+* Discord Webhook *[msk_webhook is NOT required]*
 ```lua
 -- example can be found here: https://github.com/MSK-Scripts/msk_webhook
 MSK.AddWebhook(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
