@@ -32,10 +32,10 @@ string.upper(MSK.GetRandomLetter(3)) -- ABC
 table = {'value_1', 'value_2'}
 
 -- Check if one of the values contains in the table
-local contains = MSK.Table.Contains(table, {'value_1', 'value_5'})
+local contains = MSK.Table_Contains(table, {'value_1', 'value_5'})
 
 -- Check if the value contains in the table
-local contains = MSK.Table.Contains(table, 'value_1')
+local contains = MSK.Table_Contains(table, 'value_1')
 
 if contains then
     -- true
