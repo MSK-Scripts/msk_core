@@ -19,7 +19,7 @@ MSK.Notification = function(src, text)
     TriggerClientEvent('msk_core:notification', src, text)
 end
 
-MSK.HelpNotification = function(text)
+MSK.HelpNotification = function(src, text)
     TriggerClientEvent('msk_core:helpNotification', src, text)
 end
 
