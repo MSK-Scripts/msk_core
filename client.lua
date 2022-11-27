@@ -16,6 +16,18 @@ MSK.GetRandomLetter = function(length)
     end
 end
 
+MSK.Notification = function(text)
+    SetNotificationTextEntry('STRING')
+    AddTextComponentString(text)
+	DrawNotification(false, true)
+end
+
+MSK.HelpNotification = function(text)
+    SetTextComponentFormat('STRING')
+    AddTextComponentString(text)
+    DisplayHelpTextFromStringLabel(0, 0, 1, -1)
+end
+
 MSK.Table_Contains = function(table, value)
     if type(value) == 'table' then
         for k, v in pairs(table) do
@@ -96,6 +108,16 @@ AddEventHandler("msk_core:responseCallback", function(requestId, ...)
         callbackRequest[requestId](...)
         callbackRequest[requestId] = nil
     end
+end)
+
+RegisterNetEvent("msk_core:notification")
+AddEventHandler("msk_core:notification", function(text)
+    MSK.Notification(text)
+end)
+
+RegisterNetEvent("msk_core:helpNotification")
+AddEventHandler("msk_core:helpNotification", function(text)
+    MSK.HelpNotification(text)
 end)
 
 CreateThread(function()

@@ -15,6 +15,14 @@ MSK.GetRandomLetter = function(length)
     end
 end
 
+MSK.Notification = function(src, text)
+    TriggerClientEvent('msk_core:notification', src, text)
+end
+
+MSK.HelpNotification = function(text)
+    TriggerClientEvent('msk_core:helpNotification', src, text)
+end
+
 MSK.Table_Contains = function(table, value)
     if type(value) == 'table' then
         for k, v in pairs(table) do
