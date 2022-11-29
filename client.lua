@@ -28,6 +28,30 @@ MSK.HelpNotification = function(text)
     DisplayHelpTextFromStringLabel(0, 0, 1, -1)
 end
 
+MSK.Draw3DText = function(coords, text, size, font)
+    local coords = type(coords) == "vector3" and coords or vec(coords.x, coords.y, coords.z)
+    local camCoords = GetGameplayCamCoords()
+    local distance = #(coords - camCoords)
+
+    if not size then size = 1 end
+    if not font then font = 0 end
+
+    local scale = (size / distance) * 2
+    local fov = (1 / GetGameplayCamFov()) * 100
+    scale = scale * fov
+
+    SetTextScale(0.0, scale * 0.5)
+    SetTextFont(font)
+    SetTextProportional(1)
+    SetTextColour(255, 255, 255, 255)
+    BeginTextCommandDisplayText('STRING')
+    SetTextCentre(true)
+    AddTextComponentSubstringPlayerName(text)
+    SetDrawOrigin(coords.xyz, 0)
+    EndTextCommandDisplayText(0.0, 0.0)
+    ClearDrawOrigin()
+end
+
 MSK.Table_Contains = function(table, value)
     if type(value) == 'table' then
         for k, v in pairs(table) do
@@ -113,11 +137,6 @@ end)
 RegisterNetEvent("msk_core:notification")
 AddEventHandler("msk_core:notification", function(text)
     MSK.Notification(text)
-end)
-
-RegisterNetEvent("msk_core:helpNotification")
-AddEventHandler("msk_core:helpNotification", function(text)
-    MSK.HelpNotification(text)
 end)
 
 CreateThread(function()
