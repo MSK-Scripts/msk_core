@@ -11,5 +11,10 @@ You have to add this at the top of your clientside and serverside file
 MSK = exports.msk_core:getCoreObject()
 ```
 
+## Functions
+* [COMMON](https://github.com/MSK-Scripts/msk_core/wiki/Common) - *clientside **AND** serverside functions*
+* [CLIENTSIDE](https://github.com/MSK-Scripts/msk_core/wiki/Clientside) - *clientside functions only*
+* [SERVERSIDE](https://github.com/MSK-Scripts/msk_core/wiki/Serverside) - *serverside functions only*
+
 ## Requirements
 * oxmysql
