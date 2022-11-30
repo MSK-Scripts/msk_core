@@ -22,10 +22,12 @@ MSK.CreateBlip = function(action, coords, value)
 
     if action:match('area') then
         blip = AddBlipForArea(coords.x, coords.y, coords.z, value.width, value.height)
+        SetBlipRotation(blip, 0)
     elseif action:match('coord') then
         blip = AddBlipForCoord(coords.x, coords.y, coords.z)
     elseif action:match('entity') then
         blip = AddBlipForEntity(value.entity)
+        SetBlipAsFriendly(blip, value.friendly)
     elseif action:match('radius') then
         blip = AddBlipForRadius(coords.x, coords.y, coords.z, value.radius)
     end
