@@ -16,6 +16,30 @@ MSK.GetRandomLetter = function(length)
     end
 end
 
+MSK.CreateBlip = function(action, coords, value) 
+    local blip
+    local coords = type(coords) == "vector3" and coords or vec(coords.x, coords.y, coords.z)
+
+    if action:match('area') then
+        blip = AddBlipForArea(coords.x, coords.y, coords.z, value.width, value.height)
+    elseif action:match('coord') then
+        blip = AddBlipForCoord(coords.x, coords.y, coords.z)
+    elseif action:match('entity') then
+        blip = AddBlipForEntity(value.entity)
+    elseif action:match('radius') then
+        blip = AddBlipForRadius(coords.x, coords.y, coords.z, value.radius)
+    end
+
+    SetBlipSprite(blip, value.id)
+    SetBlipScale(blip, value.scale)
+    SetBlipDisplay(blip, 4)
+    SetBlipColour(blip, value.color)
+    SetBlipAsShortRange(blip, true)
+    BeginTextCommandSetBlipName('STRING') 
+    AddTextComponentString(value.label)
+    EndTextCommandSetBlipName(blip)
+end
+
 MSK.Notification = function(text)
     SetNotificationTextEntry('STRING')
     AddTextComponentString(text)
