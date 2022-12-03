@@ -141,7 +141,7 @@ end)
 
 CreateThread(function()
     while true do
-        local sleep = 100
+        local sleep = 200
 
         if #MSK.Timeouts > 0 then
             local currTime = GetGameTimer()
