@@ -16,6 +16,8 @@ MSK = exports.msk_core:getCoreObject()
 
 ![Screenshot_173](https://user-images.githubusercontent.com/49867381/205465609-26f96507-e080-4fb0-b450-4dc44e64203d.png)
 
+**Usage: little higher**
+
 ## Functions
 * [COMMON](https://github.com/MSK-Scripts/msk_core/wiki/Common) - *clientside **AND** serverside functions*
 * [CLIENTSIDE](https://github.com/MSK-Scripts/msk_core/wiki/Clientside) - *clientside functions only*
