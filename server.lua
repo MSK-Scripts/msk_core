@@ -22,16 +22,16 @@ MSK.GetRandomLetter = function(length)
     end
 end
 
-MSK.RegisterCommand = function(name, group, cb, console, suggestion)
-    if RegisteredCommands[name] then
-        logging('debug', ('Command %s is already registerd. Overriding Command...'):format(name))
-    end
-    
+MSK.RegisterCommand = function(name, group, cb, console, suggestion)    
     if type(name) == 'table' then
         for k, v in ipairs(name) do 
             MSK.RegisterCommand(v, group, cb, console, suggestion)
         end
         return
+    end
+
+    if RegisteredCommands[name] then
+        logging('debug', ('Command %s is already registerd. Overriding Command...'):format(name))
     end
     
     local added = addChatSuggestions(name, suggestion)
