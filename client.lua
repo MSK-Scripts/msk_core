@@ -96,24 +96,17 @@ MSK.DelTimeout = function(i)
     MSK.Timeouts[i] = nil
 end
 
-MSK.logging = function(script, code, msg, msg2, msg3)
+MSK.logging = function(script, code, ...)
     if code == 'error' then
-        if msg3 then
-			print(script, '[^1ERROR^0]', msg, msg2, msg3)
-        elseif msg2 and not msg3 then
-            print(script, '[^1ERROR^0]', msg, msg2)
-        else
-		    print(script, '[^1ERROR^0]', msg)
-        end
+        print(script, '[^1ERROR^0]', ...)
     elseif code == 'debug' then
-		if msg3 then
-			print(script, '[^3DEBUG^0]', msg, msg2, msg3)
-        elseif msg2 and not msg3 then
-            print(script, '[^3DEBUG^0]', msg, msg2)
-        else
-		    print(script, '[^3DEBUG^0]', msg)
-        end
+		print(script, '[^3DEBUG^0]', ...)
 	end
+end
+
+logging = function(code, ...)
+    local script = "[^2"..GetCurrentResourceName().."^0]"
+    MSK.logging(script, code, ...)
 end
 
 GenerateRequestKey = function(tbl)

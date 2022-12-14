@@ -1,4 +1,11 @@
 MSK = {}
+RegisteredCommands = {}
+
+if Config.Framework:match('esx') then
+    ESX = exports["es_extended"]:getSharedObject()
+elseif Config.Framework:match('qbcore') then
+    QBCore = exports['qb-core']:GetCoreObject()
+end
 
 local Callbacks = {}
 local Letters = {}
@@ -12,6 +19,92 @@ MSK.GetRandomLetter = function(length)
         return GetRandomLetter(length - 1) .. Letters[math.random(1, #Letters)]
     else
         return ''
+    end
+end
+
+MSK.RegisterCommand = function(name, group, cb, console, suggestion)
+    if RegisteredCommands[name] then
+        logging('debug', ('Command %s is already registerd. Overriding Command...'):format(name))
+    end
+    
+    if type(name) == 'table' then
+        for k, v in ipairs(name) do 
+            MSK.RegisterCommand(v, group, cb, console, suggestion)
+        end
+        return
+    end
+    
+    local added = addChatSuggestions(name, suggestion)
+    while not added do Wait(1) end
+    
+    RegisteredCommands[name] = {group = group, cb = cb, console = console, suggestion = suggestion}
+
+    RegisterCommand(name, function(source, args, rawCommand)
+        local source = source
+        local Command, error = RegisteredCommands[name], nil
+
+        if not Command.console and source == 0 then 
+            logging('error', 'You can not run this Command in Server Console!')
+        else
+            if Command.suggestion and Command.suggestion.arguments then 
+                local newArgs = {}
+
+                for k, v in ipairs(Command.suggestion.arguments) do 
+                    if v.action == 'number' then
+                        if args[k] then
+                            if tonumber(args[k]) then
+                                newArgs[v.name] = args[k]
+                            else
+                                error = ('Argument %s is not a number!'):format(v.name)
+                            end
+                        end
+                    elseif v.action == 'playerId' then
+                        if args[k] then
+                            if tonumber(args[k]) > 0 and doesPlayerIdExist(args[k]) then
+                                newArgs[v.name] = args[k]
+                            else
+                                error = ('PlayerId %s does not exist!'):format(args[k])
+                            end
+                        end
+                    else
+                        newArgs[v.name] = args[k]
+                    end
+
+                    if not error and not newArgs[v.name] and v.val then 
+                        error = ('Argument Mismatch with Argument %s'):format(v.name)
+                    end
+                    if error then break end
+                end
+
+                args = newArgs
+            end
+
+            if error then
+                if source == 0 then
+                    logging('error', error)
+                else
+                    MSK.Notification(source, error)
+                end
+            else
+                if Config.Framework:match('standalone') then
+                    cb(source, args, rawCommand)
+                elseif Config.Framework:match('esx') then
+                    local xPlayer = ESX.GetPlayerFromId(source)
+                    cb(xPlayer, args, rawCommand)
+                elseif Config.Framework:match('qbcore') then
+                    local Player = QBCore.Functions.GetPlayer(source)
+                    cb(Player, args, rawCommand)
+                end
+            end
+        end
+    end, true)
+
+    if type(group) == 'table' then
+        for k, v in ipairs(group) do
+            ExecuteCommand(('add_ace group.%s command.%s allow'):format(v, name))
+        end
+    else
+        ExecuteCommand(('add_ace group.%s command.%s allow'):format(group, name))
     end
 end
 
@@ -73,23 +166,11 @@ MSK.RegisterCallback = function(name, cb)
     Callbacks[name] = cb
 end
 
-MSK.logging = function(script, code, msg, msg2, msg3)
+MSK.logging = function(script, code, ...)
     if code == 'error' then
-        if msg3 then
-			print(script, '[^1ERROR^0]', msg, msg2, msg3)
-        elseif msg2 and not msg3 then
-            print(script, '[^1ERROR^0]', msg, msg2)
-        else
-		    print(script, '[^1ERROR^0]', msg)
-        end
+        print(script, '[^1ERROR^0]', ...)
     elseif code == 'debug' then
-		if msg3 then
-			print(script, '[^3DEBUG^0]', msg, msg2, msg3)
-        elseif msg2 and not msg3 then
-            print(script, '[^3DEBUG^0]', msg, msg2)
-        else
-		    print(script, '[^3DEBUG^0]', msg)
-        end
+		print(script, '[^3DEBUG^0]', ...)
 	end
 end
 
@@ -102,6 +183,37 @@ AddEventHandler('msk_core:triggerCallback', function(name, requestId, ...)
         end, ...)
     end
 end)
+
+doesPlayerIdExist = function(playerId)
+    for k, id in pairs(GetPlayers()) do
+        if id == playerId then
+            return true
+        end
+    end
+    return false
+end
+
+addChatSuggestions = function(name, suggestion)
+    if RegisteredCommands[name] then
+        if RegisteredCommands[name].suggestion then
+            TriggerClientEvent('chat:removeSuggestion', -1, '/' .. name)
+        end
+    end
+
+    if suggestion then
+        if not suggestion.arguments then suggestion.arguments = {} end
+        if not suggestion.help then suggestion.help = '' end
+    
+        TriggerClientEvent('chat:addSuggestion', -1, '/' .. name, suggestion.help, suggestion.arguments)
+    end
+
+    return true
+end
+
+logging = function(code, ...)
+    local script = "[^2"..GetCurrentResourceName().."^0]"
+    MSK.logging(script, code, ...)
+end
 
 GithubUpdater = function()
     GetCurrentVersion = function()
