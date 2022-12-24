@@ -1,6 +1,12 @@
 MSK = {}
 MSK.Timeouts = {}
 
+if Config.Framework:match('esx') then
+    ESX = exports["es_extended"]:getSharedObject()
+elseif Config.Framework:match('qbcore') then
+    QBCore = exports['qb-core']:GetCoreObject()
+end
+
 local callbackRequest = {}
 local Letters = {}
 for i = 48,  57 do table.insert(Letters, string.char(i)) end
@@ -14,6 +20,16 @@ MSK.GetRandomLetter = function(length)
     else
         return ''
     end
+end
+
+MSK.HasItem = function(item)
+    if not Config.Framework:match('esx') or Config.Framework:match('qbcore') then 
+        logging('error', ('Function %s can not used without Framework!'):format('MSK.HasItem'))
+        return 
+    end
+
+    local hasItem = MSK.TriggerCallback('msk_core:hasItem', item)
+    return hasItem
 end
 
 MSK.Notification = function(text)
@@ -68,6 +84,7 @@ MSK.Table_Contains = function(table, value)
             end
         end
     end
+    return false
 end
 
 MSK.TriggerCallback = function(name, ...)

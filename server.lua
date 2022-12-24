@@ -22,10 +22,10 @@ MSK.GetRandomLetter = function(length)
     end
 end
 
-MSK.RegisterCommand = function(name, group, cb, console, suggestion)    
+MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)    
     if type(name) == 'table' then
         for k, v in ipairs(name) do 
-            MSK.RegisterCommand(v, group, cb, console, suggestion)
+            MSK.RegisterCommand(v, group, cb, console, framework, suggestion)
         end
         return
     end
@@ -86,14 +86,14 @@ MSK.RegisterCommand = function(name, group, cb, console, suggestion)
                     MSK.Notification(source, error)
                 end
             else
-                if Config.Framework:match('standalone') then
-                    cb(source, args, rawCommand)
-                elseif Config.Framework:match('esx') then
+                if Config.Framework:match('esx') and framework then
                     local xPlayer = ESX.GetPlayerFromId(source)
                     cb(xPlayer, args, rawCommand)
-                elseif Config.Framework:match('qbcore') then
+                elseif Config.Framework:match('qbcore') and framework then
                     local Player = QBCore.Functions.GetPlayer(source)
                     cb(Player, args, rawCommand)
+                elseif Config.Framework:match('standalone') or not framework then
+                    cb(source, args, rawCommand)
                 end
             end
         end
@@ -128,6 +128,7 @@ MSK.Table_Contains = function(table, value)
             end
         end
     end
+    return false
 end
 
 MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
@@ -173,6 +174,38 @@ MSK.logging = function(script, code, ...)
 		print(script, '[^3DEBUG^0]', ...)
 	end
 end
+
+MSK.HasItem = function(xPlayer, item)
+    if not xPlayer then logging('error', 'Player on Function MSK.HasItem does not exist!') return end
+    if not Config.Framework:match('esx') or Config.Framework:match('qbcore') then 
+        logging('error', ('Function %s can not used without Framework!'):format('^3MSK.HasItem^0'))
+        return 
+    end
+    local hasItem
+
+    if Config.Framework:match('esx') then
+        hasItem = xPlayer.getInventoryItem(item)
+    elseif Config.Framework:match('qbcore') then
+        hasItem = xPlayer.Functions.GetItemByName(item)
+    else
+        logging('error', 'Framework on Function MSK.HasItem is not configured!')
+    end
+
+    return hasItem
+end
+
+MSK.RegisterCallback('msk_core:hasItem', function(source, cb, item)
+    local src = source
+    local xPlayer
+
+    if Config.Framework:match('esx') then
+        xPlayer = ESX.GetPlayerFromId(src)
+    elseif Config.Framework:match('qbcore') then
+        xPlayer = QBCore.Functions.GetPlayer(src)
+    end
+
+    cb(MSK.HasItem(xPlayer, item))
+end)
 
 RegisterNetEvent('msk_core:triggerCallback')
 AddEventHandler('msk_core:triggerCallback', function(name, requestId, ...)
