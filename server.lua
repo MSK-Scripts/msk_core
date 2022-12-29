@@ -7,6 +7,14 @@ elseif Config.Framework:match('qbcore') then
     QBCore = exports['qb-core']:GetCoreObject()
 end
 
+AddEventHandler('onResourceStart', function(resource)
+	if GetCurrentResourceName() ~= 'msk_core' then
+        print('^1Please rename the Script to^3 msk_core^0!')
+        print('^1Server will be shutdown^0!')
+        os.exit()
+    end
+end)
+
 local Callbacks = {}
 local Letters = {}
 for i = 48,  57 do table.insert(Letters, string.char(i)) end
