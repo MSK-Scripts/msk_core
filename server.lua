@@ -1,12 +1,6 @@
 MSK = {}
 RegisteredCommands = {}
 
-if Config.Framework:match('esx') then
-    ESX = exports["es_extended"]:getSharedObject()
-elseif Config.Framework:match('qbcore') then
-    QBCore = exports['qb-core']:GetCoreObject()
-end
-
 AddEventHandler('onResourceStart', function(resource)
 	if GetCurrentResourceName() ~= 'msk_core' then
         print('^1Please rename the Script to^3 msk_core^0!')
@@ -15,11 +9,25 @@ AddEventHandler('onResourceStart', function(resource)
     end
 end)
 
+if Config.Framework:match('esx') then
+    ESX = exports["es_extended"]:getSharedObject()
+elseif Config.Framework:match('qbcore') then
+    QBCore = exports['qb-core']:GetCoreObject()
+end
+
 local Callbacks = {}
 local Letters = {}
 for i = 48,  57 do table.insert(Letters, string.char(i)) end
 for i = 65,  90 do table.insert(Letters, string.char(i)) end
 for i = 97, 122 do table.insert(Letters, string.char(i)) end
+
+MSK.Round = function(num, decimal) 
+    return tonumber(string.format("%." .. (decimal or 0) .. "f", num))
+end
+
+MSK.Trim = function(str)
+    return (string.gsub(str, "%s+", ""))
+end
 
 MSK.GetRandomLetter = function(length)
     Wait(0)
