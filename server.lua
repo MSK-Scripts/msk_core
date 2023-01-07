@@ -1,5 +1,7 @@
 MSK = {}
-RegisteredCommands = {}
+
+local RegisteredCommands = {}
+local Callbacks = {}
 
 AddEventHandler('onResourceStart', function(resource)
 	if GetCurrentResourceName() ~= 'msk_core' then
@@ -15,11 +17,19 @@ elseif Config.Framework:match('qbcore') then
     QBCore = exports['qb-core']:GetCoreObject()
 end
 
-local Callbacks = {}
 local Letters = {}
 for i = 48,  57 do table.insert(Letters, string.char(i)) end
 for i = 65,  90 do table.insert(Letters, string.char(i)) end
 for i = 97, 122 do table.insert(Letters, string.char(i)) end
+
+MSK.GetRandomLetter = function(length)
+    Wait(0)
+    if length > 0 then
+        return MSK.GetRandomLetter(length - 1) .. Letters[math.random(1, #Letters)]
+    else
+        return ''
+    end
+end
 
 MSK.Round = function(num, decimal) 
     return tonumber(string.format("%." .. (decimal or 0) .. "f", num))
@@ -27,15 +37,6 @@ end
 
 MSK.Trim = function(str)
     return (string.gsub(str, "%s+", ""))
-end
-
-MSK.GetRandomLetter = function(length)
-    Wait(0)
-    if length > 0 then
-        return GetRandomLetter(length - 1) .. Letters[math.random(1, #Letters)]
-    else
-        return ''
-    end
 end
 
 MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)    
@@ -128,25 +129,6 @@ MSK.Notification = function(src, text)
     TriggerClientEvent('msk_core:notification', src, text)
 end
 
-MSK.Table_Contains = function(table, value)
-    if type(value) == 'table' then
-        for k, v in pairs(table) do
-            for k2, v2 in pairs(value) do
-                if v == v2 then
-                    return true
-                end
-            end
-        end
-    else
-        for k, v in pairs(table) do
-            if v == value then
-                return true
-            end
-        end
-    end
-    return false
-end
-
 MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
     if footer then 
         if time then
@@ -181,6 +163,25 @@ end
 
 MSK.RegisterCallback = function(name, cb)
     Callbacks[name] = cb
+end
+
+MSK.Table_Contains = function(table, value)
+    if type(value) == 'table' then
+        for k, v in pairs(table) do
+            for k2, v2 in pairs(value) do
+                if v == v2 then
+                    return true
+                end
+            end
+        end
+    else
+        for k, v in pairs(table) do
+            if v == value then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 MSK.logging = function(script, code, ...)

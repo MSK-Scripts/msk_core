@@ -1,5 +1,7 @@
 MSK = {}
-MSK.Timeouts = {}
+
+local Timeouts = {}
+local callbackRequest = {}
 
 if Config.Framework:match('esx') then
     ESX = exports["es_extended"]:getSharedObject()
@@ -7,19 +9,10 @@ elseif Config.Framework:match('qbcore') then
     QBCore = exports['qb-core']:GetCoreObject()
 end
 
-local callbackRequest = {}
 local Letters = {}
 for i = 48,  57 do table.insert(Letters, string.char(i)) end
 for i = 65,  90 do table.insert(Letters, string.char(i)) end
 for i = 97, 122 do table.insert(Letters, string.char(i)) end
-
-MSK.Round = function(num, decimal) 
-    return tonumber(string.format("%." .. (decimal or 0) .. "f", num))
-end
-
-MSK.Trim = function(str)
-    return (string.gsub(str, "%s+", ""))
-end
 
 MSK.GetRandomLetter = function(length)
     Wait(0)
@@ -30,14 +23,12 @@ MSK.GetRandomLetter = function(length)
     end
 end
 
-MSK.HasItem = function(item)
-    if not Config.Framework:match('esx') or Config.Framework:match('qbcore') then 
-        logging('error', ('Function %s can not used without Framework!'):format('MSK.HasItem'))
-        return 
-    end
+MSK.Round = function(num, decimal) 
+    return tonumber(string.format("%." .. (decimal or 0) .. "f", num))
+end
 
-    local hasItem = MSK.TriggerCallback('msk_core:hasItem', item)
-    return hasItem
+MSK.Trim = function(str)
+    return (string.gsub(str, "%s+", ""))
 end
 
 MSK.Notification = function(text)
@@ -76,25 +67,6 @@ MSK.Draw3DText = function(coords, text, size, font)
     ClearDrawOrigin()
 end
 
-MSK.Table_Contains = function(table, value)
-    if type(value) == 'table' then
-        for k, v in pairs(table) do
-            for k2, v2 in pairs(value) do
-                if v == v2 then
-                    return true
-                end
-            end
-        end
-    else
-        for k, v in pairs(table) do
-            if v == value then
-                return true
-            end
-        end
-    end
-    return false
-end
-
 MSK.TriggerCallback = function(name, ...)
     local requestId = GenerateRequestKey(callbackRequest)
     local response
@@ -113,12 +85,41 @@ MSK.TriggerCallback = function(name, ...)
 end
 
 MSK.AddTimeout = function(ms, cb)
-    table.insert(MSK.Timeouts, {time = GetGameTimer() + ms, cb = cb})
-    return #MSK.Timeouts
+    table.insert(Timeouts, {time = GetGameTimer() + ms, cb = cb})
+    return #Timeouts
 end
 
 MSK.DelTimeout = function(i)
-    MSK.Timeouts[i] = nil
+    Timeouts[i] = nil
+end
+
+MSK.HasItem = function(item)
+    if not Config.Framework:match('esx') or Config.Framework:match('qbcore') then 
+        logging('error', ('Function %s can not used without Framework!'):format('MSK.HasItem'))
+        return 
+    end
+
+    local hasItem = MSK.TriggerCallback('msk_core:hasItem', item)
+    return hasItem
+end
+
+MSK.Table_Contains = function(table, value)
+    if type(value) == 'table' then
+        for k, v in pairs(table) do
+            for k2, v2 in pairs(value) do
+                if v == v2 then
+                    return true
+                end
+            end
+        end
+    else
+        for k, v in pairs(table) do
+            if v == value then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 MSK.logging = function(script, code, ...)
@@ -161,14 +162,14 @@ CreateThread(function()
     while true do
         local sleep = 200
 
-        if #MSK.Timeouts > 0 then
+        if #Timeouts > 0 then
             local currTime = GetGameTimer()
             sleep = 0
 
-            for i = 1, #MSK.Timeouts, 1 do
-                if currTime >= MSK.Timeouts[i].time then
-                    MSK.Timeouts[i].cb()
-                    MSK.Timeouts[i] = nil
+            for i = 1, #Timeouts, 1 do
+                if currTime >= Timeouts[i].time then
+                    Timeouts[i].cb()
+                    Timeouts[i] = nil
                 end
             end
         end
