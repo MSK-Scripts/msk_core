@@ -39,6 +39,10 @@ MSK.Trim = function(str)
     return (string.gsub(str, "%s+", ""))
 end
 
+MSK.Trim_ = function(str)
+    return (str:gsub("^%s*(.-)%s*$", "%1"))
+end
+
 MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)    
     if type(name) == 'table' then
         for k, v in ipairs(name) do 
