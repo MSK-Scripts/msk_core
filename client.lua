@@ -27,12 +27,9 @@ MSK.Round = function(num, decimal)
     return tonumber(string.format("%." .. (decimal or 0) .. "f", num))
 end
 
-MSK.Trim = function(str)
-    return (string.gsub(str, "%s+", ""))
-end
-
-MSK.Trim_ = function(str)
-    return (str:gsub("^%s*(.-)%s*$", "%1"))
+MSK.Trim = function(str, bool)
+    if bool then return (str:gsub("^%s*(.-)%s*$", "%1")) end
+    return (str:gsub("%s+", ""))
 end
 
 MSK.Notification = function(text)
