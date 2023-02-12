@@ -131,6 +131,8 @@ MSK.Notification = function(src, text)
 end
 
 MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
+    local content = {}
+
     if footer then 
         if time then
             footer = {
@@ -145,13 +147,22 @@ MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, descript
         end
     end
 
-    local content = {{
-        ["title"] = title,
-        ["description"] = description,
-        ["color"] = botColor,
-        ["fields"] = fields,
-        ["footer"] = footer
-    }}
+    if fields then
+        content = {{
+            ["title"] = title,
+            ["description"] = description,
+            ["color"] = botColor,
+            ["fields"] = fields,
+            ["footer"] = footer
+        }}
+    else
+        content = {{
+            ["title"] = title,
+            ["description"] = description,
+            ["color"] = botColor,
+            ["footer"] = footer
+        }}
+    end
 
     PerformHttpRequest(webhook, function(err, text, headers) end, 'POST', json.encode({
         username = botName,
