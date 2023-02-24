@@ -236,6 +236,21 @@ MSK.RegisterCallback('msk_core:hasItem', function(source, cb, item)
     cb(MSK.HasItem(xPlayer, item))
 end)
 
+MSK.Comma = function(int, tag)
+    if not tag then tag = '.' end
+    local newInt = int
+
+    while true do  
+        newInt, k = string.gsub(newInt, "^(-?%d+)(%d%d%d)", '%1'..tag..'%2')
+
+        if (k == 0) then
+            break
+        end
+    end
+
+    return newInt
+end
+
 RegisterNetEvent('msk_core:triggerCallback')
 AddEventHandler('msk_core:triggerCallback', function(name, requestId, ...)
     local src = source
@@ -292,7 +307,7 @@ GithubUpdater = function()
                 print(resourceName .. '^2 ✓ Resource is Up to Date^0 - ^5Current Version: ^2' .. CurrentVersion .. '^0')
             elseif CurrentVersion ~= NewestVersion then
                 print(resourceName .. '^1 ✗ Resource Outdated. Please Update!^0 - ^5Current Version: ^1' .. CurrentVersion .. '^0')
-                print('^5Newest Version: ^2' .. NewestVersion .. '^0 - ^6Download here:^9 https://github.com/MSK-Scripts/msk_core ^0')
+                print('^5Newest Version: ^2' .. NewestVersion .. '^0 - ^6Download here:^9 https://github.com/MSK-Scripts/msk_core/releases/tag/v'.. NewestVersion .. '^0')
             end
             print("###############################")
         end)

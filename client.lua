@@ -123,6 +123,21 @@ MSK.Table_Contains = function(table, value)
     return false
 end
 
+MSK.Comma = function(int, tag)
+    if not tag then tag = '.' end
+    local newInt = int
+
+    while true do  
+        newInt, k = string.gsub(newInt, "^(-?%d+)(%d%d%d)", '%1'..tag..'%2')
+
+        if (k == 0) then
+            break
+        end
+    end
+
+    return newInt
+end
+
 MSK.logging = function(script, code, ...)
     if code == 'error' then
         print(script, '[^1ERROR^0]', ...)
