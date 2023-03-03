@@ -5,6 +5,9 @@
 
 If you have any suggestions, feel free to contact me at the [MSK Scripts Discord](https://discord.gg/5hHSBRHvJE)
 
+## Important
+You can use only the Export **OR** the Import!
+
 ## Export
 You have to add this at the top of your clientside and serverside file
 ```lua
