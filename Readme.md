@@ -11,6 +11,12 @@ You have to add this at the top of your clientside and serverside file
 MSK = exports.msk_core:getCoreObject()
 ```
 
+## Import
+You can add the following to the fxmanifest.lua to get MSK
+```lua
+shared_script '@msk_core/import.lua'
+```
+
 ## Resmon
 **Idle: 0.00 ms**
 
