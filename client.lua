@@ -44,6 +44,17 @@ MSK.HelpNotification = function(text)
     DisplayHelpTextFromStringLabel(0, 0, 1, -1)
 end
 
+MSK.AdvancedNotification = function(text, title, subtitle, icon, flash, icontype)
+    if not flash then flash = true end
+    if not icontype then icontype = 1 end
+    if not icon then icon = 'CHAR_HUMANDEFAULT' end
+
+    SetNotificationTextEntry('STRING')
+    AddTextComponentString(text)
+    SetNotificationMessage(icon, icon, flash, icontype, title, subtitle)
+	DrawNotification(false, true)
+end
+
 MSK.Draw3DText = function(coords, text, size, font)
     local coords = type(coords) == "vector3" and coords or vec(coords.x, coords.y, coords.z)
     local camCoords = GetGameplayCamCoords()
@@ -172,6 +183,11 @@ end)
 RegisterNetEvent("msk_core:notification")
 AddEventHandler("msk_core:notification", function(text)
     MSK.Notification(text)
+end)
+
+RegisterNetEvent('msk_core:advancedNotification')
+AddEventHandler('msk_core:advancedNotification', function(text, title, subtitle, icon, flash, icontype)
+    MSK.AdvancedNotification(text, title, subtitle, icon, flash, icontype)
 end)
 
 CreateThread(function()

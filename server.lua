@@ -130,6 +130,10 @@ MSK.Notification = function(src, text)
     TriggerClientEvent('msk_core:notification', src, text)
 end
 
+MSK.AdvancedNotification = function(src, text, title, subtitle, icon, flash, icontype)
+    TriggerClientEvent('msk_core:advancedNotification', src, text, title, subtitle, icon, flash, icontype)
+end
+
 MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
     local content = {}
 

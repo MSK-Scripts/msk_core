@@ -4,7 +4,7 @@ games { 'gta5' }
 author 'Musiker15 - MSK Scripts'
 name 'msk_core'
 description 'Core functions for MSK Scripts'
-version '1.5'
+version '1.6'
 
 lua54 'yes'
 
@@ -19,6 +19,10 @@ client_scripts {
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'server.lua'
+}
+
+files {
+	'import.lua'
 }
 
 dependencies {
