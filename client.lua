@@ -96,13 +96,23 @@ MSK.TriggerCallback = function(name, ...)
     return table.unpack(response)
 end
 
+local Timeout = 0
 MSK.AddTimeout = function(ms, cb)
-    table.insert(Timeouts, {time = GetGameTimer() + ms, cb = cb})
-    return #Timeouts
+    local requestId = Timeout + 1
+
+    SetTimeout(ms, function()
+        logging('debug', 'Timeouts[requestId]', Timeouts[requestId])
+        if Timeouts[requestId] then Timeouts[requestId] = nil return end
+        cb()
+    end)
+
+    Timeout = requestId
+    return requestId
 end
 
-MSK.DelTimeout = function(i)
-    Timeouts[i] = nil
+MSK.DelTimeout = function(requestId)
+    if not requestId then return end
+    Timeouts[requestId] = true
 end
 
 MSK.HasItem = function(item)
@@ -188,26 +198,6 @@ end)
 RegisterNetEvent('msk_core:advancedNotification')
 AddEventHandler('msk_core:advancedNotification', function(text, title, subtitle, icon, flash, icontype)
     MSK.AdvancedNotification(text, title, subtitle, icon, flash, icontype)
-end)
-
-CreateThread(function()
-    while true do
-        local sleep = 200
-
-        if #Timeouts > 0 then
-            local currTime = GetGameTimer()
-            sleep = 0
-
-            for i = 1, #Timeouts, 1 do
-                if currTime >= Timeouts[i].time then
-                    Timeouts[i].cb()
-                    Timeouts[i] = nil
-                end
-            end
-        end
-
-        Wait(sleep)
-    end
 end)
 
 exports('getCoreObject', function()
