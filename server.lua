@@ -1,7 +1,6 @@
 MSK = {}
 
-local RegisteredCommands = {}
-local Callbacks = {}
+local Timeouts, RegisteredCommands, Callbacks = {}, {}, {}
 
 AddEventHandler('onResourceStart', function(resource)
 	if GetCurrentResourceName() ~= 'msk_core' then
@@ -206,6 +205,24 @@ MSK.logging = function(script, code, ...)
     elseif code == 'debug' then
 		print(script, '[^3DEBUG^0]', ...)
 	end
+end
+
+local Timeout = 0
+MSK.AddTimeout = function(ms, cb)
+    local requestId = Timeout + 1
+
+    SetTimeout(ms, function()
+        if Timeouts[requestId] then Timeouts[requestId] = nil return end
+        cb()
+    end)
+
+    Timeout = requestId
+    return requestId
+end
+
+MSK.DelTimeout = function(requestId)
+    if not requestId then return end
+    Timeouts[requestId] = true
 end
 
 MSK.HasItem = function(xPlayer, item)

@@ -1,7 +1,6 @@
 MSK = {}
 
-local Timeouts = {}
-local callbackRequest = {}
+local Timeouts, callbackRequest = {}, {}
 
 if Config.Framework:match('esx') then
     ESX = exports["es_extended"]:getSharedObject()
@@ -101,7 +100,6 @@ MSK.AddTimeout = function(ms, cb)
     local requestId = Timeout + 1
 
     SetTimeout(ms, function()
-        logging('debug', 'Timeouts[requestId]', Timeouts[requestId])
         if Timeouts[requestId] then Timeouts[requestId] = nil return end
         cb()
     end)
