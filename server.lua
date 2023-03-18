@@ -4,9 +4,8 @@ local Timeouts, RegisteredCommands, Callbacks = {}, {}, {}
 
 AddEventHandler('onResourceStart', function(resource)
 	if GetCurrentResourceName() ~= 'msk_core' then
-        print('^1Please rename the Script to^3 msk_core^0!')
-        print('^1Server will be shutdown^0!')
-        os.exit()
+		error('^1Please rename the Script to^3 msk_core^0!')
+		return
     end
 end)
 
