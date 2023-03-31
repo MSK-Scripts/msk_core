@@ -125,8 +125,8 @@ MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)
     end
 end
 
-MSK.Notification = function(src, text)
-    TriggerClientEvent('msk_core:notification', src, text)
+MSK.Notification = function(src, message, info, duration, playSound)
+    TriggerClientEvent('msk_core:notification', src, message, info, duration, playSound)
 end
 
 MSK.AdvancedNotification = function(src, text, title, subtitle, icon, flash, icontype)

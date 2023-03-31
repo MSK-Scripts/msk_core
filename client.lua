@@ -31,10 +31,21 @@ MSK.Trim = function(str, bool)
     return (str:gsub("%s+", ""))
 end
 
-MSK.Notification = function(text)
-    SetNotificationTextEntry('STRING')
-    AddTextComponentString(text)
-	DrawNotification(false, true)
+MSK.Notification = function(message, info, duration, playSound)
+    if Config.Notification == 'native' then
+        SetNotificationTextEntry('STRING')
+        AddTextComponentString(message)
+        DrawNotification(false, true)
+    else
+        SendNUIMessage({
+            message = message,
+            duration = duration or 5000,
+            type = info or 'default',
+            map = IsRadarEnabled()
+        })
+    end
+
+    if playSound then PlaySoundFrontend(-1, "ATM_WINDOW", "HUD_FRONTEND_DEFAULT_SOUNDSET", 1) end
 end
 
 MSK.HelpNotification = function(text)
@@ -189,8 +200,8 @@ AddEventHandler("msk_core:responseCallback", function(requestId, ...)
 end)
 
 RegisterNetEvent("msk_core:notification")
-AddEventHandler("msk_core:notification", function(text)
-    MSK.Notification(text)
+AddEventHandler("msk_core:notification", function(message, info, duration, playSound)
+    MSK.Notification(message, info, duration, playSound)
 end)
 
 RegisterNetEvent('msk_core:advancedNotification')

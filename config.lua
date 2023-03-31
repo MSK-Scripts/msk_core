@@ -10,3 +10,7 @@ Config.showCoords = {
     command = 'coords',
     groups = {'superadmin', 'admin'}
 }
+----------------------------------------------------------------
+-- Set to 'native' for FiveM Native Notification
+-- Set to 'nui' for NUI Notification
+Config.Notification = 'nui'
