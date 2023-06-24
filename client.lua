@@ -31,6 +31,16 @@ MSK.Trim = function(str, bool)
     return (str:gsub("%s+", ""))
 end
 
+MSK.Split = function(str, delimiter)
+    local result = {}
+    
+    for match in (s..delimiter):gmatch("(.-)"..delimiter) do 
+        table.insert(result, match) 
+    end 
+
+    return result 
+end
+
 MSK.Notification = function(message, info, duration, playSound)
     if Config.Notification == 'native' then
         SetNotificationTextEntry('STRING')
@@ -166,6 +176,21 @@ MSK.Comma = function(int, tag)
     end
 
     return newInt
+end
+
+MSK.GetVehicleInDirection = function()
+    local playerPed = PlayerPedId()
+    local playerCoords = GetEntityCoords(playerPed)
+    local inDirection = GetOffsetFromEntityInWorldCoords(playerPed, 0.0, 5.0, 0.0)
+    local rayHandle = StartExpensiveSynchronousShapeTestLosProbe(playerCoords, inDirection, 10, playerPed, 0)
+    local numRayHandle, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
+
+    if hit == 1 and GetEntityType(entityHit) == 2 then
+        local entityCoords = GetEntityCoords(entityHit)
+        return entityHit, entityCoords
+    end
+
+    return nil
 end
 
 MSK.logging = function(script, code, ...)

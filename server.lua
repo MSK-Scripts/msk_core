@@ -39,6 +39,16 @@ MSK.Trim = function(str, bool)
     return (str:gsub("%s+", ""))
 end
 
+MSK.Split = function(str, delimiter)
+    local result = {}
+    
+    for match in (s..delimiter):gmatch("(.-)"..delimiter) do 
+        table.insert(result, match) 
+    end 
+
+    return result 
+end
+
 MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)    
     if type(name) == 'table' then
         for k, v in ipairs(name) do 
