@@ -2,9 +2,8 @@
 
 .notify-wrapper {
     position: absolute;
-    right: 0vh;
-    top: 0vh;
-    margin-right: 2vh;
+    left: 2vh;
+    top: 10vh;
     font-size: 1.8vh;
     font-family: 'Montserrat', sans-serif;
 }
