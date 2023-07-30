@@ -1,8 +1,30 @@
+var field = false 
+
 window.addEventListener('message', (event) => {
     if (event.data.action == 'notify') {
         notification(event.data.title, event.data.message, event.data.info, event.data.time);
+    } else if (event.data.action == 'openInput') {
+        var data = event.data;
+        var input = 'small-input'
+
+        if (data.field) {
+            input = 'big-input'
+            field = true
+            $("#big-input").show()
+            $("#small-input").hide()
+        } else {
+            field = false
+            $("#big-input").hide()
+            $("#small-input").show()
+        }
+
+        document.getElementById(input).placeholder = data.placeholder;
+        $(".msk-input-container").fadeIn()
+        $("#msk-input-title").text(data.header)
     }
 })
+
+/* MSK Notification */
 
 const icons = {
     "general" : "fas fa-warehouse",
@@ -78,4 +100,26 @@ notification = (title, message, info, time) => {
     }, time);
 
     return notification;
+}
+
+/* MSK Input */
+
+function closeInputUI(send) {
+    $(".msk-input-container").fadeOut()
+    if (!send) { $.post(`http://${GetParentResourceName()}/closeInput`, JSON.stringify({})) }
+}
+
+document.onkeyup = function(data) {
+    if (data.which == 27) {
+        closeInputUI()
+    }
+}
+
+function input() {
+    var textfield = '#small-input'
+    if (field) {textfield = '#big-input'}
+
+    $.post(`http://${GetParentResourceName()}/submitInput`, JSON.stringify({input: $(textfield).val()}));
+    $(textfield).val('');
+    closeInputUI(true)
 }

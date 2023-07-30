@@ -1,5 +1,6 @@
 Config = {}
 ----------------------------------------------------------------
+Config.Debug = true
 Config.VersionChecker = true
 ----------------------------------------------------------------
 -- Only Required for MSK.RegisterCommand // View Wiki for more Information about that!

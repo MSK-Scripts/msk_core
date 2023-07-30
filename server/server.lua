@@ -1,6 +1,6 @@
 MSK = {}
 
-local Timeouts, RegisteredCommands, Callbacks = {}, {}, {}
+local RegisteredCommands, Callbacks = {}, {}
 
 AddEventHandler('onResourceStart', function(resource)
 	if GetCurrentResourceName() ~= 'msk_core' then
@@ -14,39 +14,6 @@ if Config.Framework:match('esx') then
     ESX = exports["es_extended"]:getSharedObject()
 elseif Config.Framework:match('qbcore') then
     QBCore = exports['qb-core']:GetCoreObject()
-end
-
-local Letters = {}
-for i = 48,  57 do table.insert(Letters, string.char(i)) end
-for i = 65,  90 do table.insert(Letters, string.char(i)) end
-for i = 97, 122 do table.insert(Letters, string.char(i)) end
-
-MSK.GetRandomLetter = function(length)
-    Wait(0)
-    if length > 0 then
-        return MSK.GetRandomLetter(length - 1) .. Letters[math.random(1, #Letters)]
-    else
-        return ''
-    end
-end
-
-MSK.Round = function(num, decimal) 
-    return tonumber(string.format("%." .. (decimal or 0) .. "f", num))
-end
-
-MSK.Trim = function(str, bool)
-    if bool then return (str:gsub("^%s*(.-)%s*$", "%1")) end
-    return (str:gsub("%s+", ""))
-end
-
-MSK.Split = function(str, delimiter)
-    local result = {}
-    
-    for match in (s..delimiter):gmatch("(.-)"..delimiter) do 
-        table.insert(result, match) 
-    end 
-
-    return result 
 end
 
 MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)    
@@ -192,51 +159,6 @@ MSK.RegisterCallback = function(name, cb)
     Callbacks[name] = cb
 end
 
-MSK.Table_Contains = function(table, value)
-    if type(value) == 'table' then
-        for k, v in pairs(table) do
-            for k2, v2 in pairs(value) do
-                if v == v2 then
-                    return true
-                end
-            end
-        end
-    else
-        for k, v in pairs(table) do
-            if v == value then
-                return true
-            end
-        end
-    end
-    return false
-end
-
-MSK.logging = function(script, code, ...)
-    if code == 'error' then
-        print(script, '[^1ERROR^0]', ...)
-    elseif code == 'debug' then
-		print(script, '[^3DEBUG^0]', ...)
-	end
-end
-
-local Timeout = 0
-MSK.AddTimeout = function(ms, cb)
-    local requestId = Timeout + 1
-
-    SetTimeout(ms, function()
-        if Timeouts[requestId] then Timeouts[requestId] = nil return end
-        cb()
-    end)
-
-    Timeout = requestId
-    return requestId
-end
-
-MSK.DelTimeout = function(requestId)
-    if not requestId then return end
-    Timeouts[requestId] = true
-end
-
 MSK.HasItem = function(xPlayer, item)
     if not xPlayer then logging('error', 'Player on Function MSK.HasItem does not exist!') return end
     if not Config.Framework:match('esx') or Config.Framework:match('qbcore') then 
@@ -268,21 +190,6 @@ MSK.RegisterCallback('msk_core:hasItem', function(source, cb, item)
 
     cb(MSK.HasItem(xPlayer, item))
 end)
-
-MSK.Comma = function(int, tag)
-    if not tag then tag = '.' end
-    local newInt = int
-
-    while true do  
-        newInt, k = string.gsub(newInt, "^(-?%d+)(%d%d%d)", '%1'..tag..'%2')
-
-        if (k == 0) then
-            break
-        end
-    end
-
-    return newInt
-end
 
 RegisterNetEvent('msk_core:triggerCallback')
 AddEventHandler('msk_core:triggerCallback', function(name, requestId, ...)
@@ -318,11 +225,6 @@ addChatSuggestions = function(name, suggestion)
     end
 
     return true
-end
-
-logging = function(code, ...)
-    local script = "[^2"..GetCurrentResourceName().."^0]"
-    MSK.logging(script, code, ...)
 end
 
 GithubUpdater = function()
