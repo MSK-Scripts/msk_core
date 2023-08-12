@@ -13,5 +13,6 @@ Config.showCoords = {
 }
 ----------------------------------------------------------------
 -- Set to 'native' for FiveM Native Notification
--- Set to 'nui' for NUI Notification
-Config.Notification = 'nui'
+-- Set to 'msk' for NUI Notification
+-- Set to 'okok' for OKOK Notification
+Config.Notification = 'msk'

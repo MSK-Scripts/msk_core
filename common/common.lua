@@ -128,7 +128,18 @@ MSK.logging = function(code, ...)
     end
 end
 
+exports('getConfig', function()
+    return Config
+end)
+
 logging = function(code, ...)
     if not Config.Debug then return end
-    MSK.logging(code, ...)
+    
+    if code == 'error' then
+        print("[^2msk_core^0]", '[^1ERROR^0]', ...)
+    elseif code == 'debug' then
+        print("[^2msk_core^0]", '[^3DEBUG^0]', ...)
+    elseif code == 'info' then
+        print("[^2msk_core^0]", '[^4Info^0]', ...)
+    end
 end

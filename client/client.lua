@@ -1,6 +1,6 @@
 MSK = {}
 
-local callbackRequest = {}
+local callbackRequest, Callbacks = {}, {}
 
 if Config.Framework:match('esx') then
     ESX = exports["es_extended"]:getSharedObject()
@@ -8,12 +8,31 @@ elseif Config.Framework:match('qbcore') then
     QBCore = exports['qb-core']:GetCoreObject()
 end
 
+MSK.RegisterCallback = function(name, cb)
+    Callbacks[name] = cb
+end
+
+MSK.TriggerCallback = function(name, ...)
+    local requestId = GenerateRequestKey(callbackRequest)
+    local response
+
+    callbackRequest[requestId] = function(...)
+        response = {...}
+    end
+
+    TriggerServerEvent('msk_core:triggerCallback', name, requestId, ...)
+
+    while not response do Wait(0) end
+
+    return table.unpack(response)
+end
+
 MSK.Notification = function(title, message, info, time)
     if Config.Notification == 'native' then
         SetNotificationTextEntry('STRING')
         AddTextComponentString(message)
         DrawNotification(false, true)
-    else
+    elseif Config.Notification == 'nui' or Config.Notification == 'msk' then
         SendNUIMessage({
             action = 'notify',
             title = title,
@@ -21,6 +40,8 @@ MSK.Notification = function(title, message, info, time)
             info = info or 'general',
             time = time or 5000
         })
+    elseif Config.Notification == 'okok' then
+        exports['okokNotify']:Alert(title, message, time or 5000, info or 'info')
     end
 end
 
@@ -65,23 +86,6 @@ MSK.Draw3DText = function(coords, text, size, font)
     ClearDrawOrigin()
 end
 
-MSK.TriggerCallback = function(name, ...)
-    local requestId = GenerateRequestKey(callbackRequest)
-    local response
-
-    callbackRequest[requestId] = function(...)
-        response = {...}
-    end
-
-    TriggerServerEvent('msk_core:triggerCallback', name, requestId, ...)
-
-    while not response do
-        Wait(0)
-    end
-
-    return table.unpack(response)
-end
-
 MSK.HasItem = function(item)
     if not Config.Framework:match('esx') or Config.Framework:match('qbcore') then 
         logging('error', ('Function %s can not used without Framework!'):format('MSK.HasItem'))
@@ -116,8 +120,19 @@ MSK.IsVehicleEmpty = function(vehicle)
     return passengers == 0 and driverSeatFree
 end
 
+MSK.GetPedMugshot = function(ped, transparent)
+    if not DoesEntityExist(ped) then return end
+    local mugshot = transparent and RegisterPedheadshotTransparent(ped) or RegisterPedheadshot(ped)
+
+    while not IsPedheadshotReady(mugshot) do
+        Wait(0)
+    end
+
+    return mugshot, GetPedheadshotTxdString(mugshot)
+end
+
 GenerateRequestKey = function(tbl)
-    local id = string.upper(MSK.GetRandomLetter(3)) .. math.random(000, 999) .. string.upper(MSK.GetRandomLetter(2)) .. math.random(00, 99)
+    local id = string.upper(MSK.GetRandomString(3)) .. math.random(000, 999) .. string.upper(MSK.GetRandomString(2)) .. math.random(00, 99)
 
     if not tbl[id] then 
         return tostring(id)
@@ -131,6 +146,15 @@ AddEventHandler("msk_core:responseCallback", function(requestId, ...)
     if callbackRequest[requestId] then 
         callbackRequest[requestId](...)
         callbackRequest[requestId] = nil
+    end
+end)
+
+RegisterNetEvent('msk_core:triggerCallback')
+AddEventHandler('msk_core:triggerCallback', function(name, requestId, ...)
+    if Callbacks[name] then
+        Callbacks[name](GetPlayerServerId(PlayerId()), function(...)
+            TriggerServerEvent("msk_core:responseCallback", requestId, ...)
+        end, ...)
     end
 end)
 

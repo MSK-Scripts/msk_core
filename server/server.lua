@@ -1,6 +1,6 @@
 MSK = {}
 
-local RegisteredCommands, Callbacks = {}, {}
+local RegisteredCommands, Callbacks, callbackRequest = {}, {}, {}
 
 AddEventHandler('onResourceStart', function(resource)
 	if GetCurrentResourceName() ~= 'msk_core' then
@@ -14,6 +14,25 @@ if Config.Framework:match('esx') then
     ESX = exports["es_extended"]:getSharedObject()
 elseif Config.Framework:match('qbcore') then
     QBCore = exports['qb-core']:GetCoreObject()
+end
+
+MSK.RegisterCallback = function(name, cb)
+    Callbacks[name] = cb
+end
+
+MSK.TriggerCallback = function(name, playerId, ...)
+    local requestId = GenerateRequestKey(callbackRequest)
+    local response
+
+    callbackRequest[requestId] = function(...)
+        response = {...}
+    end
+
+    TriggerClientEvent('msk_core:triggerCallback', playerId, name, requestId, ...)
+
+    while not response do Wait(0) end
+    
+    return table.unpack(response)
 end
 
 MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)    
@@ -155,10 +174,6 @@ MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, descript
     })
 end
 
-MSK.RegisterCallback = function(name, cb)
-    Callbacks[name] = cb
-end
-
 MSK.HasItem = function(xPlayer, item)
     if not xPlayer then logging('error', 'Player on Function MSK.HasItem does not exist!') return end
     if not Config.Framework:match('esx') or Config.Framework:match('qbcore') then 
@@ -200,6 +215,24 @@ AddEventHandler('msk_core:triggerCallback', function(name, requestId, ...)
         end, ...)
     end
 end)
+
+RegisterNetEvent("msk_core:responseCallback")
+AddEventHandler("msk_core:responseCallback", function(requestId, ...)
+    if callbackRequest[requestId] then 
+        callbackRequest[requestId](...)
+        callbackRequest[requestId] = nil
+    end
+end)
+
+GenerateRequestKey = function(tbl)
+    local id = string.upper(MSK.GetRandomString(3)) .. math.random(000, 999) .. string.upper(MSK.GetRandomString(2)) .. math.random(00, 99)
+
+    if not tbl[id] then 
+        return tostring(id)
+    else
+        GenerateRequestKey(tbl)
+    end
+end
 
 doesPlayerIdExist = function(playerId)
     for k, id in pairs(GetPlayers()) do

@@ -21,6 +21,10 @@ window.addEventListener('message', (event) => {
         document.getElementById(input).placeholder = data.placeholder;
         $(".msk-input-container").fadeIn()
         $("#msk-input-title").text(data.header)
+    } else if (event.data.action == 'progressBarStart') {
+        progressBarStart(event.data);
+    } else if (event.data.action == 'progressBarStop') {
+        progressBarStop(event.data.id);
     }
 })
 
@@ -104,22 +108,69 @@ notification = (title, message, info, time) => {
 
 /* MSK Input */
 
-function closeInputUI(send) {
+closeInputUI = (send) => {
     $(".msk-input-container").fadeOut()
     if (!send) { $.post(`http://${GetParentResourceName()}/closeInput`, JSON.stringify({})) }
 }
 
-document.onkeyup = function(data) {
+document.onkeyup = (data) => {
     if (data.which == 27) {
         closeInputUI()
     }
 }
 
-function input() {
+$("#small-input").keydown((event) => {
+    if (event.keyCode == 13) {
+        event.preventDefault();
+    }
+})
+
+input = () => {
     var textfield = '#small-input'
     if (field) {textfield = '#big-input'}
 
     $.post(`http://${GetParentResourceName()}/submitInput`, JSON.stringify({input: $(textfield).val()}));
     $(textfield).val('');
     closeInputUI(true)
+}
+
+/* MSK ProgressBar */
+
+let activeBars = new Map(); // Using a Map to store active bars with their IDs as keys
+let isProgressActive = false
+
+progressBarStart = (data) => {
+    if (activeBars.has(data.id)) {
+        $.post(`https://${GetParentResourceName()}/notif`, JSON.stringify({ text: "Already doing an action." }));
+        return;
+    }
+
+    let progressBar = {
+        element: $('#progress'),
+        elementValue: $('#progress-value')
+    };
+
+    activeBars.set(data.id, progressBar);
+
+    progressBar.element.removeClass('hidden');
+    progressBar.elementValue.css("animation",`load ${data.time}s normal forwards`);
+    progressBar.element.css("animation",`glow ${data.time}s normal forwards`);
+    
+    $('#progress-text').text(data.text);
+    document.body.style.setProperty('--mainColor', data.color);
+
+    setTimeout(() => {
+        stopProgress(data.id);
+    }, data.time);
+}
+
+progressBarStop = (id) => {
+    let progressBar = activeBars.get(id);
+    
+    if (progressBar) {
+        progressBar.element.addClass('hidden');
+        progressBar.elementValue.css("animation",'');
+        progressBar.element.css("animation",'');
+        activeBars.delete(id);
+    }
 }
