@@ -6,7 +6,9 @@
 If you have any suggestions, feel free to contact me at the [MSK Scripts Discord](https://discord.gg/5hHSBRHvJE)
 
 ## Important
-You can only use the Export **OR** the Import!
+You can only use the Export **OR** the Import but Import Method is recommended.
+
+The Import is already integraded in our Scripts, so you don't have to anything if you use a script from us.
 
 ## Export
 You have to add this at the top of your clientside and serverside file
