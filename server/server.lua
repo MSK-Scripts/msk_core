@@ -16,11 +16,13 @@ elseif Config.Framework:match('qbcore') then
     QBCore = exports['qb-core']:GetCoreObject()
 end
 
-MSK.RegisterCallback = function(name, cb)
+MSK.RegisterServerCallback = function(name, cb)
     Callbacks[name] = cb
 end
+MSK.RegisterCallback = MSK.RegisterServerCallback
+exports('RegisterServerCallback', RegisterServerCallback)
 
-MSK.TriggerCallback = function(name, playerId, ...)
+MSK.TriggerClientCallback = function(name, playerId, ...)
     local requestId = GenerateRequestKey(callbackRequest)
     local response
 
@@ -34,6 +36,8 @@ MSK.TriggerCallback = function(name, playerId, ...)
     
     return table.unpack(response)
 end
+MSK.TriggerCallback = MSK.TriggerClientCallback
+exports('TriggerClientCallback', TriggerClientCallback)
 
 MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)    
     if type(name) == 'table' then
@@ -120,16 +124,19 @@ MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)
         ExecuteCommand(('add_ace group.%s command.%s allow'):format(group, name))
     end
 end
+exports('RegisterCommand', RegisterCommand)
 
 MSK.Notification = function(src, title, message, info, time)
     if not src or src == 0 then return end
     TriggerClientEvent('msk_core:notification', src, title, message, info, time)
 end
+exports('Notification', Notification)
 
 MSK.AdvancedNotification = function(src, text, title, subtitle, icon, flash, icontype)
     if not src or src == 0 then return end
     TriggerClientEvent('msk_core:advancedNotification', src, text, title, subtitle, icon, flash, icontype)
 end
+exports('AdvancedNotification', AdvancedNotification)
 
 MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
     local content = {}
@@ -173,6 +180,7 @@ MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, descript
         ['Content-Type'] = 'application/json'
     })
 end
+exports('AddWebhook', AddWebhook)
 
 MSK.HasItem = function(xPlayer, item)
     if not xPlayer then logging('error', 'Player on Function MSK.HasItem does not exist!') return end
@@ -192,6 +200,7 @@ MSK.HasItem = function(xPlayer, item)
 
     return hasItem
 end
+exports('HasItem', HasItem)
 
 MSK.RegisterCallback('msk_core:hasItem', function(source, cb, item)
     local src = source

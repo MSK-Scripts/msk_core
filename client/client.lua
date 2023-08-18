@@ -8,11 +8,13 @@ elseif Config.Framework:match('qbcore') then
     QBCore = exports['qb-core']:GetCoreObject()
 end
 
-MSK.RegisterCallback = function(name, cb)
+MSK.RegisterClientCallback = function(name, cb)
     Callbacks[name] = cb
 end
+MSK.RegisterCallback = MSK.RegisterClientCallback
+exports('RegisterClientCallback', RegisterClientCallback)
 
-MSK.TriggerCallback = function(name, ...)
+MSK.TriggerServerCallback = function(name, ...)
     local requestId = GenerateRequestKey(callbackRequest)
     local response
 
@@ -26,6 +28,8 @@ MSK.TriggerCallback = function(name, ...)
 
     return table.unpack(response)
 end
+MSK.TriggerCallback = MSK.TriggerServerCallback
+exports('TriggerServerCallback', TriggerServerCallback)
 
 MSK.Notification = function(title, message, info, time)
     if Config.Notification == 'native' then
@@ -44,12 +48,14 @@ MSK.Notification = function(title, message, info, time)
         exports['okokNotify']:Alert(title, message, time or 5000, info or 'info')
     end
 end
+exports('Notification', Notification)
 
 MSK.HelpNotification = function(text)
     SetTextComponentFormat('STRING')
     AddTextComponentString(text)
     DisplayHelpTextFromStringLabel(0, 0, 1, -1)
 end
+exports('HelpNotification', HelpNotification)
 
 MSK.AdvancedNotification = function(text, title, subtitle, icon, flash, icontype)
     if not flash then flash = true end
@@ -61,6 +67,7 @@ MSK.AdvancedNotification = function(text, title, subtitle, icon, flash, icontype
     SetNotificationMessage(icon, icon, flash, icontype, title, subtitle)
 	DrawNotification(false, true)
 end
+exports('AdvancedNotification', AdvancedNotification)
 
 MSK.Draw3DText = function(coords, text, size, font)
     local coords = type(coords) == "vector3" and coords or vec(coords.x, coords.y, coords.z)
@@ -85,6 +92,7 @@ MSK.Draw3DText = function(coords, text, size, font)
     EndTextCommandDisplayText(0.0, 0.0)
     ClearDrawOrigin()
 end
+exports('Draw3DText', Draw3DText)
 
 MSK.HasItem = function(item)
     if not Config.Framework:match('esx') or Config.Framework:match('qbcore') then 
@@ -95,6 +103,7 @@ MSK.HasItem = function(item)
     local hasItem = MSK.TriggerCallback('msk_core:hasItem', item)
     return hasItem
 end
+exports('HasItem', HasItem)
 
 MSK.GetVehicleInDirection = function()
     local playerPed = PlayerPedId()
@@ -111,6 +120,7 @@ MSK.GetVehicleInDirection = function()
 
     return nil
 end
+exports('GetVehicleInDirection', GetVehicleInDirection)
 
 MSK.IsVehicleEmpty = function(vehicle)
     if not vehicle or (vehicle and not DoesEntityExist(vehicle)) then return end
@@ -119,6 +129,7 @@ MSK.IsVehicleEmpty = function(vehicle)
 
     return passengers == 0 and driverSeatFree
 end
+exports('IsVehicleEmpty', IsVehicleEmpty)
 
 MSK.GetPedMugshot = function(ped, transparent)
     if not DoesEntityExist(ped) then return end
@@ -130,6 +141,7 @@ MSK.GetPedMugshot = function(ped, transparent)
 
     return mugshot, GetPedheadshotTxdString(mugshot)
 end
+exports('GetPedMugshot', GetPedMugshot)
 
 GenerateRequestKey = function(tbl)
     local id = string.upper(MSK.GetRandomString(3)) .. math.random(000, 999) .. string.upper(MSK.GetRandomString(2)) .. math.random(00, 99)

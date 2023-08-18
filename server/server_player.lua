@@ -34,6 +34,7 @@ MSK.GetPlayer = function(player)
 
     return Player
 end
+exports('GetPlayer', GetPlayer)
 
 MSK.GetPlayers = function(key, val)
     local Players
@@ -68,3 +69,4 @@ MSK.GetPlayers = function(key, val)
 
     return Players
 end
+exports('GetPlayers', GetPlayers)

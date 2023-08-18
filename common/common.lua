@@ -13,15 +13,18 @@ MSK.GetRandomString = function(length)
     end
 end
 MSK.GetRandomLetter = MSK.GetRandomString
+exports('GetRandomString', GetRandomString)
 
 MSK.Round = function(num, decimal) 
     return tonumber(string.format("%." .. (decimal or 0) .. "f", num))
 end
+exports('Round', Round)
 
 MSK.Trim = function(str, bool)
     if bool then return (str:gsub("^%s*(.-)%s*$", "%1")) end
     return (str:gsub("%s+", ""))
 end
+exports('Trim', Trim)
 
 MSK.Split = function(str, delimiter)
     local result = {}
@@ -32,8 +35,9 @@ MSK.Split = function(str, delimiter)
 
     return result 
 end
+exports('Split', Split)
 
-MSK.Table_Contains = function(table, value)
+MSK.TableContains = function(table, value)
     if type(value) == 'table' then
         for k, v in pairs(table) do
             for k2, v2 in pairs(value) do
@@ -51,6 +55,8 @@ MSK.Table_Contains = function(table, value)
     end
     return false
 end
+MSK.Table_Contains = MSK.TableContains
+exports('TableContains', TableContains)
 
 MSK.Comma = function(int, tag)
     if not tag then tag = '.' end
@@ -66,9 +72,10 @@ MSK.Comma = function(int, tag)
 
     return newInt
 end
+exports('Comma', Comma)
 
 local Timeout = 0
-MSK.AddTimeout = function(ms, cb)
+MSK.SetTimeout = function(ms, cb)
     local requestId = Timeout + 1
 
     SetTimeout(ms, function()
@@ -79,11 +86,14 @@ MSK.AddTimeout = function(ms, cb)
     Timeout = requestId
     return requestId
 end
+MSK.AddTimeout = MSK.SetTimeout
+exports('SetTimeout', SetTimeout)
 
 MSK.DelTimeout = function(requestId)
     if not requestId then return end
     Timeouts[requestId] = true
 end
+exports('DelTimeout', DelTimeout)
 
 MSK.DumpTable = function(tbl, n)
     if not n then n = 0 end
@@ -100,8 +110,9 @@ MSK.DumpTable = function(tbl, n)
 
     return s .. '}'
 end
+exports('DumpTable', DumpTable)
 
-MSK.logging = function(code, ...)
+MSK.Logging = function(code, ...)
     local script = "[^2"..GetInvokingResource().."^0]"
 
     if not MSK.Table_Contains({'error', 'debug', 'info'}, code) then
@@ -127,6 +138,8 @@ MSK.logging = function(code, ...)
         end
     end
 end
+MSK.logging = MSK.Logging
+exports('Logging', Logging)
 
 exports('getConfig', function()
     return Config

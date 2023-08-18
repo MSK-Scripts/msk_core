@@ -21,6 +21,7 @@ closeInput = function()
     SetNuiFocus(false, false)
 	isOpen = false
 end
+MSK.CloseInput = closeInput
 exports('closeInput', closeInput)
 
 RegisterNUICallback('closeInput', function(data)
