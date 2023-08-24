@@ -149,15 +149,15 @@ progressBarStart = (data) => {
     if (!activeBars.has(id)) {
         let progressBar = {
             element: $('#progress'),
-            elementValue: $('#progress-value')
+            elementValue: $('#progress-value'),
+            elementText: $('#progress-text')
         };
         activeBars.set(id, progressBar);
 
         progressBar.element.removeClass('progress-hidden');
         progressBar.elementValue.css("animation",`load ${time / 1000}s normal forwards`);
-
-        $('#progress-text').text(text);
-        document.body.style.setProperty('--mainColor', color);
+        progressBar.elementText.text(text);
+        document.querySelector('.progress-container').style.setProperty('--mainColor', color);
 
         timeout = setTimeout(() => {
             progressBarStop(id);
