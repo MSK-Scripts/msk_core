@@ -5,8 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
         <title>MSK Scripts</title>
         <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
-        <script src="https://kit.fontawesome.com/57b9d31625.js" crossorigin="anonymous"></script>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" rel="stylesheet">
+        <script src="https://kit.fontawesome.com/57b9d31625.js" crossorigin="anonymous"></script>
+        <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
         <link rel="stylesheet" href="style.css">
     </head>
 
@@ -20,6 +21,13 @@
             <textarea class="msk-input" rows="5" cols="50" id="big-input" placeholder=""></textarea>
             <textarea class="msk-input" rows="1" cols="50" id="small-input" placeholder=""></textarea>
             <button class="msk-submit-button" onclick="input()">Confirm</button>
+        </div>
+        
+        <div class="progress-container">
+            <div id="progress" class="progress-hidden">
+                <div id="progress-value" class="progress-color"></div>
+                <div id="progress-text">Progressing...</div>
+            </div>
         </div>
     </body>
 </html>

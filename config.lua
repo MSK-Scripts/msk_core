@@ -16,3 +16,5 @@ Config.showCoords = {
 -- Set to 'msk' for NUI Notification
 -- Set to 'okok' for OKOK Notification
 Config.Notification = 'msk'
+
+Config.progressColor = "#5eb131" -- Default Color for ProgressBar

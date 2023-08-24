@@ -1,4 +1,7 @@
 var field = false 
+let currID = 0
+let timeout
+let activeBars = new Map(); // Using a Map to store active bars with their IDs as keys
 
 window.addEventListener('message', (event) => {
     if (event.data.action == 'notify') {
@@ -22,9 +25,10 @@ window.addEventListener('message', (event) => {
         $(".msk-input-container").fadeIn()
         $("#msk-input-title").text(data.header)
     } else if (event.data.action == 'progressBarStart') {
+        event.data.id = currID
         progressBarStart(event.data);
     } else if (event.data.action == 'progressBarStop') {
-        progressBarStop(event.data.id);
+        progressBarStop();
     }
 })
 
@@ -136,41 +140,54 @@ input = () => {
 
 /* MSK ProgressBar */
 
-let activeBars = new Map(); // Using a Map to store active bars with their IDs as keys
-let isProgressActive = false
-
 progressBarStart = (data) => {
-    if (activeBars.has(data.id)) {
-        $.post(`https://${GetParentResourceName()}/notif`, JSON.stringify({ text: "Already doing an action." }));
-        return;
+    let time = data.time
+    let text = data.text
+    let color = data.color
+    let id = data.id
+
+    if (!activeBars.has(id)) {
+        let progressBar = {
+            element: $('#progress'),
+            elementValue: $('#progress-value')
+        };
+        activeBars.set(id, progressBar);
+
+        progressBar.element.removeClass('progress-hidden');
+        progressBar.elementValue.css("animation",`load ${time / 1000}s normal forwards`);
+
+        $('#progress-text').text(text);
+        document.body.style.setProperty('--mainColor', color);
+
+        timeout = setTimeout(() => {
+            progressBarStop(id);
+        }, time);
     }
-
-    let progressBar = {
-        element: $('#progress'),
-        elementValue: $('#progress-value')
-    };
-
-    activeBars.set(data.id, progressBar);
-
-    progressBar.element.removeClass('hidden');
-    progressBar.elementValue.css("animation",`load ${data.time}s normal forwards`);
-    progressBar.element.css("animation",`glow ${data.time}s normal forwards`);
-    
-    $('#progress-text').text(data.text);
-    document.body.style.setProperty('--mainColor', data.color);
-
-    setTimeout(() => {
-        stopProgress(data.id);
-    }, data.time);
 }
 
 progressBarStop = (id) => {
-    let progressBar = activeBars.get(id);
+    clearTimeout(timeout);
+
+    if (id) {
+        let progressBar = activeBars.get(id);
     
-    if (progressBar) {
-        progressBar.element.addClass('hidden');
-        progressBar.elementValue.css("animation",'');
-        progressBar.element.css("animation",'');
-        activeBars.delete(id);
+        if (progressBar) {
+            progressBar.element.addClass('progress-hidden');
+            progressBar.elementValue.css("animation",'');
+            progressBar.element.css("animation",'');
+            activeBars.delete(id);
+        }
+    } else {
+        let id = currID
+        let progressBar = activeBars.get(id);
+    
+        if (progressBar) {
+            progressBar.element.addClass('progress-hidden');
+            progressBar.elementValue.css("animation",'');
+            progressBar.element.css("animation",'');
+            activeBars.delete(id);
+        }
     }
+
+    currID = currID + 1
 }
