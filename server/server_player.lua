@@ -45,7 +45,7 @@ MSK.GetPlayers = function(key, val)
         if not key then 
             Players = QBCore.Functions.GetQBPlayers()
         else
-            local qbPlayers
+            local qbPlayers = {}
 
             for k, Player in pairs(QBCore.Functions.GetQBPlayers()) do
                 if key == 'job' then
