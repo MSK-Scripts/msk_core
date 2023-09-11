@@ -95,7 +95,7 @@ end
 exports('Draw3DText', Draw3DText)
 
 MSK.HasItem = function(item)
-    if not Config.Framework:match('esx') or Config.Framework:match('qbcore') then 
+    if not Config.Framework:match('esx') or not Config.Framework:match('qbcore') then 
         logging('error', ('Function %s can not used without Framework!'):format('MSK.HasItem'))
         return 
     end
