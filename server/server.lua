@@ -184,7 +184,7 @@ exports('AddWebhook', AddWebhook)
 
 MSK.HasItem = function(xPlayer, item)
     if not xPlayer then logging('error', 'Player on Function MSK.HasItem does not exist!') return end
-    if not Config.Framework:match('esx') or Config.Framework:match('qbcore') then 
+    if not Config.Framework:match('esx') or not Config.Framework:match('qbcore') then 
         logging('error', ('Function %s can not used without Framework!'):format('^3MSK.HasItem^0'))
         return 
     end
