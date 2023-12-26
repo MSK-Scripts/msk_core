@@ -141,10 +141,10 @@ input = () => {
 /* MSK ProgressBar */
 
 progressBarStart = (data) => {
+    let id = data.id
     let time = data.time
     let text = data.text
     let color = data.color
-    let id = data.id
 
     if (!activeBars.has(id)) {
         let progressBar = {
@@ -158,7 +158,7 @@ progressBarStart = (data) => {
         progressBar.elementValue.css("animation",`load ${time / 1000}s normal forwards`);
         progressBar.elementText.text(text);
         document.querySelector('.progress-container').style.setProperty('--mainColor', color);
-
+        
         timeout = setTimeout(() => {
             progressBarStop(id);
         }, time);

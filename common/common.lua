@@ -7,7 +7,7 @@ for i = 97, 122 do table.insert(Letters, string.char(i)) end
 MSK.GetRandomString = function(length)
     Wait(0)
     if length > 0 then
-        return MSK.GetRandomLetter(length - 1) .. Letters[math.random(1, #Letters)]
+        return MSK.GetRandomString(length - 1) .. Letters[math.random(1, #Letters)]
     else
         return ''
     end
@@ -38,6 +38,8 @@ end
 exports('Split', Split)
 
 MSK.TableContains = function(table, value)
+    if not table or not value then return end
+    
     if type(value) == 'table' then
         for k, v in pairs(table) do
             for k2, v2 in pairs(value) do

@@ -96,8 +96,7 @@ exports('Draw3DText', Draw3DText)
 
 MSK.HasItem = function(item)
     if not Config.Framework:match('esx') or not Config.Framework:match('qbcore') then 
-        logging('error', ('Function %s can not used without Framework!'):format('MSK.HasItem'))
-        return 
+        return logging('error', ('Function %s can not used without Framework!'):format('MSK.HasItem'))
     end
 
     local hasItem = MSK.TriggerCallback('msk_core:hasItem', item)

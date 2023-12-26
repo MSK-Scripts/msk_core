@@ -2,7 +2,7 @@ ProgressStart = function(time, text, color)
     SendNUIMessage({
         action = 'progressBarStart',
         time = time,
-        text = text,
+        text = text or '',
         color = color or Config.progressColor,
     })
 end
