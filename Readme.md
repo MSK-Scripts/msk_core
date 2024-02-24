@@ -1,7 +1,7 @@
 # msk_core
 **[STANDALONE]** Core functions for MSK Scripts
 
-**!!! Please read the [WIKI Page](https://github.com/MSK-Scripts/msk_core/wiki) for more Information about the functions !!!**
+**!!! Please read the [Documentation](https://docu.msk-scripts.de/msk-core/installation) for more Information about the functions !!!**
 
 If you have any suggestions, feel free to contact me at the [MSK Scripts Discord](https://discord.gg/5hHSBRHvJE)
 
