@@ -13,18 +13,18 @@ MSK.GetRandomString = function(length)
     end
 end
 MSK.GetRandomLetter = MSK.GetRandomString
-exports('GetRandomString', GetRandomString)
+exports('GetRandomString', MSK.GetRandomString)
 
 MSK.Round = function(num, decimal) 
     return tonumber(string.format("%." .. (decimal or 0) .. "f", num))
 end
-exports('Round', Round)
+exports('Round', MSK.Round)
 
 MSK.Trim = function(str, bool)
     if bool then return (str:gsub("^%s*(.-)%s*$", "%1")) end
     return (str:gsub("%s+", ""))
 end
-exports('Trim', Trim)
+exports('Trim', MSK.Trim)
 
 MSK.Split = function(str, delimiter)
     local result = {}
@@ -35,7 +35,7 @@ MSK.Split = function(str, delimiter)
 
     return result 
 end
-exports('Split', Split)
+exports('Split', MSK.Split)
 
 MSK.TableContains = function(table, value)
     if not table or not value then return end
@@ -58,7 +58,7 @@ MSK.TableContains = function(table, value)
     return false
 end
 MSK.Table_Contains = MSK.TableContains
-exports('TableContains', TableContains)
+exports('TableContains', MSK.TableContains)
 
 MSK.Comma = function(int, tag)
     if not tag then tag = '.' end
@@ -74,7 +74,7 @@ MSK.Comma = function(int, tag)
 
     return newInt
 end
-exports('Comma', Comma)
+exports('Comma', MSK.Comma)
 
 local Timeout = 0
 MSK.SetTimeout = function(ms, cb)
@@ -89,13 +89,13 @@ MSK.SetTimeout = function(ms, cb)
     return requestId
 end
 MSK.AddTimeout = MSK.SetTimeout
-exports('SetTimeout', SetTimeout)
+exports('SetTimeout', MSK.SetTimeout)
 
 MSK.DelTimeout = function(requestId)
     if not requestId then return end
     Timeouts[requestId] = true
 end
-exports('DelTimeout', DelTimeout)
+exports('DelTimeout', MSK.DelTimeout)
 
 MSK.DumpTable = function(tbl, n)
     if not n then n = 0 end
@@ -112,36 +112,24 @@ MSK.DumpTable = function(tbl, n)
 
     return s .. '}'
 end
-exports('DumpTable', DumpTable)
+exports('DumpTable', MSK.DumpTable)
 
 MSK.Logging = function(code, ...)
     local script = "[^2"..GetInvokingResource().."^0]"
 
-    if not MSK.Table_Contains({'error', 'debug', 'info'}, code) then
+    if not MSK.TableContains({'error', 'debug', 'info'}, code) then
         script = code
         local action = ...
         local args = {...}
         table.remove(args, 1)
 
-        if action == 'error' then
-            print(script, '[^1ERROR^0]', table.unpack(args))
-        elseif action == 'debug' then
-            print(script, '[^3DEBUG^0]', table.unpack(args))
-        elseif action == 'info' then
-            print(script, '[^4Info^0]', table.unpack(args))
-        end
+        print(script, Config.LoggingTypes[action], table.unpack(args))
     else
-        if code == 'error' then
-            print(script, '[^1ERROR^0]', ...)
-        elseif code == 'debug' then
-            print(script, '[^3DEBUG^0]', ...)
-        elseif code == 'info' then
-            print(script, '[^4Info^0]', ...)
-        end
+        print(script, Config.LoggingTypes[action], ...)
     end
 end
 MSK.logging = MSK.Logging
-exports('Logging', Logging)
+exports('Logging', MSK.Logging)
 
 exports('getConfig', function()
     return Config
@@ -149,12 +137,5 @@ end)
 
 logging = function(code, ...)
     if not Config.Debug then return end
-    
-    if code == 'error' then
-        print("[^2msk_core^0]", '[^1ERROR^0]', ...)
-    elseif code == 'debug' then
-        print("[^2msk_core^0]", '[^3DEBUG^0]', ...)
-    elseif code == 'info' then
-        print("[^2msk_core^0]", '[^4Info^0]', ...)
-    end
+    print(script, Config.LoggingTypes[action], ...)
 end

@@ -34,7 +34,7 @@ MSK.GetPlayer = function(player)
 
     return Player
 end
-exports('GetPlayer', GetPlayer)
+exports('GetPlayer', MSK.GetPlayer)
 
 MSK.GetPlayers = function(key, val)
     local Players
@@ -69,4 +69,4 @@ MSK.GetPlayers = function(key, val)
 
     return Players
 end
-exports('GetPlayers', GetPlayers)
+exports('GetPlayers', MSK.GetPlayers)

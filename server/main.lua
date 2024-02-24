@@ -1,11 +1,12 @@
 MSK = {}
 
-local RegisteredCommands, Callbacks, callbackRequest = {}, {}, {}
+local RegisteredCommands = {}
 
 AddEventHandler('onResourceStart', function(resource)
 	if GetCurrentResourceName() ~= 'msk_core' then
         print('^1Please rename the Script to^3 msk_core^0!')
         print('^1Server will be shutdown^0!')
+        Wait(250)
         os.exit()
     end
 end)
@@ -15,29 +16,6 @@ if Config.Framework:match('esx') then
 elseif Config.Framework:match('qbcore') then
     QBCore = exports['qb-core']:GetCoreObject()
 end
-
-MSK.RegisterServerCallback = function(name, cb)
-    Callbacks[name] = cb
-end
-MSK.RegisterCallback = MSK.RegisterServerCallback
-exports('RegisterServerCallback', RegisterServerCallback)
-
-MSK.TriggerClientCallback = function(name, playerId, ...)
-    local requestId = GenerateRequestKey(callbackRequest)
-    local response
-
-    callbackRequest[requestId] = function(...)
-        response = {...}
-    end
-
-    TriggerClientEvent('msk_core:triggerCallback', playerId, name, requestId, ...)
-
-    while not response do Wait(0) end
-    
-    return table.unpack(response)
-end
-MSK.TriggerCallback = MSK.TriggerClientCallback
-exports('TriggerClientCallback', TriggerClientCallback)
 
 MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)    
     if type(name) == 'table' then
@@ -124,19 +102,19 @@ MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)
         ExecuteCommand(('add_ace group.%s command.%s allow'):format(group, name))
     end
 end
-exports('RegisterCommand', RegisterCommand)
+exports('RegisterCommand', MSK.RegisterCommand)
 
 MSK.Notification = function(src, title, message, info, time)
     if not src or src == 0 then return end
     TriggerClientEvent('msk_core:notification', src, title, message, info, time)
 end
-exports('Notification', Notification)
+exports('Notification', MSK.Notification)
 
 MSK.AdvancedNotification = function(src, text, title, subtitle, icon, flash, icontype)
     if not src or src == 0 then return end
     TriggerClientEvent('msk_core:advancedNotification', src, text, title, subtitle, icon, flash, icontype)
 end
-exports('AdvancedNotification', AdvancedNotification)
+exports('AdvancedNotification', MSK.AdvancedNotification)
 
 MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
     local content = {}
@@ -180,7 +158,7 @@ MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, descript
         ['Content-Type'] = 'application/json'
     })
 end
-exports('AddWebhook', AddWebhook)
+exports('AddWebhook', MSK.AddWebhook)
 
 MSK.HasItem = function(xPlayer, item)
     if not xPlayer then logging('error', 'Player on Function MSK.HasItem does not exist!') return end
@@ -199,48 +177,7 @@ MSK.HasItem = function(xPlayer, item)
 
     return hasItem
 end
-exports('HasItem', HasItem)
-
-MSK.RegisterCallback('msk_core:hasItem', function(source, cb, item)
-    local src = source
-    local xPlayer
-
-    if Config.Framework:match('esx') then
-        xPlayer = ESX.GetPlayerFromId(src)
-    elseif Config.Framework:match('qbcore') then
-        xPlayer = QBCore.Functions.GetPlayer(src)
-    end
-
-    cb(MSK.HasItem(xPlayer, item))
-end)
-
-RegisterNetEvent('msk_core:triggerCallback')
-AddEventHandler('msk_core:triggerCallback', function(name, requestId, ...)
-    local src = source
-    if Callbacks[name] then
-        Callbacks[name](src, function(...)
-            TriggerClientEvent("msk_core:responseCallback", src, requestId, ...)
-        end, ...)
-    end
-end)
-
-RegisterNetEvent("msk_core:responseCallback")
-AddEventHandler("msk_core:responseCallback", function(requestId, ...)
-    if callbackRequest[requestId] then 
-        callbackRequest[requestId](...)
-        callbackRequest[requestId] = nil
-    end
-end)
-
-GenerateRequestKey = function(tbl)
-    local id = string.upper(MSK.GetRandomString(3)) .. math.random(000, 999) .. string.upper(MSK.GetRandomString(2)) .. math.random(00, 99)
-
-    if not tbl[id] then 
-        return tostring(id)
-    else
-        GenerateRequestKey(tbl)
-    end
-end
+exports('HasItem', MSK.HasItem)
 
 doesPlayerIdExist = function(playerId)
     for k, id in pairs(GetPlayers()) do
@@ -274,7 +211,7 @@ GithubUpdater = function()
     end
     
     local CurrentVersion = GetCurrentVersion()
-    local resourceName = "^4["..GetCurrentResourceName().."]^0"
+    local resourceName = "^0[^2"..GetCurrentResourceName().."^0]"
 
     if Config.VersionChecker then
         PerformHttpRequest('https://raw.githubusercontent.com/MSK-Scripts/msk_core/main/VERSION', function(Error, NewestVersion, Header)
@@ -288,9 +225,7 @@ GithubUpdater = function()
             print("###############################")
         end)
     else
-        print("###############################")
         print(resourceName .. '^2 ✓ Resource loaded^0')
-        print("###############################")
     end
 end
 GithubUpdater()

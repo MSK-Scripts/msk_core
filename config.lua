@@ -18,3 +18,9 @@ Config.showCoords = {
 Config.Notification = 'msk'
 
 Config.progressColor = "#5eb131" -- Default Color for ProgressBar
+----------------------------------------------------------------
+Config.LoggingTypes = {
+    ['info'] = '[^4Info^0]',
+    ['debug'] = '[^3DEBUG^0]',
+    ['error'] = '[^1ERROR^0]',
+}
