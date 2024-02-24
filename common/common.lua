@@ -123,9 +123,9 @@ MSK.Logging = function(code, ...)
         local args = {...}
         table.remove(args, 1)
 
-        print(script, Config.LoggingTypes[action], table.unpack(args))
-    else
         print(script, Config.LoggingTypes[action], ...)
+    else
+        print(script, Config.LoggingTypes[code], ...)
     end
 end
 MSK.logging = MSK.Logging
@@ -137,5 +137,5 @@ end)
 
 logging = function(code, ...)
     if not Config.Debug then return end
-    print(script, Config.LoggingTypes[action], ...)
+    print(script, Config.LoggingTypes[code], ...)
 end
