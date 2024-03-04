@@ -1,31 +1,41 @@
 local callbackRequest = {}
+local CallbackHandler = {}
+
+AddEventHandler('onResourceStop', function(resource)
+	if CallbackHandler[resource] then
+        RemoveEventHandler(CallbackHandler[resource])
+    end
+end)
 
 -- NEW Method for Client Callbacks
-MSK.RegisterClientCallback = function(name, cb)
-    RegisterNetEvent(('events-request-%s'):format(name), function (ticket, ...)
-        TriggerServerEvent(('events-resolve-%s-%s'):format(name, ticket), cb(...))
+MSK.RegisterClientCallback = function(eventName, cb)
+    local handler = RegisterNetEvent(('events-request-%s'):format(eventName), function (ticket, ...)
+        TriggerServerEvent(('events-resolve-%s-%s'):format(eventName, ticket), cb(...))
     end)
+
+    local script = GetInvokingResource()
+    if script then CallbackHandler[script] = handler end
 end
 exports('RegisterClientCallback', MSK.RegisterClientCallback)
 
 -- NEW Method for Server Callbacks
-MSK.Trigger = function(name, ...)
+MSK.Trigger = function(eventName, ...)
     local p = promise.new()
     local ticket = GetGameTimer() .. GetPlayerServerId(PlayerId())
 
     SetTimeout(5000, function()
-        p:reject({err="Request Timed Out (408)"})
+        p:reject("Request Timed Out (408)")
     end)
 
-    local handler = RegisterNetEvent(('events-resolve-%s-%s'):format(name, ticket), function(data)
-        p:resolve(data)
+    local handler = RegisterNetEvent(('events-resolve-%s-%s'):format(eventName, ticket), function(...)
+        p:resolve({...})
     end)
 
-    TriggerServerEvent(('events-request-%s'):format(name), ticket, ...)
+    TriggerServerEvent(('events-request-%s'):format(eventName), ticket, ...)
 
     local result = Citizen.Await(p)
     RemoveEventHandler(handler)
-    return result
+    return table.unpack(result)
 end
 
 -- OLD Method for Server Callbacks

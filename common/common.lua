@@ -137,5 +137,5 @@ end)
 
 logging = function(code, ...)
     if not Config.Debug then return end
-    print(script, Config.LoggingTypes[code], ...)
+    print(Config.LoggingTypes[code], ...)
 end

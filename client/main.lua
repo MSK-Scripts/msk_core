@@ -74,7 +74,7 @@ MSK.HasItem = function(item)
         return logging('error', ('Function %s can not used without Framework!'):format('MSK.HasItem'))
     end
 
-    local hasItem = MSK.TriggerCallback('msk_core:hasItem', item)
+    local hasItem = MSK.Trigger('msk_core:hasItem', item)
     return hasItem
 end
 exports('HasItem', MSK.HasItem)
