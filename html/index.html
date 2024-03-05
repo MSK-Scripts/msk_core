@@ -16,11 +16,15 @@
         <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
         <script src="script.js"></script>
         
-        <div class="msk-input-container"><span id="msk-input-title">Das ist eine Überschrift</span>
-            <span id="close" onclick="closeInputUI()"><i class="fa-solid fa-xmark"></i></span>
+        <div class="msk-input-container">
+            <div class="msk-input-title-box">
+                <div class="msk-input-title">
+                    <span class="msk-input-title-text"><i class="fa-solid fa-chevrons-left arrow-left"></i><span id="msk-input-title">This is a title</span><i class="fa-solid fa-chevrons-right arrow-right"></i></span>
+                </div>
+            </div>
             <textarea class="msk-input" rows="5" cols="50" id="big-input" placeholder=""></textarea>
             <textarea class="msk-input" rows="1" cols="50" id="small-input" placeholder=""></textarea>
-            <button class="msk-submit-button" onclick="input()">Confirm</button>
+            <button class="msk-submit-button"onclick="input()"><span class="msk-submit-button-text">Confirm</span></button>
         </div>
         
         <div class="progress-container">

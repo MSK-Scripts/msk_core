@@ -3,7 +3,9 @@ local CallbackHandler = {}
 
 AddEventHandler('onResourceStop', function(resource)
 	if CallbackHandler[resource] then
-        RemoveEventHandler(CallbackHandler[resource])
+        for k, handler in pairs(CallbackHandler[resource]) do
+            RemoveEventHandler(handler)
+        end
     end
 end)
 
@@ -14,14 +16,22 @@ MSK.RegisterClientCallback = function(eventName, cb)
     end)
 
     local script = GetInvokingResource()
-    if script then CallbackHandler[script] = handler end
+    if script then 
+        if CallbackHandler[script] then
+            table.insert(CallbackHandler[script], handler)
+        else
+            CallbackHandler[script] = {}
+            table.insert(CallbackHandler[script], handler)
+        end
+    end
 end
+MSK.Register = MSK.RegisterClientCallback
 exports('RegisterClientCallback', MSK.RegisterClientCallback)
 
 -- NEW Method for Server Callbacks
 MSK.Trigger = function(eventName, ...)
     local p = promise.new()
-    local ticket = GetGameTimer() .. GetPlayerServerId(PlayerId())
+    local ticket = tostring(GetGameTimer() .. GetPlayerServerId(PlayerId()))
 
     SetTimeout(5000, function()
         p:reject("Request Timed Out (408)")

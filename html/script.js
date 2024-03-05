@@ -24,6 +24,15 @@ window.addEventListener('message', (event) => {
         document.getElementById(input).placeholder = data.placeholder;
         $(".msk-input-container").fadeIn()
         $("#msk-input-title").text(data.header)
+
+        document.getElementById('small-input').addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                if (e.shiftKey) {
+                    return;
+                }
+                e.preventDefault();
+            }
+        })
     } else if (event.data.action == 'progressBarStart') {
         event.data.id = currID
         progressBarStart(event.data);
@@ -119,15 +128,13 @@ closeInputUI = (send) => {
 
 document.onkeyup = (data) => {
     if (data.which == 27) {
+        var textfield = '#small-input'
+        if (field) {textfield = '#big-input'}
+        $(textfield).val('');
+
         closeInputUI()
     }
 }
-
-$("#small-input").keydown((event) => {
-    if (event.keyCode == 13) {
-        event.preventDefault();
-    }
-})
 
 input = () => {
     var textfield = '#small-input'

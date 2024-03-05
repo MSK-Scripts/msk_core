@@ -3,19 +3,27 @@ local CallbackHandler = {}
 
 AddEventHandler('onResourceStop', function(resource)
 	if CallbackHandler[resource] then
-        RemoveEventHandler(CallbackHandler[resource])
+        for k, handler in pairs(CallbackHandler[resource]) do
+            RemoveEventHandler(handler)
+        end
     end
 end)
 
--- NEW Method for Server Callbacks
 MSK.Register = function(eventName, cb)
-    local handler = RegisterNetEvent(('events-request-%s'):format(eventName), function (ticket, ...)
-        print(('events-request-%s'):format(eventName), ticket, ...)
+    local handler = RegisterNetEvent(('events-request-%s'):format(eventName), function(ticket, ...)
+        logging('debug', ('events-request-%s'):format(eventName), ticket, source, cb, ...)
         TriggerClientEvent(('events-resolve-%s-%s'):format(eventName, ticket), source, cb(source, ...))
     end)
 
     local script = GetInvokingResource()
-    if script then CallbackHandler[script] = handler end
+    if script then 
+        if CallbackHandler[script] then
+            table.insert(CallbackHandler[script], handler)
+        else
+            CallbackHandler[script] = {}
+            table.insert(CallbackHandler[script], handler)
+        end
+    end
 end
 
 -- NEW Method for Client Callbacks
@@ -37,6 +45,7 @@ MSK.TriggerClientCallback = function(eventName, playerId, ...)
     RemoveEventHandler(handler)
     return table.unpack(result)
 end
+MSK.Trigger = MSK.TriggerClientCallback
 exports('TriggerClientCallback', MSK.TriggerClientCallback)
 
 -- OLD Method for Server Callbacks
