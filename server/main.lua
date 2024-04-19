@@ -26,7 +26,7 @@ MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)
     end
 
     if RegisteredCommands[name] then
-        logging('debug', ('Command %s is already registerd. Overriding Command...'):format(name))
+        logging('debug', ('Command ^3%s^0 is already registerd. Overriding Command...'):format(name))
     end
     
     local added = addChatSuggestions(name, suggestion)
@@ -162,7 +162,7 @@ exports('AddWebhook', MSK.AddWebhook)
 
 MSK.HasItem = function(xPlayer, item)
     if not xPlayer then logging('error', 'Player on Function MSK.HasItem does not exist!') return end
-    if not Config.Framework:match('esx') or not Config.Framework:match('qbcore') then 
+    if not Config.Framework:match('esx') and not Config.Framework:match('qbcore') then 
         return logging('error', ('Function %s can not used without Framework!'):format('^3MSK.HasItem^0'))
     end
     local hasItem
