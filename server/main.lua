@@ -55,10 +55,13 @@ MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)
                         end
                     elseif v.action == 'playerId' then
                         if args[k] then
-                            if tonumber(args[k]) > 0 and doesPlayerIdExist(args[k]) then
-                                newArgs[v.name] = args[k]
+                            local targetId = args[k]
+                            if targetId == 'me' then targetId = source end
+
+                            if tonumber(targetId) > 0 and doesPlayerIdExist(targetId) then
+                                newArgs[v.name] = targetId
                             else
-                                error = ('PlayerId %s does not exist!'):format(args[k])
+                                error = ('PlayerId %s does not exist!'):format(targetId)
                             end
                         end
                     else

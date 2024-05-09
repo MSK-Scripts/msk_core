@@ -2,8 +2,31 @@ MSK = {}
 
 if Config.Framework:match('esx') then
     ESX = exports["es_extended"]:getSharedObject()
+
+    AddEventHandler('esx:setPlayerData', function(key, val, last)
+        if GetInvokingResource() == 'es_extended' then
+            ESX.PlayerData[key] = val
+            if OnPlayerData then
+                OnPlayerData(key, val, last)
+            end
+        end
+    end)
+
+    RegisterNetEvent('esx:playerLoaded', function(xPlayer)
+        ESX.PlayerData = xPlayer
+        ESX.PlayerLoaded = true
+    end)
+
+    RegisterNetEvent('esx:onPlayerLogout', function()
+        ESX.PlayerLoaded = false
+        ESX.PlayerData = {}
+    end)
 elseif Config.Framework:match('qbcore') then
     QBCore = exports['qb-core']:GetCoreObject()
+
+    RegisterNetEvent('QBCore:Player:SetPlayerData', function(PlayerData)
+        QBCore.PlayerData = PlayerData
+    end)
 end
 
 MSK.Notification = function(title, message, info, time)
@@ -11,7 +34,9 @@ MSK.Notification = function(title, message, info, time)
         SetNotificationTextEntry('STRING')
         AddTextComponentString(message)
         DrawNotification(false, true)
-    elseif Config.Notification == 'nui' or Config.Notification == 'msk' then
+    elseif Config.Notification == 'okok' then
+        exports['okokNotify']:Alert(title, message, time or 5000, info or 'info')
+    else
         SendNUIMessage({
             action = 'notify',
             title = title,
@@ -19,8 +44,6 @@ MSK.Notification = function(title, message, info, time)
             info = info or 'general',
             time = time or 5000
         })
-    elseif Config.Notification == 'okok' then
-        exports['okokNotify']:Alert(title, message, time or 5000, info or 'info')
     end
 end
 exports('Notification', MSK.Notification)

@@ -1,21 +1,18 @@
-local Timeouts, Letters = {}, {}
+local Timeouts, Charset = {}, {}
 
-for i = 48, 57 do table.insert(Letters, string.char(i)) end
-for i = 65, 90 do table.insert(Letters, string.char(i)) end
-for i = 97, 122 do table.insert(Letters, string.char(i)) end
+for i = 48, 57 do table.insert(Charset, string.char(i)) end
+for i = 65, 90 do table.insert(Charset, string.char(i)) end
+for i = 97, 122 do table.insert(Charset, string.char(i)) end
 
 MSK.GetRandomString = function(length)
-    Wait(0)
-    if length > 0 then
-        return MSK.GetRandomString(length - 1) .. Letters[math.random(1, #Letters)]
-    else
-        return ''
-    end
+    math.randomseed(GetGameTimer())
+
+	return length > 0 and ESX.GetRandomString(length - 1) .. Charset[math.random(1, #Charset)] or ''
 end
 MSK.GetRandomLetter = MSK.GetRandomString
 exports('GetRandomString', MSK.GetRandomString)
 
-MSK.Round = function(num, decimal) 
+MSK.Round = function(num, decimal)
     return tonumber(string.format("%." .. (decimal or 0) .. "f", num))
 end
 exports('Round', MSK.Round)
@@ -131,9 +128,11 @@ end
 MSK.logging = MSK.Logging
 exports('Logging', MSK.Logging)
 
-exports('getConfig', function()
+MSK.GetConfig = function()
     return Config
-end)
+end
+exports('GetConfig', MSK.GetConfig)
+exports('getConfig', MSK.GetConfig)
 
 logging = function(code, ...)
     if not Config.Debug then return end
