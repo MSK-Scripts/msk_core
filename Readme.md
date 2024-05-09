@@ -30,9 +30,9 @@ shared_script '@msk_core/import.lua'
 **Usage: little higher**
 
 ## Functions
-* [COMMON](https://github.com/MSK-Scripts/msk_core/wiki/Common) - *clientside **AND** serverside functions*
-* [CLIENTSIDE](https://github.com/MSK-Scripts/msk_core/wiki/Clientside) - *clientside functions only*
-* [SERVERSIDE](https://github.com/MSK-Scripts/msk_core/wiki/Serverside) - *serverside functions only*
+* [COMMON](https://docu.msk-scripts.de/msk-core/installation/common) - *clientside **AND** serverside functions*
+* [CLIENTSIDE](https://docu.msk-scripts.de/msk-core/installation/clientside) - *clientside functions only*
+* [SERVERSIDE](https://docu.msk-scripts.de/msk-core/installation/serverside) - *serverside functions only*
 
 ## Requirements
 * oxmysql
