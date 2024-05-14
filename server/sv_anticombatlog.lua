@@ -49,8 +49,8 @@ AddEventHandler('playerDropped', function(reason)
             Config.AntiCombatlog.discord.title, 
             Config.AntiCombatlog.discord.text:format(playerName, src),
             {
-                {name = "Reason", value = reason, inline = false},
-                {name = "Coords", value = coords, inline = false},
+                {name = "Reason", value = ("%s"):format(reason), inline = false},
+                {name = "Coords", value = ("%s"):format(coords), inline = false},
                 {name = "Identifier", value = ("%s\n%s\n%s"):format(getIdentifier('steam:'), getIdentifier('license:'), getIdentifier('discord:')), inline = false},
             },
             {text = ("© %s • %s"):format(Config.AntiCombatlog.discord.botName, time), link = Config.AntiCombatlog.discord.botAvatar}
