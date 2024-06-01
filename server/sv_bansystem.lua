@@ -153,6 +153,7 @@ banPlayer = function(source, playerId, time, reason)
         end
     end)
 end
+MSK.BanPlayer = banPlayer
 exports('banPlayer', banPlayer)
 
 unbanPlayer = function(source, banId)
@@ -180,6 +181,7 @@ unbanPlayer = function(source, banId)
         end
     end)
 end
+MSK.UnbanPlayer = unbanPlayer
 exports('unbanPlayer', unbanPlayer)
 
 AddEventHandler('playerConnecting', function(playerName, setKickReason, deferrals)
