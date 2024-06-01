@@ -29,6 +29,10 @@ elseif Config.Framework:match('qbcore') then
     end)
 end
 
+exports('getCoreObject', function()
+    return MSK
+end)
+
 MSK.Notification = function(title, message, info, time)
     if Config.Notification == 'native' then
         SetNotificationTextEntry('STRING')
@@ -36,6 +40,8 @@ MSK.Notification = function(title, message, info, time)
         DrawNotification(false, true)
     elseif Config.Notification == 'okok' then
         exports['okokNotify']:Alert(title, message, time or 5000, info or 'info')
+    elseif Config.Notification == 'custom' then
+        Config.customNotification()
     else
         SendNUIMessage({
             action = 'notify',
@@ -148,8 +154,4 @@ end)
 RegisterNetEvent('msk_core:advancedNotification')
 AddEventHandler('msk_core:advancedNotification', function(text, title, subtitle, icon, flash, icontype)
     MSK.AdvancedNotification(text, title, subtitle, icon, flash, icontype)
-end)
-
-exports('getCoreObject', function()
-    return MSK
 end)

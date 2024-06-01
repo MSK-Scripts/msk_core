@@ -1,10 +1,10 @@
-fx_version 'adamant'
+fx_version 'cerulean'
 games { 'gta5' }
 
 author 'Musiker15 - MSK Scripts'
 name 'msk_core'
 description 'Core functions for MSK Scripts'
-version '2.0'
+version '2.1.0'
 
 lua54 'yes'
 

@@ -1,22 +1,16 @@
 MSK = {}
 
-local RegisteredCommands = {}
-
-AddEventHandler('onResourceStart', function(resource)
-	if GetCurrentResourceName() ~= 'msk_core' then
-        print('^1Please rename the Script to^3 msk_core^0!')
-        print('^1Server will be shutdown^0!')
-        Wait(250)
-        os.exit()
-    end
-end)
-
 if Config.Framework:match('esx') then
     ESX = exports["es_extended"]:getSharedObject()
 elseif Config.Framework:match('qbcore') then
     QBCore = exports['qb-core']:GetCoreObject()
 end
 
+exports('getCoreObject', function()
+    return MSK
+end)
+
+local RegisteredCommands = {}
 MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)    
     if type(name) == 'table' then
         for k, v in ipairs(name) do 
@@ -209,30 +203,70 @@ addChatSuggestions = function(name, suggestion)
 end
 
 GithubUpdater = function()
-    GetCurrentVersion = function()
-	    return GetResourceMetadata( GetCurrentResourceName(), "version" )
+    local GetCurrentVersion = function()
+	    return GetResourceMetadata(GetCurrentResourceName(), "version")
     end
+
+	local isVersionIncluded = function(Versions, cVersion)
+		for k, v in pairs(Versions) do
+			if v.version == cVersion then
+				return true
+			end
+		end
+
+		return false
+	end
     
     local CurrentVersion = GetCurrentVersion()
     local resourceName = "^0[^2"..GetCurrentResourceName().."^0]"
 
     if Config.VersionChecker then
-        PerformHttpRequest('https://raw.githubusercontent.com/MSK-Scripts/msk_core/main/VERSION', function(Error, NewestVersion, Header)
-            print("###############################")
-            if CurrentVersion == NewestVersion then
-                print(resourceName .. '^2 ✓ Resource is Up to Date^0 - ^5Current Version: ^2' .. CurrentVersion .. '^0')
-            elseif CurrentVersion ~= NewestVersion then
-                print(resourceName .. '^1 ✗ Resource Outdated. Please Update!^0 - ^5Current Version: ^1' .. CurrentVersion .. '^0')
-                print('^5Newest Version: ^2' .. NewestVersion .. '^0 - ^6Download here:^9 https://github.com/MSK-Scripts/msk_core/releases/tag/v'.. NewestVersion .. '^0')
+        PerformHttpRequest('https://raw.githubusercontent.com/Musiker15/VERSIONS/main/Lib.json', function(errorCode, jsonString, headers)
+			if not jsonString then 
+                print(resourceName .. '^1 Update Check failed ^3Please Update to the latest Version:^9 https://github.com/MSK-Scripts/msk_core/ ^0')
+                print(resourceName .. '^2 ✓ Resource loaded^0 - ^5Current Version: ^0' .. CurrentVersion)
+                return 
             end
-            print("###############################")
+
+			local decoded = json.decode(jsonString)
+            local version = decoded[1].version
+
+            if CurrentVersion == version then
+                print(resourceName .. '^2 ✓ Resource is Up to Date^0 - ^5Current Version: ^2' .. CurrentVersion .. '^0')
+            elseif CurrentVersion ~= version then
+                print(resourceName .. '^1 ✗ Resource Outdated. Please Update!^0 - ^5Current Version: ^1' .. CurrentVersion .. '^0')
+                print('^5Latest Version: ^2' .. version .. '^0 - ^6Download here:^9 https://github.com/MSK-Scripts/msk_core/releases/tag/v'.. version .. '^0')
+				print('')
+				for i=1, #decoded do 
+					if decoded[i]['version'] == CurrentVersion then
+						break
+					elseif not isVersionIncluded(decoded, CurrentVersion) then
+						print('^1You are using an^3 UNSUPPORTED VERSION^1 of ^0' .. resourceName)
+						break
+					end
+
+					if decoded[i]['changelogs'] then
+						print('^3Changelogs v' .. decoded[i]['version'] .. '^0')
+
+						for _, c in ipairs(decoded[i]['changelogs']) do
+							print(c)
+						end
+					end
+				end
+            end
         end)
     else
-        print(resourceName .. '^2 ✓ Resource loaded^0')
+        print(resourceName .. '^2 ✓ Resource loaded^0 - ^5Current Version: ^2' .. CurrentVersion .. '^0')
     end
 end
 GithubUpdater()
 
-exports('getCoreObject', function()
-    return MSK
-end)
+checkResourceName = function()
+    if GetCurrentResourceName() ~= 'msk_core' then
+        while true do
+            print('^1Please rename the Script to^3 msk_core^0!')
+            Wait(5000)
+        end
+    end
+end
+checkResourceName()

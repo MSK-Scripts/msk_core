@@ -11,8 +11,18 @@ local GenerateCallbackHandlerKey = function()
     end
 end
 
+RegisterNetEvent("msk_core:client:callbackResponse", function(requestId, ...)
+	if not CallbackHandler[requestId] then return end
+	CallbackHandler[requestId] = {...}
+end)
+
+RegisterNetEvent("msk_core:client:callbackNotFound", function(requestId)
+	if not CallbackHandler[requestId] then return end
+	CallbackHandler[requestId] = nil
+end)
+
 ----------------------------------------------------------------
--- NEW Method for Client Callbacks
+-- Client Callbacks
 ----------------------------------------------------------------
 MSK.Register = function(eventName, cb)
     Callbacks[eventName] = cb
@@ -33,7 +43,7 @@ RegisterNetEvent('msk_core:client:triggerClientCallback', function(playerId, eve
 end)
 
 ----------------------------------------------------------------
--- NEW Method for Server Callbacks
+-- Server Callbacks with Method [return]
 ----------------------------------------------------------------
 MSK.Trigger = function(eventName, ...)
     local requestId = GenerateCallbackHandlerKey()
@@ -45,7 +55,7 @@ MSK.Trigger = function(eventName, ...)
         p:reject(('Request Timed Out: [%s] [%s]'):format(eventName, requestId))
     end)
 
-    TriggerServerEvent('msk_core:server:triggerServerCallback', eventName, requestId, ...)
+    TriggerServerEvent('msk_core:server:triggerCallback', eventName, requestId, false, ...)
 
     while CallbackHandler[requestId] == 'request' do Wait(0) end
     if not CallbackHandler[requestId] then return end
@@ -58,52 +68,30 @@ MSK.Trigger = function(eventName, ...)
 end
 exports('Trigger', MSK.Trigger)
 
-RegisterNetEvent("msk_core:client:callbackResponse", function(requestId, ...)
-	if not CallbackHandler[requestId] then return end
-	CallbackHandler[requestId] = {...}
-end)
-
-RegisterNetEvent("msk_core:client:callbackNotFound", function(requestId)
-	if not CallbackHandler[requestId] then return end
-	CallbackHandler[requestId] = nil
-end)
-
 ----------------------------------------------------------------
--- OLD Method for Server Callbacks [OUTDATED - Do not use this!]
+-- Server Callbacks with Method [cb]
 ----------------------------------------------------------------
-local callbackRequest = {}
+MSK.TriggerCallback = function(eventName, ...)
+    local requestId = GenerateCallbackHandlerKey()
+    local p = promise.new()
+    CallbackHandler[requestId] = 'request'
 
-local GenerateRequestKey = function()
-    local requestId = math.random(1, 999999999)
+    SetTimeout(5000, function()
+        CallbackHandler[requestId] = nil
+        p:reject(('Request Timed Out: [%s] [%s]'):format(eventName, requestId))
+    end)
+    
+    TriggerServerEvent('msk_core:server:triggerCallback', eventName, requestId, true, ...)
 
-    if not callbackRequest[requestId] then 
-        return tostring(requestId)
-    else
-        GenerateRequestKey()
-    end
+    while CallbackHandler[requestId] == 'request' do Wait(0) end
+    if not CallbackHandler[requestId] then return end
+
+    p:resolve(CallbackHandler[requestId])
+    CallbackHandler[requestId] = nil
+
+    local result = Citizen.Await(p)
+    return table.unpack(result)
 end
-
-MSK.TriggerServerCallback = function(name, ...)
-    local requestId = GenerateRequestKey()
-    local response
-
-    callbackRequest[requestId] = function(...)
-        response = {...}
-    end
-
-    TriggerServerEvent('msk_core:triggerCallback', name, requestId, ...)
-
-    while not response do Wait(0) end
-
-    return table.unpack(response)
-end
-MSK.TriggerCallback = MSK.TriggerServerCallback
-exports('TriggerServerCallback', MSK.TriggerServerCallback)
-
-RegisterNetEvent("msk_core:responseCallback")
-AddEventHandler("msk_core:responseCallback", function(requestId, ...)
-    if callbackRequest[requestId] then 
-        callbackRequest[requestId](...)
-        callbackRequest[requestId] = nil
-    end
-end)
+MSK.TriggerServerCallback = MSK.TriggerCallback
+exports('TriggerCallback', MSK.TriggerCallback)
+exports('TriggerServerCallback', MSK.TriggerCallback)
