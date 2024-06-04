@@ -1,0 +1,153 @@
+* {
+  user-select: none;
+  box-sizing: border-box;
+  text-shadow:rgba(0, 0, 0, 0.658) 0vh 0vh 1.2vh;
+  padding:0;
+}
+
+.numpad-container {
+  position: absolute;
+  padding-top:12vh;
+  padding-bottom:1.4vh;
+  top:50%;
+  left:50%;
+  border-radius:2vh;
+  transform:translate(-50%, -50%);
+  background: repeating-linear-gradient(
+      -55deg,
+      rgba(56, 56, 56, 0.36),
+      rgba(56, 56, 56, 0.36) 1.0vh,
+      rgba(56, 56, 56, 0.4), 1.0vh,
+      rgba(56, 56, 56, 0.4) 2.0vh
+    );
+  background-color:rgb(0, 0, 0);
+  box-shadow:0vh 0vh 2vh 0vh rgba(0, 0, 0, 0.8);
+}
+
+.numpad-buttons-list {
+  position: relative;
+  width:35.6vh;
+  height:50%;
+  top:50%;
+  left:2vh;
+  transform:translateY(-50%);
+}
+
+.numpad-input {
+  position: absolute;
+  width: 31.6vh;
+  height: 8vh;
+  top:-10vh;
+  font-size:2.8vh;
+  border-radius:0.4vh;
+  color:#c0c0c0;
+  /* box-shadow:0 0 2vh rgba(0, 0, 0, 0.384); */
+  background:rgba(255, 255, 255, 0.04);
+  align-items: center;
+  align-content: center;
+  text-align: center;
+  border: none;
+  outline: none;
+}
+
+.numpad-pin-button {
+  position: relative;
+  float:left;
+  width: 10vh;
+  height:  10vh;
+  font-size:2vh;
+  margin:0.4vh;
+  top:-0.4vh;
+  left:-0.4vh;
+  border-radius:0.4vh;
+  border:none;
+  color:white;
+  /* border: var(--Pin-Button-Border) 0.1vh solid; */
+/*   box-shadow:rgba(0, 0, 0, 0.24) 0vh 0vh 3.4vh 0.8vh inset; */
+  background:rgba(255, 255, 255, 0.04);
+  transition: 200ms;
+}
+
+.numpad-pin-button:hover {
+  cursor:pointer;
+  background:rgba(255, 255, 255, 0.06);
+}
+
+.numpad-submit-button {
+  background:rgba(30, 255, 0, 0.04);
+}
+
+.numpad-pin-button:active {
+  top:0.08vh;
+}
+
+.numpad-submit-button:before {
+  opacity:0;
+  position: absolute;
+  z-index:-1;
+  width:100%;
+  height:100%;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  border-radius:0.4vh;
+  content:"";
+  background: repeating-linear-gradient(
+      -55deg,
+      rgba(30, 255, 0, 0.24),
+      rgba(30, 255, 0, 0.24) 1.0vh,
+      rgba(30, 255, 0, 0.28) 1.0vh,
+      rgba(30, 255, 0, 0.28)  2.0vh
+    );
+
+  transition:400ms;
+  backface-visibility: hidden;
+}
+
+.numpad-submit-button:hover {
+  cursor:pointer;
+}
+
+.numpad-submit-button:hover:before {
+  opacity:1
+}
+
+.numpad-submit-button {
+  background:rgba(30, 255, 0, 0.04);
+}
+
+
+.numpad-clear-button {
+  background:rgba(255, 100, 100, 0.090);
+}
+
+.numpad-clear-button:before {
+  opacity:0;
+  position: absolute;
+  z-index:-1;
+  width:100%;
+  height:100%;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  border-radius:0.4vh;
+  content:"";
+  background: repeating-linear-gradient(
+      -55deg,
+      rgba(255, 0, 0, 0.24),
+      rgba(255, 0, 0, 0.24) 1.0vh,
+      rgba(255, 0, 0, 0.28) 1.0vh,
+      rgba(255, 0, 0, 0.28)  2.0vh
+    );
+
+  transition:400ms;
+  backface-visibility: hidden;
+}
+
+.numpad-clear-button:hover {
+  cursor:pointer;
+}
+
+.numpad-clear-button:hover:before {
+  opacity:1
+}

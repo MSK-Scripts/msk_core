@@ -4,33 +4,58 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
         <title>MSK Scripts</title>
+
         <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+        <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,500,700,900&display=swap" rel="stylesheet">
+
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" rel="stylesheet">
+
         <script src="https://kit.fontawesome.com/57b9d31625.js" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+
         <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
-        <link rel="stylesheet" href="style.css">
+        <script src="script.js" type="text/javascript"></script>
+        <link rel="stylesheet" href="css/import.css">
     </head>
 
-    <body style="background-color: transparent;">
+    <body>
+        <!-- MSK Notify -->
         <div class="d-grid notify-wrapper"></div>
-        <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
-        <script src="script.js"></script>
         
+        <!-- MSK Input -->
         <div class="msk-input-container">
-            <div class="msk-input-title-box">
-                <div class="msk-input-title">
-                    <span class="msk-input-title-text"><i class="fa-solid fa-chevrons-left arrow-left"></i><span id="msk-input-title">This is a title</span><i class="fa-solid fa-chevrons-right arrow-right"></i></span>
-                </div>
+            <div class="top-banner">
+                <div class="top-banner-title"><span class="white-mask" id="msk-input-title">This Is A Title</span></div>
             </div>
-            <textarea class="msk-input" rows="5" cols="50" id="big-input" placeholder=""></textarea>
-            <textarea class="msk-input" rows="1" cols="50" id="small-input" placeholder=""></textarea>
-            <button class="msk-submit-button"onclick="input()"><span class="msk-submit-button-text">Confirm</span></button>
+            <textarea class="msk-input" rows="5" cols="50" id="big-input" placeholder="" spellcheck="false"></textarea>
+            <input class="msk-input" id="small-input" placeholder="" spellcheck="false">
+            <button class="msk-submit-button" onclick="submitInput()"><span class="white-mask">Confirm</span>
         </div>
-        
+
+        <!-- MSK Progressbar -->
         <div class="progress-container">
             <div id="progress" class="progress-hidden">
                 <div id="progress-value" class="progress-color"></div>
                 <div id="progress-text">Progressing...</div>
+            </div>
+        </div>
+
+        <!-- MSK Numpad -->
+        <div class="numpad-container" style="display:none" id="numpad-container">
+            <div class="numpad-buttons-list">
+                <button class="numpad-input" id="numpad-display">ENTER CODE</button>
+                <button class="numpad-pin-button" onclick="addNumpad('1')"><span class="white-mask">1</span></button>
+                <button class="numpad-pin-button" onclick="addNumpad('2')"><span class="white-mask">2</span></button>
+                <button class="numpad-pin-button" onclick="addNumpad('3')"><span class="white-mask">3</span></button>
+                <button class="numpad-pin-button" onclick="addNumpad('4')"><span class="white-mask">4</span></button>
+                <button class="numpad-pin-button" onclick="addNumpad('5')"><span class="white-mask">5</span></button>
+                <button class="numpad-pin-button" onclick="addNumpad('6')"><span class="white-mask">6</span></button>
+                <button class="numpad-pin-button" onclick="addNumpad('7')"><span class="white-mask">7</span></button>
+                <button class="numpad-pin-button" onclick="addNumpad('8')"><span class="white-mask">8</span></button>
+                <button class="numpad-pin-button" onclick="addNumpad('9')"><span class="white-mask">9</span></button>
+                <button class="numpad-pin-button" onclick="addNumpad('0')"><span class="white-mask">0</span></button>
+                <button class="numpad-pin-button numpad-clear-button" id='numpad-clear' onclick="clearNumpad()"><span class="white-mask">C</span></button>
+                <button class="numpad-pin-button numpad-submit-button" id='numpad-submit' onclick="submitNumpad()"><span class="white-mask"><i class="fa-solid fa-check"></i></span></button>
             </div>
         </div>
     </body>

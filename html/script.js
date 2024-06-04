@@ -1,47 +1,78 @@
-var field = false 
-let currID = 0
-let timeout
-let activeBars = new Map(); // Using a Map to store active bars with their IDs as keys
+var isInputOpen = false
+var isNumpadOpen = false
 
-window.addEventListener('message', (event) => {
-    if (event.data.action == 'notify') {
-        notification(event.data.title, event.data.message, event.data.info, event.data.time);
-    } else if (event.data.action == 'openInput') {
-        var data = event.data;
-        var input = 'small-input'
+/* ----------------
+General Stuff 
+---------------- */
 
-        if (data.field) {
-            input = 'big-input'
-            field = true
-            $("#big-input").show()
-            $("#small-input").hide()
-        } else {
-            field = false
-            $("#big-input").hide()
-            $("#small-input").show()
-        }
-
-        document.getElementById(input).placeholder = data.placeholder;
-        $(".msk-input-container").fadeIn()
-        $("#msk-input-title").text(data.header)
-
-        document.getElementById('small-input').addEventListener("keydown", function(e) {
-            if (e.key === "Enter") {
-                if (e.shiftKey) {
-                    return;
-                }
-                e.preventDefault();
+$(document).ready(function() {
+    window.addEventListener('message', (event) => {
+        const data = event.data
+    
+        if (data.action == 'notify') {
+            notification(data.title, data.message, data.info, data.time);
+        } else if (data.action == 'openInput') {
+            isInputOpen = true
+            var input = 'small-input'
+    
+            if (data.field) {
+                input = 'big-input'
+                field = true
+                $("#big-input").show()
+                $("#small-input").hide()
+            } else {
+                field = false
+                $("#big-input").hide()
+                $("#small-input").show()
             }
-        })
-    } else if (event.data.action == 'progressBarStart') {
-        event.data.id = currID
-        progressBarStart(event.data);
-    } else if (event.data.action == 'progressBarStop') {
-        progressBarStop();
-    }
+    
+            document.getElementById(input).placeholder = data.placeholder;
+            $(".msk-input-container").fadeIn()
+            $("#msk-input-title").text(data.header)
+    
+            document.getElementById('small-input').addEventListener("keydown", function(e) {
+                if (e.key === "Enter") {
+                    if (e.shiftKey) {
+                        return;
+                    }
+                    e.preventDefault();
+                }
+            })
+        } else if (data.action == 'closeInput') {
+            closeInput();
+        } else if (data.action == 'progressBarStart') {
+            progressBarStart(data);
+        } else if (data.action == 'progressBarStop') {
+            progressBarStop();
+        } else if (data.action == 'openNumpad') {
+            openNumpad(data);
+        } else if (data.action == 'closeNumpad') {
+            closeNumpad();
+        }
+    })
 })
 
-/* MSK Notification */
+document.onkeydown = function(e) {
+    if (e.key === "Escape") {
+        if (isInputOpen) {
+            closeInput(true)
+        }
+
+        if (isNumpadOpen) {
+            closeNumpad(true)
+        }
+    }
+};
+
+function playSound(sound, volume) {
+    var audio = new Audio(`./sounds/${sound}`);
+    audio.volume = volume;
+    audio.play();
+}
+
+/* ----------------
+MSK Notification 
+---------------- */
 
 const icons = {
     "general" : "fas fa-warehouse",
@@ -81,9 +112,6 @@ const replaceColors = (str, obj) => {
     return strToReplace
 }
 
-var sound = new Audio('notification.mp3');
-sound.volume = 0.25;
-
 notification = (title, message, info, time) => {
     for (color in colors) {
         if (message.includes(color)) {
@@ -110,7 +138,7 @@ notification = (title, message, info, time) => {
     `).appendTo(`.notify-wrapper`);
 
     notification.fadeIn("slow");
-    sound.play();
+    playSound("notification.mp3", 0.25);
 
     setTimeout(() => {
         notification.fadeOut("slow");
@@ -119,82 +147,148 @@ notification = (title, message, info, time) => {
     return notification;
 }
 
-/* MSK Input */
+/* ----------------
+MSK Input 
+---------------- */
 
-closeInputUI = (send) => {
-    $(".msk-input-container").fadeOut()
-    if (!send) { $.post(`http://${GetParentResourceName()}/closeInput`, JSON.stringify({})) }
+var field = false 
+
+closeInput = (send) => {
+    isInputOpen = false
+    $(".msk-input-container").fadeOut("fast")
+    $('#small-input').val('');
+    $('#big-input').val('');
+    if (send) { $.post(`https://${GetParentResourceName()}/closeInput`) }
 }
 
-document.onkeyup = (data) => {
-    if (data.which == 27) {
-        var textfield = '#small-input'
-        if (field) {textfield = '#big-input'}
-        $(textfield).val('');
-
-        closeInputUI()
-    }
-}
-
-input = () => {
+submitInput = () => {
     var textfield = '#small-input'
     if (field) {textfield = '#big-input'}
-
-    $.post(`http://${GetParentResourceName()}/submitInput`, JSON.stringify({input: $(textfield).val()}));
-    $(textfield).val('');
-    closeInputUI(true)
+    $.post(`https://${GetParentResourceName()}/submitInput`, JSON.stringify({input: $(textfield).val()}));
+    closeInput()
 }
 
-/* MSK ProgressBar */
+/* ----------------
+MSK ProgressBar 
+---------------- */
+
+let progressId = 0
+let progressTimeout
+let activeBars = new Map();
 
 progressBarStart = (data) => {
-    let id = data.id
+    let currId = progressId
     let time = data.time
     let text = data.text
     let color = data.color
 
-    if (!activeBars.has(id)) {
+    if (!activeBars.has(currId)) {
         let progressBar = {
             element: $('#progress'),
             elementValue: $('#progress-value'),
             elementText: $('#progress-text')
         };
-        activeBars.set(id, progressBar);
+        activeBars.set(currId, progressBar);
 
         progressBar.element.removeClass('progress-hidden');
         progressBar.elementValue.css("animation",`load ${time / 1000}s normal forwards`);
         progressBar.elementText.text(text);
         document.querySelector('.progress-container').style.setProperty('--mainColor', color);
         
-        timeout = setTimeout(() => {
-            progressBarStop(id);
+        progressTimeout = setTimeout(() => {
+            progressBarStop(currId);
         }, time);
     }
 }
 
 progressBarStop = (id) => {
-    clearTimeout(timeout);
-
-    if (id) {
-        let progressBar = activeBars.get(id);
+    clearTimeout(progressTimeout);
+    let currId = id
+    if (!id) {currId = progressId}
+    let progressBar = activeBars.get(currId);
     
-        if (progressBar) {
-            progressBar.element.addClass('progress-hidden');
-            progressBar.elementValue.css("animation",'');
-            progressBar.element.css("animation",'');
-            activeBars.delete(id);
-        }
-    } else {
-        let id = currID
-        let progressBar = activeBars.get(id);
-    
-        if (progressBar) {
-            progressBar.element.addClass('progress-hidden');
-            progressBar.elementValue.css("animation",'');
-            progressBar.element.css("animation",'');
-            activeBars.delete(id);
-        }
+    if (progressBar) {
+        progressBar.element.addClass('progress-hidden');
+        progressBar.elementValue.css("animation",'');
+        progressBar.element.css("animation",'');
+        activeBars.delete(currId);
     }
 
-    currID = currID + 1
+    progressId = progressId + 1
+}
+
+/* ----------------
+MSK Numpad 
+---------------- */
+
+var numpadCode = ''
+var numpadInput = ''
+var numpadLength = 4
+var numpadShowPin = true
+var numpadEnterCode = ''
+var numpadWrongCode = ''
+
+openNumpad = (data) => {
+    isNumpadOpen = true
+    numpadCode = data.code
+    numpadLength = data.length
+    numpadShowPin = data.show
+    numpadEnterCode = data.EnterCode
+    numpadWrongCode = data.WrongCode
+
+    $('#numpad-container').fadeIn();
+    $('#numpad-display').text(data.EnterCode);
+    $('#numpad-wrong').text(data.WrongCode);
+}
+
+clearNumpad = () => {
+    playSound("click.mp3", 0.14);
+    $('#numpad-display').css('color', '#c0c0c0')
+    $('#numpad-display').text(numpadEnterCode)
+    numpadInput = '';
+}
+
+closeNumpad = (send) => {
+    isNumpadOpen = false
+    numpadInput = ''
+    $('#numpad-container').fadeOut();
+    if (send) { $.post(`https://${GetParentResourceName()}/closeNumpad`) }
+}
+
+getLenght = () => {
+    if (numpadShowPin) {
+        return $("#numpad-display").text().length;
+    } else {
+        return $('#numpad-display').children().length;
+    }
+}
+
+addNumpad = (num) => {
+    if (isNaN($("#numpad-display").text())) {
+        $("#numpad-display").html('')
+        $('#numpad-display').css('color', '#c0c0c0')
+    }
+
+    playSound("click.mp3", 0.14);
+
+    if (getLenght() < numpadLength) {
+        if (numpadShowPin) {
+            $("#numpad-display").text($("#numpad-display").text() + num)
+            numpadInput = numpadInput + num
+        } else {
+            $("#numpad-display").html($("#numpad-display").html()+'<i class="fa-solid fa-star-of-life"></i>') 
+            numpadInput = numpadInput + num
+        }
+    }
+}
+
+submitNumpad = () => {
+    if (numpadInput == numpadCode) {
+        $.post(`https://${GetParentResourceName()}/submitNumpad`);
+        closeNumpad()
+    } else {
+        $('#numpad-display').css('color', 'red')
+        $('#numpad-display').text(numpadWrongCode)
+        numpadInput = ''
+    }
 }
