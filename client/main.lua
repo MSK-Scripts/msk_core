@@ -41,7 +41,7 @@ MSK.Notification = function(title, message, info, time)
     elseif Config.Notification == 'okok' then
         exports['okokNotify']:Alert(title, message, time or 5000, info or 'info')
     elseif Config.Notification == 'custom' then
-        Config.customNotification()
+        Config.customNotification(title, message, info, time)
     else
         SendNUIMessage({
             action = 'notify',

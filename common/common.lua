@@ -115,6 +115,7 @@ MSK.Logging = function(code, ...)
     local script = "[^2"..GetInvokingResource().."^0]"
 
     if not MSK.TableContains({'error', 'debug', 'info'}, code) then
+        -- Support for old Scripts
         script = code
         local action = ...
         local args = {...}

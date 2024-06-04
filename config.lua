@@ -19,7 +19,7 @@ Config.showCoords = {
 -- Set to 'custom' for Config.customNotification()
 Config.Notification = 'msk'
 
-Config.customNotification = function()
+Config.customNotification = function(title, message, info, time)
     -- Set Config.Notification = 'custom'
     -- Add your own clientside Notification here
 end

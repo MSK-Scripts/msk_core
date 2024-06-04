@@ -1,9 +1,12 @@
-local isOpen = false
-local callback = {}
+local isInputOpen = false
+local callback = nil
 
-openInput = function(header, placeholder, field, cb)
-    if isOpen then return print('Input is already open') end
-    if not cb then callback = field else callback = cb end
+MSK.Input = function(header, placeholder, field, cb)
+    if isInputOpen then return end
+    logging('debug', 'MSK.Input')
+    isInputOpen = true
+    callback = cb
+    if not callback then callback = field end
 
     SetNuiFocus(true, true)
     SendNUIMessage({
@@ -12,30 +15,34 @@ openInput = function(header, placeholder, field, cb)
         placeholder = placeholder,
         field = field and type(field) == 'boolean'
     })
-    isOpen = true
 end
-MSK.Input = openInput
-exports('openInput', openInput)
+exports('Input', MSK.Input)
+exports('openInput', MSK.Input)
 
-closeInput = function()
+MSK.CloseInput = function()
+    logging('debug', 'MSK.CloseInput')
+	isInputOpen = false
+    callback = nil
     SetNuiFocus(false, false)
-	isOpen = false
+    SendNUIMessage({
+        action = 'closeInput'
+    })
 end
-MSK.CloseInput = closeInput
-exports('closeInput', closeInput)
-
-RegisterNUICallback('closeInput', function(data)
-    callback()
-    closeInput()
-end)
+exports('CloseInput', MSK.CloseInput)
+exports('closeInput', MSK.CloseInput)
 
 RegisterNUICallback('submitInput', function(data)
+    if data.input == '' then data.input = nil end
+    if tonumber(data.input) then data.input = tonumber(data.input) end
 	callback(data.input)
-    closeInput()
+    MSK.CloseInput()
 end)
 
-AddEventHandler('onResourceStop', function(resourceName)
-    if resourceName == GetCurrentResourceName() then
-        closeInput()
-    end
+RegisterNUICallback('closeInput', function(data)
+    MSK.CloseInput()
+end)
+
+AddEventHandler('onResourceStop', function(resource)
+    if GetCurrentResourceName() ~= resource then return end
+    MSK.CloseInput()
 end)

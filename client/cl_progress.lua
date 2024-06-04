@@ -1,4 +1,4 @@
-ProgressStart = function(time, text, color)
+MSK.Progressbar = function(time, text, color)
     SendNUIMessage({
         action = 'progressBarStart',
         time = time,
@@ -6,13 +6,13 @@ ProgressStart = function(time, text, color)
         color = color or Config.progressColor,
     })
 end
-MSK.ProgressStart = ProgressStart
-exports('ProgressStart', ProgressStart)
+MSK.ProgressStart = MSK.Progressbar
+exports('Progressbar', MSK.Progressbar)
+exports('ProgressStart', MSK.Progressbar)
 
-ProgressStop = function()
+MSK.ProgressStop = function()
     SendNUIMessage({
         action = 'progressBarStop',
     })
 end
-MSK.ProgressStop = ProgressStop
-exports('ProgressStop', ProgressStop)
+exports('ProgressStop', MSK.ProgressStop)
