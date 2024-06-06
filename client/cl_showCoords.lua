@@ -2,6 +2,10 @@ local showCoords = false
 
 RegisterNetEvent('msk_core:showCoords', function()
 	showCoords = not showCoords
+
+	if showCoords then
+		CreateThread(startShowCoordsThread)
+	end
 end)
 
 local DrawGenericText = function(text)
@@ -17,19 +21,15 @@ local DrawGenericText = function(text)
 	DrawText(0.40, 0.00)
 end
 
-CreateThread(function()
-	while true do
-		local sleep = 500
+startShowCoordsThread = function()
+	while showCoords do
+		local sleep = 1
+		local playerPed = PlayerPedId()
+		local playerX, playerY, playerZ = table.unpack(GetEntityCoords(playerPed))
+		local playerH = GetEntityHeading(playerPed)
 
-		if showCoords then
-			sleep = 0
-			local playerPed = PlayerPedId()
-			local playerX, playerY, playerZ = table.unpack(GetEntityCoords(playerPed))
-			local playerH = GetEntityHeading(playerPed)
-
-			DrawGenericText(("~g~X~w~ = ~r~%s ~g~Y~w~ = ~r~%s ~g~Z~w~ = ~r~%s ~g~H~w~ = ~r~%s~s~"):format(MSK.Round(playerX, 2), MSK.Round(playerY, 2), MSK.Round(playerZ, 2), MSK.Round(playerH, 2)))
-		end
+		DrawGenericText(("~g~X~w~ = ~r~%s ~g~Y~w~ = ~r~%s ~g~Z~w~ = ~r~%s ~g~H~w~ = ~r~%s~s~"):format(MSK.Round(playerX, 2), MSK.Round(playerY, 2), MSK.Round(playerZ, 2), MSK.Round(playerH, 2)))
 
 		Wait(sleep)
 	end
-end)
+end

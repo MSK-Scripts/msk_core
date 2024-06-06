@@ -19,7 +19,16 @@ Config.showCoords = {
 -- Set to 'custom' for Config.customNotification()
 Config.Notification = 'msk'
 
-Config.customNotification = function(title, message, info, time)
+Config.NotifyTypes = {
+    -- https://fontawesome.com/icons
+    ['general'] = {icon = 'fa-solid fa-circle-info', color = '#ffffff'},
+    ['info'] = {icon = 'fa-solid fa-circle-info', color = '#75d6ff'},
+    ['success'] = {icon = 'fa-solid fa-shield-check', color = '#76ee62'},
+    ['warning'] = {icon = 'fa-solid fa-triangle-exclamation', color = '#ffcb11'},
+    ['error'] = {icon = 'fa-solid fa-circle-exclamation', color = '#ff4a4a'},
+}
+
+Config.customNotification = function(title, message, typ, duration)
     -- Set Config.Notification = 'custom'
     -- Add your own clientside Notification here
 end

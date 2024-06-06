@@ -7,6 +7,7 @@
 
         <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
         <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,500,700,900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
 
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" rel="stylesheet">
 
@@ -20,7 +21,18 @@
 
     <body>
         <!-- MSK Notify -->
-        <div class="d-grid notify-wrapper"></div>
+        <div class="notify-wrapper">
+            <div class="notify" style="display:none">
+                <div class="notify-title-banner">
+                    <div class="title"><i class="fa-solid fa-shield-check"></i> Information</div>
+                </div>
+                <div class="notify-text">This is a Notification</div>
+                    <div class="notify-progress">
+                        <div class="notify-progress-inner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <!-- MSK Input -->
         <div class="msk-input-container">

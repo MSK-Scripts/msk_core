@@ -10,7 +10,7 @@ $(document).ready(function() {
         const data = event.data
     
         if (data.action == 'notify') {
-            notification(data.title, data.message, data.info, data.time);
+            notification(data.title, data.message, data.type, data.time);
         } else if (data.action == 'openInput') {
             isInputOpen = true
             var input = 'small-input'
@@ -74,22 +74,6 @@ function playSound(sound, volume) {
 MSK Notification 
 ---------------- */
 
-const icons = {
-    "general" : "fas fa-warehouse",
-    "info"    : "fas fa-info-circle",
-    "success" : "fas fa-check-circle",
-    "error"   : "fas fa-exclamation-circle",
-    "warning" : "fas fa-exclamation-triangle"
-}
-
-const colours = {
-    "general" : "#FFFFFF",
-    "info"    : "#75D6FF",
-    "success" : "#76EE62",
-    "error"   : "#FF4A4A",
-    "warning" : "#FFCB11"
-}
-
 const colors = {
     "~r~": "red",
     "~b~": "#378cbf",
@@ -112,7 +96,7 @@ const replaceColors = (str, obj) => {
     return strToReplace
 }
 
-notification = (title, message, info, time) => {
+notification = (title, message, type, duration) => {
     for (color in colors) {
         if (message.includes(color)) {
             let obj = {};
@@ -125,24 +109,27 @@ notification = (title, message, info, time) => {
     }
 
     const notification = $(`
-        <div class="notify-div wrapper" style="border-left: 0.5vh solid ${colours[info]}; ">
-            <div class="notify-icon-box" style="border: 0.2vh solid ${colours[info]};">
-                <i class="${icons[info]} fa-ms notify-icon" style="color: ${colours[info]}"></i>
+        <div class="notify">
+            <div class="notify-title-banner">
+                <div class="title" style="color:${type.color}"><i class="${type.icon}"></i> ${title}</div>
             </div>
-
-            <div class="notify-text-box">
-                <p style="color:${colours[info]}; font-size: 2vh; font-weight: 500; margin-bottom: 0vh; margin-top: 1vh;">${title}</p>
-                <p style="margin-top: 0; color: rgba(247, 247, 247, 0.75);">${message}</p>
+            <div class="notify-text">${message}</div>
+            <div class="notify-progress">
+                <div class="notify-progress-inner" style="background:${type.color};animation:load ${duration / 1000}s normal forwards"></div>
             </div>
         </div>
-    `).appendTo(`.notify-wrapper`);
+    `).prependTo(`.notify-wrapper`);
 
-    notification.fadeIn("slow");
+    notification.show();
+    notification.css("animation", "NotifyIn 1s")
     playSound("notification.mp3", 0.25);
 
     setTimeout(() => {
-        notification.fadeOut("slow");
-    }, time);
+        notification.css("animation", "NotifyOut 1s")
+        setTimeout(() => {
+            notification.hide()
+        }, 800);
+    }, duration);
 
     return notification;
 }

@@ -33,22 +33,22 @@ exports('getCoreObject', function()
     return MSK
 end)
 
-MSK.Notification = function(title, message, info, time)
+MSK.Notification = function(title, message, typ, duration)
     if Config.Notification == 'native' then
         SetNotificationTextEntry('STRING')
         AddTextComponentString(message)
         DrawNotification(false, true)
     elseif Config.Notification == 'okok' then
-        exports['okokNotify']:Alert(title, message, time or 5000, info or 'info')
+        exports['okokNotify']:Alert(title, message, duration or 5000, typ or 'info')
     elseif Config.Notification == 'custom' then
-        Config.customNotification(title, message, info, time)
+        Config.customNotification(title, message, typ or 'info', duration or 5000)
     else
         SendNUIMessage({
             action = 'notify',
             title = title,
             message = message,
-            info = info or 'general',
-            time = time or 5000
+            type = Config.NotifyTypes[typ] or {icon = 'fas fa-info-circle', color = '#75D6FF'},
+            time = duration or 5000
         })
     end
 end
@@ -145,6 +145,25 @@ MSK.GetPedMugshot = function(ped, transparent)
     return mugshot, GetPedheadshotTxdString(mugshot)
 end
 exports('GetPedMugshot', MSK.GetPedMugshot)
+
+MSK.Progressbar = function(time, text, color)
+    SendNUIMessage({
+        action = 'progressBarStart',
+        time = time,
+        text = text or '',
+        color = color or Config.progressColor,
+    })
+end
+MSK.ProgressStart = MSK.Progressbar
+exports('Progressbar', MSK.Progressbar)
+exports('ProgressStart', MSK.Progressbar)
+
+MSK.ProgressStop = function()
+    SendNUIMessage({
+        action = 'progressBarStop',
+    })
+end
+exports('ProgressStop', MSK.ProgressStop)
 
 RegisterNetEvent("msk_core:notification")
 AddEventHandler("msk_core:notification", function(title, message, info, time)
