@@ -30,7 +30,7 @@ shared_script '@msk_core/import.lua'
 **Usage: little higher**
 
 ## Functions
-* [COMMON](https://docu.msk-scripts.de/msk-core/installation/common) - *clientside **AND** serverside functions*
+* [Shared](https://docu.msk-scripts.de/msk-core/installation/common) - *clientside **AND** serverside functions*
 * [CLIENTSIDE](https://docu.msk-scripts.de/msk-core/installation/clientside) - *clientside functions only*
 * [SERVERSIDE](https://docu.msk-scripts.de/msk-core/installation/serverside) - *serverside functions only*
 
