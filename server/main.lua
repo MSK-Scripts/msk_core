@@ -105,13 +105,34 @@ MSK.Notification = function(src, title, message, info, time)
     if not src or src == 0 then return end
     TriggerClientEvent('msk_core:notification', src, title, message, info, time)
 end
+MSK.Notify = MSK.Notification
 exports('Notification', MSK.Notification)
 
 MSK.AdvancedNotification = function(src, text, title, subtitle, icon, flash, icontype)
     if not src or src == 0 then return end
     TriggerClientEvent('msk_core:advancedNotification', src, text, title, subtitle, icon, flash, icontype)
 end
+MSK.AdvancedNotify = MSK.AdvancedNotification
 exports('AdvancedNotification', MSK.AdvancedNotification)
+
+MSK.ScaleformAnnounce = function(src, header, text, typ, duration)
+    if not src or src == 0 then return end
+    TriggerClientEvent('msk_core:scaleformNotification', src, header, text, typ, duration)
+end
+MSK.Scaleform = MSK.ScaleformAnnounce
+exports('ScaleformAnnounce', MSK.ScaleformAnnounce)
+
+MSK.Subtitle = function(src, message, duration)
+    if not src or src == 0 then return end
+    TriggerClientEvent('msk_core:subtitle', src, message, duration)
+end
+exports('Subtitle', MSK.Subtitle)
+
+MSK.Spinner = function(src, text, typ, duration)
+    if not src or src == 0 then return end
+    TriggerClientEvent('msk_core:spinner', src, text, typ, duration)
+end
+exports('Spinner', MSK.Spinner)
 
 MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
     local content = {}

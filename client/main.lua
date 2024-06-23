@@ -3,12 +3,9 @@ MSK = {}
 if Config.Framework:match('esx') then
     ESX = exports["es_extended"]:getSharedObject()
 
-    AddEventHandler('esx:setPlayerData', function(key, val, last)
+    RegisterNetEvent('esx:setPlayerData', function(key, val)
         if GetInvokingResource() == 'es_extended' then
             ESX.PlayerData[key] = val
-            if OnPlayerData then
-                OnPlayerData(key, val, last)
-            end
         end
     end)
 
@@ -20,6 +17,10 @@ if Config.Framework:match('esx') then
     RegisterNetEvent('esx:onPlayerLogout', function()
         ESX.PlayerLoaded = false
         ESX.PlayerData = {}
+    end)
+
+    RegisterNetEvent('esx:setJob', function(job)
+        ESX.PlayerData.job = job
     end)
 elseif Config.Framework:match('qbcore') then
     QBCore = exports['qb-core']:GetCoreObject()
@@ -35,9 +36,9 @@ end)
 
 MSK.Notification = function(title, message, typ, duration)
     if Config.Notification == 'native' then
-        SetNotificationTextEntry('STRING')
-        AddTextComponentString(message)
-        DrawNotification(false, true)
+        BeginTextCommandThefeedPost('STRING')
+        AddTextComponentSubstringPlayerName(message)
+        EndTextCommandThefeedPostTicker(false, true)
     elseif Config.Notification == 'okok' then
         exports['okokNotify']:Alert(title, message, duration or 5000, typ or 'info')
     elseif Config.Notification == 'custom' then
@@ -52,13 +53,15 @@ MSK.Notification = function(title, message, typ, duration)
         })
     end
 end
+MSK.Notify = MSK.Notification
 exports('Notification', MSK.Notification)
 
 MSK.HelpNotification = function(text)
-    SetTextComponentFormat('STRING')
-    AddTextComponentString(text)
-    DisplayHelpTextFromStringLabel(0, 0, 1, -1)
+    BeginTextCommandDisplayHelp('STRING')
+    AddTextComponentSubstringPlayerName(text)
+    EndTextCommandDisplayHelp(0, false, true, -1)
 end
+MSK.HelpNotify = MSK.HelpNotification
 exports('HelpNotification', MSK.HelpNotification)
 
 MSK.AdvancedNotification = function(text, title, subtitle, icon, flash, icontype)
@@ -66,16 +69,78 @@ MSK.AdvancedNotification = function(text, title, subtitle, icon, flash, icontype
     if not icontype then icontype = 1 end
     if not icon then icon = 'CHAR_HUMANDEFAULT' end
 
-    SetNotificationTextEntry('STRING')
-    AddTextComponentString(text)
-    SetNotificationMessage(icon, icon, flash, icontype, title, subtitle)
-	DrawNotification(false, true)
+    BeginTextCommandThefeedPost('STRING')
+    AddTextComponentSubstringPlayerName(text)
+    EndTextCommandThefeedPostMessagetext(icon, icon, flash, icontype, title, subtitle)
+	EndTextCommandThefeedPostTicker(false, true)
 end
+MSK.AdvancedNotify = MSK.AdvancedNotification
 exports('AdvancedNotification', MSK.AdvancedNotification)
+
+MSK.ScaleformAnnounce = function(header, text, typ, duration)
+    local scaleform = ''
+
+    local loadScaleform = function(sclform)
+        if not HasScaleformMovieLoaded(scaleform) then
+            scaleform = RequestScaleformMovie(sclform)
+            while not HasScaleformMovieLoaded(scaleform) do
+                Wait(1)
+            end
+        end
+    end
+
+    if typ == 1 then
+        loadScaleform("MP_BIG_MESSAGE_FREEMODE")
+        BeginScaleformMovieMethod(scaleform, "SHOW_SHARD_WASTED_MP_MESSAGE")
+        ScaleformMovieMethodAddParamTextureNameString(header)
+        ScaleformMovieMethodAddParamTextureNameString(text)
+        EndScaleformMovieMethod()
+    elseif typ == 2 then
+        loadScaleform("POPUP_WARNING")
+        BeginScaleformMovieMethod(scaleform, "SHOW_POPUP_WARNING")
+        ScaleformMovieMethodAddParamFloat(500.0)
+        ScaleformMovieMethodAddParamTextureNameString(header)
+        ScaleformMovieMethodAddParamTextureNameString(text)
+        EndScaleformMovieMethod()
+    end
+
+    local draw = true
+    while draw do
+        local sleep = 1
+
+        DrawScaleformMovieFullscreen(scaleform, 255, 255, 255, 255, 0)
+
+        MSK.SetTimeout(duration or 8000, function()
+            draw = false
+        end)
+
+        Wait(sleep)
+    end
+end
+MSK.Scaleform = MSK.ScaleformAnnounce
+exports('ScaleformAnnounce', MSK.ScaleformAnnounce)
+
+MSK.Subtitle = function(text, duration)
+    BeginTextCommandPrint('STRING')
+    AddTextComponentSubstringPlayerName(text)
+    EndTextCommandPrint(duration, true)
+end
+exports('Subtitle', MSK.Subtitle)
+
+MSK.Spinner = function(text, typ, duration)
+    BeginTextCommandBusyspinnerOn('STRING')
+    AddTextComponentSubstringPlayerName(text)
+    EndTextCommandBusyspinnerOn(typ or 4) -- 4 or 5, all others are useless // 4 = orange // 5 = white
+
+    MSK.SetTimeout(duration or 5000, function()
+        BusyspinnerOff()
+    end)
+end
+exports('Spinner', MSK.Spinner)
 
 MSK.Draw3DText = function(coords, text, size, font)
     local coords = type(coords) == "vector3" and coords or vec(coords.x, coords.y, coords.z)
-    local camCoords = GetGameplayCamCoords()
+    local camCoords = GetFinalRenderedCamCoord()
     local distance = #(coords - camCoords)
 
     if not size then size = 1 end
@@ -165,12 +230,22 @@ MSK.ProgressStop = function()
 end
 exports('ProgressStop', MSK.ProgressStop)
 
-RegisterNetEvent("msk_core:notification")
-AddEventHandler("msk_core:notification", function(title, message, info, time)
-    MSK.Notification(title, message, info, time)
+RegisterNetEvent("msk_core:notification", function(title, message, typ, time)
+    MSK.Notification(title, message, typ, time)
 end)
 
-RegisterNetEvent('msk_core:advancedNotification')
-AddEventHandler('msk_core:advancedNotification', function(text, title, subtitle, icon, flash, icontype)
+RegisterNetEvent('msk_core:advancedNotification', function(text, title, subtitle, icon, flash, icontype)
     MSK.AdvancedNotification(text, title, subtitle, icon, flash, icontype)
+end)
+
+RegisterNetEvent("msk_core:scaleformNotification", function(title, message, typ, duration)
+    MSK.ScaleformAnnounce(title, message, typ, duration)
+end)
+
+RegisterNetEvent("msk_core:subtitle", function(message, duration)
+    MSK.Subtitle(message, duration)
+end)
+
+RegisterNetEvent("msk_core:spinner", function(text, typ, duration)
+    MSK.Spinner(text, typ, duration)
 end)
