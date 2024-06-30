@@ -13,8 +13,8 @@ Config.showCoords = {
     groups = {'superadmin', 'admin'}
 }
 ----------------------------------------------------------------
+-- Set to 'msk' for MSK UI Notification
 -- Set to 'native' for FiveM Native Notification
--- Set to 'msk' for NUI Notification
 -- Set to 'okok' for OKOK Notification
 -- Set to 'custom' for Config.customNotification()
 Config.Notification = 'msk'
