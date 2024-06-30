@@ -1,4 +1,17 @@
 local CronJobs, CronJobsAt = {}, {}
+local CronJobUniqueIds = {}
+
+local createUniqueId = function()
+    local id = math.random(1, 999999999999)
+
+    if CronJobUniqueIds[id] then
+        return createUniqueId()
+    end
+
+    createUniqueId[id] = id
+
+    return createUniqueId[id]
+end
 
 local getTime = function(time, date)
     if date.m then
@@ -33,9 +46,8 @@ tickCronJob = function()
 	    local m = tonumber(os.date('%M', timestamp))
 
         if currD == d and currH == h and currM == m then
-            logging('debug', 'tickCronJob', os.date('%d.%m.%Y %H:%M:%S', currTime))
             CronJobs[i].timestamp = getTime(timestamp, CronJobs[i].date)
-            CronJobs[i].cb(CronJobs[i].data, {timestamp = currTime, d = currD, h = currH, m = currM})
+            CronJobs[i].cb(CronJobs[i].id, CronJobs[i].data, {timestamp = currTime, d = currD, h = currH, m = currM})
         end
     end
 
@@ -51,7 +63,7 @@ tickCronJobAt = function()
 
     for i=1, #CronJobsAt, 1 do
         if (not CronJobsAt[i].date.atD or CronJobsAt[i].date.atD and currD == CronJobsAt[i].date.atD) and currH == CronJobsAt[i].date.atH and currM == CronJobsAt[i].date.atM then
-            CronJobsAt[i].cb(CronJobsAt[i].data, {timestamp = currTime, d = currD, h = currH, m = currM})
+            CronJobsAt[i].cb(CronJobs[i].id, CronJobsAt[i].data, {timestamp = currTime, d = currD, h = currH, m = currM})
         end
     end
 
@@ -77,6 +89,7 @@ MSK.CreateCron = function(date, data, cb)
         end
 
         CronJobsAt[#CronJobsAt + 1] = {
+            uniqueId = createUniqueId(),
             date = date,
             data = data,
             cb = cb
@@ -85,6 +98,7 @@ MSK.CreateCron = function(date, data, cb)
         logging('debug', 'Created CronJobAT at: ' .. os.date('%d.%m.%Y %H:%M:%S', os.time()), 'Will be executed at: ' .. ('%s:%s'):format(date.atH, date.atM) .. ' ' .. ('Day %s (1-7 = Mo - Su)'):format(date.atD or 'everyday'))
     else
         CronJobs[#CronJobs + 1] = {
+            uniqueId = createUniqueId(),
             timestamp = timestamp,
             date = date,
             data = data,
@@ -96,3 +110,32 @@ MSK.CreateCron = function(date, data, cb)
 end
 exports('CreateCron', MSK.CreateCron)
 RegisterNetEvent('msk_core:createCron', MSK.CreateCron)
+
+MSK.DeleteCron = function(id)
+    if not id then return end
+    if not CronJobUniqueIds[id] then return end
+    local found = false
+
+    for i=1, #CronJobs, 1 do
+        if CronJobs[i].uniqueId == id then
+            CronJobs[i] = nil
+            CronJobUniqueIds[id] = nil
+            found = true
+            break
+        end
+    end
+
+    if found then return end
+
+    for i=1, #CronJobsAt, 1 do
+        if CronJobsAt[i].uniqueId == id then
+            CronJobsAt[i] = nil
+            CronJobUniqueIds[id] = nil
+            found = true
+            break
+        end
+    end
+
+    return found
+end
+exports('DeleteCron', MSK.DeleteCron)
