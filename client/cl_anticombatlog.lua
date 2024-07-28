@@ -25,7 +25,7 @@ end
 
 local display = function(data)
     -- data.playerId, data.playerName, data.coords, data.reason
-
+    
     local showDisplay = true
     local timeout = MSK.SetTimeout(60000, function()
         showDisplay = false
@@ -54,7 +54,4 @@ local display = function(data)
     end)
 end
 
-RegisterNetEvent('msk_core:anticombatlog')
-AddEventHandler('msk_core:anticombatlog', function(data)
-	display(data)
-end)
+RegisterNetEvent('msk_core:anticombatlog', display)

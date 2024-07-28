@@ -1,12 +1,10 @@
 MSK = {}
 
-if Config.Framework:match('esx') then
+if Config.Framework == 'esx' then
     ESX = exports["es_extended"]:getSharedObject()
 
     RegisterNetEvent('esx:setPlayerData', function(key, val)
-        if GetInvokingResource() == 'es_extended' then
-            ESX.PlayerData[key] = val
-        end
+        ESX.PlayerData[key] = val
     end)
 
     RegisterNetEvent('esx:playerLoaded', function(xPlayer)
@@ -22,7 +20,7 @@ if Config.Framework:match('esx') then
     RegisterNetEvent('esx:setJob', function(job)
         ESX.PlayerData.job = job
     end)
-elseif Config.Framework:match('qbcore') then
+elseif Config.Framework == 'qbcore' then
     QBCore = exports['qb-core']:GetCoreObject()
 
     RegisterNetEvent('QBCore:Player:SetPlayerData', function(PlayerData)
@@ -40,7 +38,7 @@ MSK.Notification = function(title, message, typ, duration)
         AddTextComponentSubstringPlayerName(message)
         EndTextCommandThefeedPostTicker(false, true)
     elseif Config.Notification == 'okok' then
-        exports['okokNotify']:Alert(title, message, duration or 5000, typ or 'info')
+        exports.okokNotify:Alert(title, message, duration or 5000, typ or 'info')
     elseif Config.Notification == 'custom' then
         Config.customNotification(title, message, typ or 'info', duration or 5000)
     else
@@ -123,7 +121,7 @@ exports('ScaleformAnnounce', MSK.ScaleformAnnounce)
 MSK.Subtitle = function(text, duration)
     BeginTextCommandPrint('STRING')
     AddTextComponentSubstringPlayerName(text)
-    EndTextCommandPrint(duration, true)
+    EndTextCommandPrint(duration or 8000, true)
 end
 exports('Subtitle', MSK.Subtitle)
 
@@ -164,7 +162,7 @@ end
 exports('Draw3DText', MSK.Draw3DText)
 
 MSK.HasItem = function(item)
-    if not Config.Framework:match('esx') and not Config.Framework:match('qbcore') then 
+    if Config.Framework == 'standalone' then 
         return logging('error', ('Function %s can not used without Framework!'):format('MSK.HasItem'))
     end
 
@@ -219,9 +217,9 @@ MSK.Progressbar = function(time, text, color)
         color = color or Config.progressColor,
     })
 end
-MSK.ProgressStart = MSK.Progressbar
+MSK.ProgressStart = MSK.Progressbar -- Support for old Scripts
 exports('Progressbar', MSK.Progressbar)
-exports('ProgressStart', MSK.Progressbar)
+exports('ProgressStart', MSK.Progressbar) -- Support for old Scripts
 
 MSK.ProgressStop = function()
     SendNUIMessage({

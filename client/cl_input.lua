@@ -15,9 +15,20 @@ MSK.Input = function(header, placeholder, field, cb)
         placeholder = placeholder,
         field = field and type(field) == 'boolean'
     })
+
+    if not callback or callback and type(callback) == 'boolean' then
+        local p = promise.new()
+
+        callback = function(response)
+            p:resolve(response)
+        end
+
+        local result = Citizen.Await(p)
+        return result
+    end
 end
 exports('Input', MSK.Input)
-exports('openInput', MSK.Input)
+exports('openInput', MSK.Input) -- Support for old Scripts
 
 MSK.CloseInput = function()
     logging('debug', 'MSK.CloseInput')
@@ -29,7 +40,7 @@ MSK.CloseInput = function()
     })
 end
 exports('CloseInput', MSK.CloseInput)
-exports('closeInput', MSK.CloseInput)
+exports('closeInput', MSK.CloseInput) -- Support for old Scripts
 
 RegisterNUICallback('submitInput', function(data)
     if data.input == '' then data.input = nil end

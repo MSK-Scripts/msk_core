@@ -9,7 +9,7 @@ MSK.GetRandomString = function(length)
 
 	return length > 0 and ESX.GetRandomString(length - 1) .. Charset[math.random(1, #Charset)] or ''
 end
-MSK.GetRandomLetter = MSK.GetRandomString
+MSK.GetRandomLetter = MSK.GetRandomString -- Support for old Scripts
 exports('GetRandomString', MSK.GetRandomString)
 
 MSK.Round = function(num, decimal)
@@ -54,7 +54,7 @@ MSK.TableContains = function(table, value)
     end
     return false
 end
-MSK.Table_Contains = MSK.TableContains
+MSK.Table_Contains = MSK.TableContains -- Support for old Scripts
 exports('TableContains', MSK.TableContains)
 
 MSK.Comma = function(int, tag)
@@ -85,7 +85,7 @@ MSK.SetTimeout = function(ms, cb)
     Timeout = requestId
     return requestId
 end
-MSK.AddTimeout = MSK.SetTimeout
+MSK.AddTimeout = MSK.SetTimeout -- Support for old Scripts
 exports('SetTimeout', MSK.SetTimeout)
 
 MSK.DelTimeout = function(requestId)
@@ -126,14 +126,14 @@ MSK.Logging = function(code, ...)
         print(script, Config.LoggingTypes[code], ...)
     end
 end
-MSK.logging = MSK.Logging
+MSK.logging = MSK.Logging -- Support for old Scripts
 exports('Logging', MSK.Logging)
 
 MSK.GetConfig = function()
     return Config
 end
 exports('GetConfig', MSK.GetConfig)
-exports('getConfig', MSK.GetConfig)
+exports('getConfig', MSK.GetConfig) -- Support for old Scripts
 
 logging = function(code, ...)
     if not Config.Debug then return end

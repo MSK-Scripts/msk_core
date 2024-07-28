@@ -125,7 +125,7 @@ MSK.DeleteCron = function(id)
         end
     end
 
-    if found then return end
+    if found then return found end
 
     for i=1, #CronJobsAt, 1 do
         if CronJobsAt[i].uniqueId == id then

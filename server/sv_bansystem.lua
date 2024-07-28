@@ -118,7 +118,7 @@ local formatTime = function(time)
     return banTime, os.date('%d-%m-%Y %H:%M', banTime)
 end
 
-banPlayer = function(source, playerId, time, reason)
+MSK.BanPlayer = function(source, playerId, time, reason)
     local playerName = GetPlayerName(playerId)
 
     if not playerName then 
@@ -153,10 +153,10 @@ banPlayer = function(source, playerId, time, reason)
         end
     end)
 end
-MSK.BanPlayer = banPlayer
-exports('banPlayer', banPlayer)
+exports('BanPlayer', MSK.BanPlayer)
+exports('banPlayer', MSK.BanPlayer) -- Support for old Scripts
 
-unbanPlayer = function(source, banId)
+MSK.UnbanPlayer = function(source, banId)
     MySQL.query('DELETE FROM msk_bansystem WHERE id = @id', { 
         ['@id'] = banId
     }, function(response)
@@ -181,8 +181,8 @@ unbanPlayer = function(source, banId)
         end
     end)
 end
-MSK.UnbanPlayer = unbanPlayer
-exports('unbanPlayer', unbanPlayer)
+exports('UnbanPlayer', MSK.UnbanPlayer)
+exports('unbanPlayer', MSK.UnbanPlayer) -- Support for old Scripts
 
 AddEventHandler('playerConnecting', function(playerName, setKickReason, deferrals)
     local src = source
@@ -193,7 +193,7 @@ AddEventHandler('playerConnecting', function(playerName, setKickReason, deferral
         CancelEvent() -- FiveM Native Function for cancelling the currently executing event
         setKickReason(('Banned by %s until %s for %s. BanID: %s'):format(isBanned.from, isBanned.time, isBanned.reason, isBanned.id))
     elseif isBanned and expired then
-        unbanPlayer(nil, isBanned.id)
+        MSK.UnbanPlayer(nil, isBanned.id)
     end
 end)
 
@@ -218,10 +218,10 @@ if Config.BanSystem.enable and Config.BanSystem.commands.enable then
 
         if not playerId or not time then return end
         if not reason then reason = 'Unknown' end
-        if src == 0 then return banPlayer(nil, playerId, time, reason) end
+        if src == 0 then return MSK.BanPlayer(nil, playerId, time, reason) end
 
         if isAllowed(src) then
-            banPlayer(src, playerId, time, reason)
+            MSK.BanPlayer(src, playerId, time, reason)
         else
             Config.Notification(src, 'You don\'t have permission to do that!')
         end
@@ -232,10 +232,10 @@ if Config.BanSystem.enable and Config.BanSystem.commands.enable then
         local banId = args[1]
 
         if not banId then return end
-        if src == 0 then return unbanPlayer(nil, banId) end
+        if src == 0 then return MSK.UnbanPlayer(nil, banId) end
 
         if isAllowed(src) then
-            unbanPlayer(src, banId)
+            MSK.UnbanPlayer(src, banId)
         else
             Config.Notification(src, 'You don\'t have permission to do that!')
         end

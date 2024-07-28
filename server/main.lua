@@ -1,8 +1,8 @@
 MSK = {}
 
-if Config.Framework:match('esx') then
+if Config.Framework == 'esx' then
     ESX = exports["es_extended"]:getSharedObject()
-elseif Config.Framework:match('qbcore') then
+elseif Config.Framework == 'qbcore' then
     QBCore = exports['qb-core']:GetCoreObject()
 end
 
@@ -78,13 +78,10 @@ MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)
                     MSK.Notification(source, error)
                 end
             else
-                if Config.Framework:match('esx') and framework then
-                    local xPlayer = ESX.GetPlayerFromId(source)
-                    cb(xPlayer, args, rawCommand)
-                elseif Config.Framework:match('qbcore') and framework then
-                    local Player = QBCore.Functions.GetPlayer(source)
+                if Config.Framework ~= 'standalone' and framework then
+                    local Player = MSK.GetPlayer({source = source})
                     cb(Player, args, rawCommand)
-                elseif Config.Framework:match('standalone') or not framework then
+                else
                     cb(source, args, rawCommand)
                 end
             end
@@ -178,19 +175,17 @@ MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, descript
 end
 exports('AddWebhook', MSK.AddWebhook)
 
-MSK.HasItem = function(xPlayer, item)
-    if not xPlayer then logging('error', 'Player on Function MSK.HasItem does not exist!') return end
-    if not Config.Framework:match('esx') and not Config.Framework:match('qbcore') then 
+MSK.HasItem = function(Player, item)
+    if not Player then logging('error', 'Player on Function MSK.HasItem does not exist!') return end
+    if Config.Framework == 'standalone' then 
         return logging('error', ('Function %s can not used without Framework!'):format('^3MSK.HasItem^0'))
     end
     local hasItem
 
-    if Config.Framework:match('esx') then
-        hasItem = xPlayer.getInventoryItem(item)
-    elseif Config.Framework:match('qbcore') then
-        hasItem = xPlayer.Functions.GetItemByName(item)
-    else
-        logging('error', 'Framework on Function MSK.HasItem is not configured!')
+    if Config.Framework == 'esx' then
+        hasItem = Player.hasItem(item)
+    elseif Config.Framework == 'qbcore' then
+        hasItem = Player.Functions.GetItemByName(item)
     end
 
     return hasItem

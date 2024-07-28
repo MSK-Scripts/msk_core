@@ -16,6 +16,17 @@ MSK.Numpad = function(pin, show, cb)
         EnterCode = 'Enter Code',
         WrongCode = 'Incorrect',
     })
+
+    if not callback then
+        local p = promise.new()
+
+        callback = function(response)
+            p:resolve(response)
+        end
+
+        local result = Citizen.Await(p)
+        return result
+    end
 end
 exports('Numpad', MSK.Numpad)
 

@@ -1,12 +1,19 @@
 local showCoords = false
 
-RegisterNetEvent('msk_core:showCoords', function()
+MSK.ShowCoords = function()
 	showCoords = not showCoords
 
 	if showCoords then
 		CreateThread(startShowCoordsThread)
 	end
-end)
+end
+exports('ShowCoords', MSK.ShowCoords)
+RegisterNetEvent('msk_core:showCoords', MSK.ShowCoords)
+
+MSK.DoesShowCoords = function()
+	return showCoords
+end
+exports('DoesShowCoords', MSK.DoesShowCoords)
 
 local DrawGenericText = function(text)
 	SetTextColour(186, 186, 186, 255)
