@@ -8,6 +8,10 @@
 ## Requirements
 * oxmysql
 
+### Optional Requirements
+* [ESX 1.9.2 and above](https://github.com/esx-framework/esx_core)
+* [QBCore](https://github.com/qbcore-framework/qb-core)
+
 ## MSK.Notification
 ![Screenshot_283](https://github.com/MSK-Scripts/msk_core/assets/49867381/81ee7bb1-f862-46f5-b56a-507da8fde12d)
 
