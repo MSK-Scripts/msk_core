@@ -15,6 +15,10 @@ MSK.DoesShowCoords = function()
 end
 exports('DoesShowCoords', MSK.DoesShowCoords)
 
+MSK.Register('msk_core:doesShowCoords', function(source)
+	return showCoords
+end)
+
 local DrawGenericText = function(text)
 	SetTextColour(186, 186, 186, 255)
 	SetTextFont(7)

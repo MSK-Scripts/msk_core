@@ -40,6 +40,11 @@ MSK.CloseNumpad = function()
     })
 end
 exports('CloseNumpad', MSK.CloseNumpad)
+RegisterNetEvent('msk_core:closeNumpad', MSK.CloseNumpad)
+
+MSK.Register('msk_core:numpad', function(source, pin, show)
+    return MSK.Numpad(pin, show)
+end)
 
 RegisterNUICallback('submitNumpad', function(data)
     callback(true)

@@ -7,10 +7,16 @@ for i = 97, 122 do table.insert(Charset, string.char(i)) end
 MSK.GetRandomString = function(length)
     math.randomseed(GetGameTimer())
 
-	return length > 0 and ESX.GetRandomString(length - 1) .. Charset[math.random(1, #Charset)] or ''
+	return length > 0 and MSK.GetRandomString(length - 1) .. Charset[math.random(1, #Charset)] or ''
 end
-MSK.GetRandomLetter = MSK.GetRandomString -- Support for old Scripts
+MSK.GetRandomLetter = MSK.GetRandomString -- Support for old Versions
 exports('GetRandomString', MSK.GetRandomString)
+
+MSK.GetConfig = function()
+    return Config
+end
+exports('GetConfig', MSK.GetConfig)
+exports('getConfig', MSK.GetConfig) -- Support for old Versions
 
 MSK.Round = function(num, decimal)
     return tonumber(string.format("%." .. (decimal or 0) .. "f", num))
@@ -34,27 +40,28 @@ MSK.Split = function(str, delimiter)
 end
 exports('Split', MSK.Split)
 
-MSK.TableContains = function(table, value)
-    if not table or not value then return end
+MSK.TableContains = function(tbl, val)
+    if not tbl then return end
+    if not val then return end
     
-    if type(value) == 'table' then
-        for k, v in pairs(table) do
-            for k2, v2 in pairs(value) do
+    if type(val) == 'table' then
+        for k, v in pairs(tbl) do
+            for k2, v2 in pairs(val) do
                 if v == v2 then
                     return true
                 end
             end
         end
     else
-        for k, v in pairs(table) do
-            if v == value then
+        for k, v in pairs(tbl) do
+            if v == val then
                 return true
             end
         end
     end
     return false
 end
-MSK.Table_Contains = MSK.TableContains -- Support for old Scripts
+MSK.Table_Contains = MSK.TableContains -- Support for old Versions
 exports('TableContains', MSK.TableContains)
 
 MSK.Comma = function(int, tag)
@@ -78,21 +85,26 @@ MSK.SetTimeout = function(ms, cb)
     local requestId = Timeout + 1
 
     SetTimeout(ms, function()
-        if Timeouts[requestId] then Timeouts[requestId] = nil return end
+        if Timeouts[requestId] then 
+            Timeouts[requestId] = nil 
+            return 
+        end
+
         cb()
     end)
 
     Timeout = requestId
     return requestId
 end
-MSK.AddTimeout = MSK.SetTimeout -- Support for old Scripts
+MSK.AddTimeout = MSK.SetTimeout -- Support for old Versions
 exports('SetTimeout', MSK.SetTimeout)
 
-MSK.DelTimeout = function(requestId)
+MSK.ClearTimeout = function(requestId)
     if not requestId then return end
     Timeouts[requestId] = true
 end
-exports('DelTimeout', MSK.DelTimeout)
+exports('ClearTimeout', MSK.ClearTimeout)
+exports('DelTimeout', MSK.ClearTimeout) -- Support for old Versions
 
 MSK.DumpTable = function(tbl, n)
     if not n then n = 0 end
@@ -115,7 +127,7 @@ MSK.Logging = function(code, ...)
     local script = "[^2"..GetInvokingResource().."^0]"
 
     if not MSK.TableContains({'error', 'debug', 'info'}, code) then
-        -- Support for old Scripts
+        -- Support for old Versions
         script = code
         local action = ...
         local args = {...}
@@ -126,14 +138,8 @@ MSK.Logging = function(code, ...)
         print(script, Config.LoggingTypes[code], ...)
     end
 end
-MSK.logging = MSK.Logging -- Support for old Scripts
+MSK.logging = MSK.Logging -- Support for old Versions
 exports('Logging', MSK.Logging)
-
-MSK.GetConfig = function()
-    return Config
-end
-exports('GetConfig', MSK.GetConfig)
-exports('getConfig', MSK.GetConfig) -- Support for old Scripts
 
 logging = function(code, ...)
     if not Config.Debug then return end

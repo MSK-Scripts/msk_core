@@ -6,7 +6,6 @@ Config.VersionChecker = true
 -- Only Required for MSK.RegisterCommand and MSK.HasItem // View Docu for more Information about that!
 Config.Framework = 'esx' -- Set to 'standalone', 'esx' or 'qbcore'
 ----------------------------------------------------------------
--- /coords
 Config.showCoords = {
     enable = true,
     command = 'coords',

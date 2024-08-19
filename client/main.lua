@@ -53,6 +53,7 @@ MSK.Notification = function(title, message, typ, duration)
 end
 MSK.Notify = MSK.Notification
 exports('Notification', MSK.Notification)
+RegisterNetEvent("msk_core:notification", MSK.Notification)
 
 MSK.HelpNotification = function(text)
     BeginTextCommandDisplayHelp('STRING')
@@ -61,6 +62,7 @@ MSK.HelpNotification = function(text)
 end
 MSK.HelpNotify = MSK.HelpNotification
 exports('HelpNotification', MSK.HelpNotification)
+RegisterNetEvent("msk_core:helpNotification", MSK.HelpNotification)
 
 MSK.AdvancedNotification = function(text, title, subtitle, icon, flash, icontype)
     if not flash then flash = true end
@@ -74,6 +76,7 @@ MSK.AdvancedNotification = function(text, title, subtitle, icon, flash, icontype
 end
 MSK.AdvancedNotify = MSK.AdvancedNotification
 exports('AdvancedNotification', MSK.AdvancedNotification)
+RegisterNetEvent("msk_core:advancedNotification", MSK.AdvancedNotification)
 
 MSK.ScaleformAnnounce = function(header, text, typ, duration)
     local scaleform = ''
@@ -117,6 +120,7 @@ MSK.ScaleformAnnounce = function(header, text, typ, duration)
 end
 MSK.Scaleform = MSK.ScaleformAnnounce
 exports('ScaleformAnnounce', MSK.ScaleformAnnounce)
+RegisterNetEvent("msk_core:scaleformNotification", MSK.ScaleformAnnounce)
 
 MSK.Subtitle = function(text, duration)
     BeginTextCommandPrint('STRING')
@@ -124,6 +128,7 @@ MSK.Subtitle = function(text, duration)
     EndTextCommandPrint(duration or 8000, true)
 end
 exports('Subtitle', MSK.Subtitle)
+RegisterNetEvent("msk_core:subtitle", MSK.Subtitle)
 
 MSK.Spinner = function(text, typ, duration)
     BeginTextCommandBusyspinnerOn('STRING')
@@ -135,6 +140,7 @@ MSK.Spinner = function(text, typ, duration)
     end)
 end
 exports('Spinner', MSK.Spinner)
+RegisterNetEvent("msk_core:spinner", MSK.Spinner)
 
 MSK.Draw3DText = function(coords, text, size, font)
     local coords = type(coords) == "vector3" and coords or vec(coords.x, coords.y, coords.z)
@@ -160,10 +166,33 @@ MSK.Draw3DText = function(coords, text, size, font)
     ClearDrawOrigin()
 end
 exports('Draw3DText', MSK.Draw3DText)
+RegisterNetEvent("msk_core:draw3DText", MSK.Draw3DText)
+
+MSK.DrawGenericText = function(text, outline, font, size, color, position)
+    if not font then font = 0 end
+    if not size then size = 0.34 end
+    if not color then color = {r = 255, g = 255, b = 255, a = 255} end
+    if not position then position = {height = 0.90, width = 0.50} end
+
+	SetTextColour(color.r, color.g, color.b, color.a)
+	SetTextFont(font)
+	SetTextScale(size, size)
+	SetTextWrap(0.0, 1.0)
+	SetTextCentre(true)
+	SetTextDropshadow(0, 0, 0, 0, 255)
+	SetTextEdge(1, 0, 0, 0, 205)
+    if outline then SetTextOutline() end
+	BeginTextCommandDisplayText("STRING")
+	AddTextComponentSubstringPlayerName(text)
+	EndTextCommandDisplayText(position.width, position.height)
+end
+exports('DrawGenericText', MSK.DrawGenericText)
+RegisterNetEvent("msk_core:drawGenericText", MSK.DrawGenericText)
 
 MSK.HasItem = function(item)
     if Config.Framework == 'standalone' then 
-        return logging('error', ('Function %s can not used without Framework!'):format('MSK.HasItem'))
+        logging('error', ('Function %s can not used without Framework!'):format('MSK.HasItem'))
+        return
     end
 
     local hasItem = MSK.Trigger('msk_core:hasItem', item)
@@ -197,6 +226,38 @@ MSK.IsVehicleEmpty = function(vehicle)
 end
 exports('IsVehicleEmpty', MSK.IsVehicleEmpty)
 
+MSK.IsSpawnPointClear = function(coords, maxDistance)
+    local nearbyVehicles = {}
+
+    if coords then
+        coords = vector3(coords.x, coords.y, coords.z)
+    else
+        coords = GetEntityCoords(PlayerPedId())
+    end
+
+    for k, vehicle in pairs(GetGamePool('CVehicle')) do
+        local distance = #(coords - GetEntityCoords(vehicle))
+
+        if distance <= maxDistance then
+            nearbyVehicles[#nearbyVehicles + 1] = vehicle
+        end
+    end
+
+    return #nearbyVehicles == 0
+end
+exports('IsSpawnPointClear', MSK.IsSpawnPointClear)
+
+MSK.GetPedVehicleSeat = function(ped, vehicle)
+    if not ped then ped = PlayerPedId() end
+    if not vehicle then GetVehiclePedIsIn(ped, false) end
+    
+    for i = -1, 16 do
+        if (GetPedInVehicleSeat(vehicle, i) == ped) then return i end
+    end
+    return -1
+end
+exports('GetPedVehicleSeat', MSK.GetPedVehicleSeat)
+
 MSK.GetPedMugshot = function(ped, transparent)
     if not DoesEntityExist(ped) then return end
     local mugshot = transparent and RegisterPedheadshotTransparent(ped) or RegisterPedheadshot(ped)
@@ -220,6 +281,7 @@ end
 MSK.ProgressStart = MSK.Progressbar -- Support for old Scripts
 exports('Progressbar', MSK.Progressbar)
 exports('ProgressStart', MSK.Progressbar) -- Support for old Scripts
+RegisterNetEvent("msk_core:progressbar", MSK.Progressbar)
 
 MSK.ProgressStop = function()
     SendNUIMessage({
@@ -227,23 +289,26 @@ MSK.ProgressStop = function()
     })
 end
 exports('ProgressStop', MSK.ProgressStop)
+RegisterNetEvent("msk_core:progressbarStop", MSK.ProgressStop)
 
-RegisterNetEvent("msk_core:notification", function(title, message, typ, time)
-    MSK.Notification(title, message, typ, time)
-end)
+MSK.LoadAnimDict = function(dict)
+    if not HasAnimDictLoaded(dict) then
+        RequestAnimDict(dict)
 
-RegisterNetEvent('msk_core:advancedNotification', function(text, title, subtitle, icon, flash, icontype)
-    MSK.AdvancedNotification(text, title, subtitle, icon, flash, icontype)
-end)
+        while not HasAnimDictLoaded(dict) do
+            Wait(1)
+        end
+    end
+end
+exports('LoadAnimDict', MSK.LoadAnimDict)
 
-RegisterNetEvent("msk_core:scaleformNotification", function(title, message, typ, duration)
-    MSK.ScaleformAnnounce(title, message, typ, duration)
-end)
-
-RegisterNetEvent("msk_core:subtitle", function(message, duration)
-    MSK.Subtitle(message, duration)
-end)
-
-RegisterNetEvent("msk_core:spinner", function(text, typ, duration)
-    MSK.Spinner(text, typ, duration)
-end)
+MSK.LoadModel = function(modelHash)
+    if not HasModelLoaded(modelHash) then
+        RequestModel(modelHash)
+    
+        while not HasModelLoaded(modelHash) do
+            Wait(1)
+        end
+    end
+end
+exports('LoadModel', MSK.LoadModel)

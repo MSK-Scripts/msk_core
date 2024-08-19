@@ -41,6 +41,11 @@ MSK.CloseInput = function()
 end
 exports('CloseInput', MSK.CloseInput)
 exports('closeInput', MSK.CloseInput) -- Support for old Scripts
+RegisterNetEvent('msk_core:closeInput', MSK.CloseInput)
+
+MSK.Register('msk_core:input', function(source, header, placeholder, field)
+    return MSK.Input(header, placeholder, field)
+end)
 
 RegisterNUICallback('submitInput', function(data)
     if data.input == '' then data.input = nil end
