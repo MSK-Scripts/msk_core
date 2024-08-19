@@ -103,6 +103,7 @@ MSK.ClearTimeout = function(requestId)
     if not requestId then return end
     Timeouts[requestId] = true
 end
+MSK.DelTimeout = MSK.ClearTimeout -- Support for old Versions
 exports('ClearTimeout', MSK.ClearTimeout)
 exports('DelTimeout', MSK.ClearTimeout) -- Support for old Versions
 
