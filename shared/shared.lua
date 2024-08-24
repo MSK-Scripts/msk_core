@@ -5,6 +5,7 @@ for i = 65, 90 do table.insert(Charset, string.char(i)) end
 for i = 97, 122 do table.insert(Charset, string.char(i)) end
 
 MSK.GetRandomString = function(length)
+    assert(length, 'Parameter "length" is nil on function MSK.GetRandomString')
     math.randomseed(GetGameTimer())
 
 	return length > 0 and MSK.GetRandomString(length - 1) .. Charset[math.random(1, #Charset)] or ''
@@ -18,21 +19,34 @@ end
 exports('GetConfig', MSK.GetConfig)
 exports('getConfig', MSK.GetConfig) -- Support for old Versions
 
+MSK.StartsWith = function(str, startStr)
+    assert(str and type(str) == 'string', 'Parameter "str" has to be a string on function MSK.StartsWith')
+    assert(startStr and type(startStr) == 'string', 'Parameter "startStr" has to be a string on function MSK.StartsWith')
+    return str:sub(1, #startStr) == startStr
+end
+exports('StartsWith', MSK.StartsWith)
+
 MSK.Round = function(num, decimal)
+    assert(num and tonumber(num), 'Parameter "num" has to be a number on function MSK.Round')
+    assert(not decimal or decimal and tonumber(decimal), 'Parameter "decimal" has to be a number on function MSK.Round')
     return tonumber(string.format("%." .. (decimal or 0) .. "f", num))
 end
 exports('Round', MSK.Round)
 
 MSK.Trim = function(str, bool)
-    if bool then return (str:gsub("^%s*(.-)%s*$", "%1")) end
-    return (str:gsub("%s+", ""))
+    assert(str and tostring(str), 'Parameter "str" has to be a string on function MSK.Trim')
+    str = tostring(str)
+    if bool then return str:gsub("^%s*(.-)%s*$", "%1") end
+    return str:gsub("%s+", "")
 end
 exports('Trim', MSK.Trim)
 
 MSK.Split = function(str, delimiter)
+    assert(str and type(str) == 'string', 'Parameter "str" has to be a string on function MSK.Split')
+    assert(delimiter and type(delimiter) == 'string', 'Parameter "delimiter" has to be a string on function MSK.Split')
     local result = {}
     
-    for match in (s..delimiter):gmatch("(.-)"..delimiter) do 
+    for match in (str..delimiter):gmatch("(.-)"..delimiter) do 
         table.insert(result, match) 
     end 
 
@@ -41,8 +55,8 @@ end
 exports('Split', MSK.Split)
 
 MSK.TableContains = function(tbl, val)
-    if not tbl then return end
-    if not val then return end
+    assert(tbl and type(tbl) == 'table', 'Parameter "tbl" has to be a table on function MSK.TableContains')
+    assert(val, 'Parameter "val" is nil on function MSK.TableContains')
     
     if type(val) == 'table' then
         for k, v in pairs(tbl) do
@@ -65,6 +79,8 @@ MSK.Table_Contains = MSK.TableContains -- Support for old Versions
 exports('TableContains', MSK.TableContains)
 
 MSK.Comma = function(int, tag)
+    assert(int and tonumber(int), 'Parameter "int" has to be a number on function MSK.Comma')
+    assert(not tag or tag and type(tag) == 'string' and not tonumber(tag), 'Parameter "tag" has to be a string on function MSK.Comma')
     if not tag then tag = '.' end
     local newInt = int
 
@@ -82,6 +98,7 @@ exports('Comma', MSK.Comma)
 
 local Timeout = 0
 MSK.SetTimeout = function(ms, cb)
+    assert(ms and tonumber(ms), 'Parameter "ms" has to be a number on function MSK.SetTimeout')
     local requestId = Timeout + 1
 
     SetTimeout(ms, function()
@@ -100,7 +117,7 @@ MSK.AddTimeout = MSK.SetTimeout -- Support for old Versions
 exports('SetTimeout', MSK.SetTimeout)
 
 MSK.ClearTimeout = function(requestId)
-    if not requestId then return end
+    assert(requestId, 'Parameter "requestId" is nil on function MSK.ClearTimeout')
     Timeouts[requestId] = true
 end
 MSK.DelTimeout = MSK.ClearTimeout -- Support for old Versions
@@ -134,9 +151,10 @@ MSK.Logging = function(code, ...)
         local args = {...}
         table.remove(args, 1)
 
-        print(script, Config.LoggingTypes[action], ...)
+        print(('%s %s'):format(script, Config.LoggingTypes[action]), ...)
     else
-        print(script, Config.LoggingTypes[code], ...)
+        assert(code and type(code) == 'string', 'Parameter "code" has to be a string on function MSK.Logging')
+        print(('%s %s'):format(script, Config.LoggingTypes[code]), ...)
     end
 end
 MSK.logging = MSK.Logging -- Support for old Versions
@@ -144,5 +162,6 @@ exports('Logging', MSK.Logging)
 
 logging = function(code, ...)
     if not Config.Debug then return end
-    print(Config.LoggingTypes[code], ...)
+    local script = "[^2"..GetCurrentResourceName().."^0]"
+    print(('%s %s'):format(script, Config.LoggingTypes[code]), ...)
 end

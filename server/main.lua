@@ -341,7 +341,7 @@ GithubUpdater = function()
             elseif CurrentVersion ~= version then
                 print(resourceName .. '^1 ✗ Resource Outdated. Please Update!^0 - ^5Current Version: ^1' .. CurrentVersion .. '^0')
                 print('^5Latest Version: ^2' .. version .. '^0 - ^6Download here:^9 https://github.com/MSK-Scripts/msk_core/releases/tag/v'.. version .. '^0')
-				print('')
+
 				for i=1, #decoded do 
 					if decoded[i]['version'] == CurrentVersion then
 						break

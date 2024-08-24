@@ -172,7 +172,7 @@ MSK.DrawGenericText = function(text, outline, font, size, color, position)
     if not font then font = 0 end
     if not size then size = 0.34 end
     if not color then color = {r = 255, g = 255, b = 255, a = 255} end
-    if not position then position = {height = 0.90, width = 0.50} end
+    if not position then position = {width = 0.50, height = 0.90} end
 
 	SetTextColour(color.r, color.g, color.b, color.a)
 	SetTextFont(font)
@@ -218,7 +218,7 @@ end
 exports('GetVehicleInDirection', MSK.GetVehicleInDirection)
 
 MSK.IsVehicleEmpty = function(vehicle)
-    if not vehicle or (vehicle and not DoesEntityExist(vehicle)) then return end
+    assert(vehicle and DoesEntityExist(vehicle), 'Parameter "vehicle" is nil or the Vehicle does not exist')
     local passengers = GetVehicleNumberOfPassengers(vehicle)
     local driverSeatFree = IsVehicleSeatFree(vehicle, -1)
 
@@ -259,7 +259,7 @@ end
 exports('GetPedVehicleSeat', MSK.GetPedVehicleSeat)
 
 MSK.GetPedMugshot = function(ped, transparent)
-    if not DoesEntityExist(ped) then return end
+    assert(ped and DoesEntityExist(ped), 'Parameter "ped" is nil or the PlayerPed does not exist')
     local mugshot = transparent and RegisterPedheadshotTransparent(ped) or RegisterPedheadshot(ped)
 
     while not IsPedheadshotReady(mugshot) do
@@ -292,6 +292,8 @@ exports('ProgressStop', MSK.ProgressStop)
 RegisterNetEvent("msk_core:progressbarStop", MSK.ProgressStop)
 
 MSK.LoadAnimDict = function(dict)
+    assert(dict and DoesAnimDictExist(dict), 'Parameter "dict" is nil or the AnimDict does not exist')
+
     if not HasAnimDictLoaded(dict) then
         RequestAnimDict(dict)
 
@@ -303,6 +305,8 @@ end
 exports('LoadAnimDict', MSK.LoadAnimDict)
 
 MSK.LoadModel = function(modelHash)
+    assert(modelHash and IsModelValid(modelHash), 'Parameter "modelHash" is nil or the Model does not exist')
+
     if not HasModelLoaded(modelHash) then
         RequestModel(modelHash)
     
