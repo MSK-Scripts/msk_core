@@ -1,1 +1,1 @@
-MSK = exports.msk_core:getCoreObject()
+MSK = exports.msk_core:GetLib()

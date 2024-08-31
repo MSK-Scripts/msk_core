@@ -29,7 +29,6 @@ local display = function(data)
     local showDisplay = true
     local timeout = MSK.SetTimeout(60000, function()
         showDisplay = false
-        MSK.DelTimeout(timeout)
     end)
     local text = ('%s (ID: %s)\n%s'):format(data.playerName, data.playerId, data.reason)
 

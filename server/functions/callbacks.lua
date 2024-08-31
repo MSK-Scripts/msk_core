@@ -89,9 +89,9 @@ MSK.Register('msk_core:hasItem', function(source, item)
     local src = source
     local xPlayer
 
-    if Config.Framework:match('esx') then
+    if Config.Framework == 'ESX' then
         xPlayer = ESX.GetPlayerFromId(src)
-    elseif Config.Framework:match('qbcore') then
+    elseif Config.Framework == 'QBCore' then
         xPlayer = QBCore.Functions.GetPlayer(src)
     end
 

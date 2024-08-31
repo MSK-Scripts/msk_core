@@ -46,9 +46,9 @@ MSK.Split = function(str, delimiter)
     assert(delimiter and type(delimiter) == 'string', 'Parameter "delimiter" has to be a string on function MSK.Split')
     local result = {}
     
-    for match in (str..delimiter):gmatch("(.-)"..delimiter) do 
-        table.insert(result, match) 
-    end 
+    for match in str:gmatch("([^"..delimiter.."]+)") do
+		result[#result + 1] = match
+	end
 
     return result 
 end

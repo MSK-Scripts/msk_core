@@ -2,7 +2,7 @@ AddEventHandler('playerDropped', function(reason)
     -- Insert the Webook Link here
     local discordWebhookLink = ""
 
-    if not Config.AntiCombatlog.enable then return end
+    if not Config.DisconnectLogger.enable then return end
     local src = source
     local playerName = GetPlayerName(src)
     local coords = GetEntityCoords(GetPlayerPed(src))
@@ -25,8 +25,8 @@ AddEventHandler('playerDropped', function(reason)
         return typ .. ' not found'
     end
 
-    if Config.AntiCombatlog.console.enable then
-        local logText = Config.AntiCombatlog.console.text:format(
+    if Config.DisconnectLogger.console.enable then
+        local logText = Config.DisconnectLogger.console.text:format(
             playerName, 
             src, 
             time, 
@@ -40,20 +40,20 @@ AddEventHandler('playerDropped', function(reason)
         print(logText)
     end
 
-    if Config.AntiCombatlog.discord.enable then
+    if Config.DisconnectLogger.discord.enable then
         MSK.AddWebhook(
             discordWebhookLink, 
-            Config.AntiCombatlog.discord.color, 
-            Config.AntiCombatlog.discord.botName, 
-            Config.AntiCombatlog.discord.botAvatar, 
-            Config.AntiCombatlog.discord.title, 
-            Config.AntiCombatlog.discord.text:format(playerName, src),
+            Config.DisconnectLogger.discord.color, 
+            Config.DisconnectLogger.discord.botName, 
+            Config.DisconnectLogger.discord.botAvatar, 
+            Config.DisconnectLogger.discord.title, 
+            Config.DisconnectLogger.discord.text:format(playerName, src),
             {
                 {name = "Reason", value = ("%s"):format(reason), inline = false},
                 {name = "Coords", value = ("%s"):format(coords), inline = false},
                 {name = "Identifier", value = ("%s\n%s\n%s"):format(getIdentifier('steam:'), getIdentifier('license:'), getIdentifier('discord:')), inline = false},
             },
-            {text = ("© %s • %s"):format(Config.AntiCombatlog.discord.botName, time), link = Config.AntiCombatlog.discord.botAvatar}
+            {text = ("© %s • %s"):format(Config.DisconnectLogger.discord.botName, time), link = Config.DisconnectLogger.discord.botAvatar}
         )
     end
 end)
