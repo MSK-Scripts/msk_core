@@ -10,7 +10,7 @@ Config.Framework = 'AUTO'
 -- Supported Inventories: default, custom, ox_inventory
 -- Set to 'custom' if you use another inventory
 -- You can add your own inventory in: server/inventories/custom.lua
-Config.Inventory = 'default'
+Config.Inventory = 'ox_inventory'
 ----------------------------------------------------------------
 Config.showCoords = {
     enable = true,
@@ -48,6 +48,7 @@ Config.LoggingTypes = {
     ['error'] = '[^1ERROR^0]',
 }
 ----------------------------------------------------------------
+-- If enabled it will display a 3D Text on the position the player disconnected
 Config.DisconnectLogger = {
     enable = false, -- Set to true if you want to use this Feature
 
@@ -72,7 +73,7 @@ Config.DisconnectLogger = {
 ----------------------------------------------------------------
 -- For more Information go to: https://github.com/MSK-Scripts/msk_bansystem/blob/main/README.md
 Config.BanSystem = {
-    enable = false, -- Set to true if you want to use this Feature
+    enable = true, -- Set to true if you want to use this Feature
 
     discordLog = false, -- Set true to enable DiscordLogs // Add Webhook Link in server/functions/bansystem.lua
     botColor = "6205745", -- https://www.mathsisfun.com/hexadecimal-decimal-colors.html
@@ -80,7 +81,7 @@ Config.BanSystem = {
     botAvatar = "https://i.imgur.com/PizJGsh.png",
 
     commands = {
-        enable = true,
+        enable = false,
         groups = {'superadmin', 'admin', 'god'},
         ban = 'banPlayer',
         unbank = 'unbanPlayer'
