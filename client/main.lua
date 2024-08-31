@@ -42,7 +42,7 @@ if MSK.Bridge.Framework.Type == 'ESX' then
         TriggerServerEvent(MSK.Bridge.Framework.Events.setPlayerData)
     end)
 
-    RegisterNetEvent('esx:playerLoaded', function(xPlayer)
+    RegisterNetEvent('esx:playerLoaded', function(xPlayer, isNew, skin)
         MSK.Bridge.isPlayerLoaded = true
         TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, MSK.Bridge.Player)
     end)
@@ -94,3 +94,17 @@ GetLib = function()
 end
 exports('GetLib', GetLib)
 exports('getCoreObject', GetLib) -- Support for old Versions
+
+if Config.BanSystem.enable and Config.BanSystem.commands.enable then
+    CreateThread(function()
+        TriggerEvent('chat:addSuggestion', '/' .. Config.BanSystem.commands.ban, 'Ban a Player', {
+            {name = "targetId", help = "ServerId"},
+            {name = "time", help = "1M = 1 Minute / 1H = 1 Hour / 1D = 1 Day / 1W = 1 Week / P = Permanent"},
+            {name = "reason", help = "Reason"},
+        })
+
+        TriggerEvent('chat:addSuggestion', '/' .. Config.BanSystem.commands.unban, 'Unban a Player', {
+            {name = "banId", help = "BanId"}
+        })
+    end)
+end

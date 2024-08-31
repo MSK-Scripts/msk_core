@@ -84,6 +84,6 @@ Config.BanSystem = {
         enable = false,
         groups = {'superadmin', 'admin', 'god'},
         ban = 'banPlayer',
-        unbank = 'unbanPlayer'
+        unban = 'unbanPlayer'
     }
 }
