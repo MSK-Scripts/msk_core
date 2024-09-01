@@ -46,7 +46,7 @@ local GetPlayerData = function(Player)
 
     if MSK.Bridge.Inventory == 'ox_inventory' then
         Player = FunctionOverride(Player)
-    elseif MSK.Bridge.Inventory == 'default' then
+    elseif MSK.Bridge.Inventory == 'custom' then
         Player = FunctionOverride(Player)
     end
 
