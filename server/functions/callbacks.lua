@@ -86,14 +86,5 @@ end)
 -- Server Callbacks with Method [return]
 ----------------------------------------------------------------
 MSK.Register('msk_core:hasItem', function(source, item)
-    local src = source
-    local xPlayer
-
-    if Config.Framework == 'ESX' then
-        xPlayer = ESX.GetPlayerFromId(src)
-    elseif Config.Framework == 'QBCore' then
-        xPlayer = QBCore.Functions.GetPlayer(src)
-    end
-
-    return MSK.HasItem(xPlayer, item)
+    return MSK.HasItem(source, item)
 end)
