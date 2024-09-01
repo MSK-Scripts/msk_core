@@ -153,7 +153,7 @@ MSK.BanPlayer = function(playerId, targetId, time, reason)
 
             bannedPlayers[#bannedPlayers + 1] = {id = banId, ids = player, reason = reason, time = banTime, from = bannedby}
             banLog(playerId, bannedby, targetId, targetName, banTime, reason, json.encode(player), banId)
-            -- DropPlayer(targetId, ('Banned by %s for %s until %s. BanID: %s'):format(bannedby, reason, banTime, banId))
+            DropPlayer(targetId, ('Banned by %s for %s until %s. BanID: %s'):format(bannedby, reason, banTime, banId))
         end
     end)
 end
