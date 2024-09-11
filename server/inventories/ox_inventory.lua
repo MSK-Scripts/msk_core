@@ -1,6 +1,7 @@
 if MSK.Bridge.Inventory ~= 'ox_inventory' then return end
 
 FunctionOverride = function(Player)
+    if GetResourceState('ox_inventory') ~= 'started' then return Player end
     local playerId = MSK.GetServerId(Player)
     Player.inventory = exports.ox_inventory:GetInventoryItems(playerId)
     Player.loadout = Player.inventory

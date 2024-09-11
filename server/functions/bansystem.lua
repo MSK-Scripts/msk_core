@@ -45,12 +45,13 @@ AddEventHandler('onResourceStart', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
     if not Config.BanSystem.enable then return end    
     MySQL.query.await("CREATE TABLE IF NOT EXISTS msk_bansystem (`id` int(10) NOT NULL AUTO_INCREMENT, `ids` longtext DEFAULT NULL, `time` text NULL, `reason` text NOT NULL, `bannedby` varchar(80) NOT NULL, PRIMARY KEY (`id`));")
+    MySQL.query.await('ALTER TABLE msk_bansystem ADD COLUMN IF NOT EXISTS `tokens` longtext DEFAULT NULL;')
 
     local data = MySQL.query.await("SELECT * FROM msk_bansystem")
     if not data then return end
 
     for k, v in pairs(data) do
-        bannedPlayers[#bannedPlayers + 1] = {id = v.id, ids = json.decode(v.ids), reason = v.reason, time = v.time, from = v.bannedby}
+        bannedPlayers[#bannedPlayers + 1] = {id = v.id, ids = json.decode(v.ids), reason = v.reason, time = v.time, from = v.bannedby, tokens = json.decode(v.tokens)}
     end
 end)
 
@@ -60,8 +61,8 @@ AddEventHandler('playerConnecting', function(playerName, setKickReason, deferral
     local isBanned, expired = MSK.IsPlayerBanned(playerId)
 
     if isBanned and not expired then
-        CancelEvent() -- FiveM Native Function for cancelling the currently executing event
         setKickReason(('Banned by %s until %s for %s. BanID: %s'):format(isBanned.from, isBanned.time, isBanned.reason, isBanned.id))
+        CancelEvent() -- FiveM Native Function for cancelling the currently executing event
     elseif isBanned and expired then
         MSK.UnbanPlayer(nil, isBanned.id)
     end
@@ -85,8 +86,46 @@ local formatTime = function(time)
     return banTime, os.date('%d-%m-%Y %H:%M', banTime)
 end
 
+RegisterCommand('isBanned', function(source, args)
+    local isBanned, expired = MSK.IsPlayerBanned(source)
+    print('isBanned', isBanned, expired)
+end)
+
+local IsTokenMatching = function(token, tokens)
+    for i = 0, #tokens do
+        if tokens[i] == token then
+            return true
+        end
+    end
+    return false
+end
+
+local IsTokenBanned = function(playerId, banTokens)
+    local num = GetNumPlayerTokens(playerId)
+    local tokens = {}
+
+    for i = 0, num - 1 do
+        local playerToken = GetPlayerToken(playerId, i)
+
+        if IsTokenMatching(playerToken, banTokens) then
+            return true
+        end
+    end
+    return false
+end
+
+local IsIdBanned = function(player, playerIds)
+    for name, id in pairs(playerIds) do
+        if player[name] and player[name] == id then
+            return true
+        end
+    end
+    return false
+end
+
 MSK.IsPlayerBanned = function(playerId)
     local identifiers = GetPlayerIdentifiers(playerId)
+    local NumPlayerTokens = GetNumPlayerTokens(playerId)
     local player = {}
 
     player.name = GetPlayerName(playerId)
@@ -95,24 +134,22 @@ MSK.IsPlayerBanned = function(playerId)
     end
 
     for i = 1, #bannedPlayers do
-        local playerIds = bannedPlayers[i].ids
         local timeUntil = bannedPlayers[i].time
+        local isTokenBanned = IsTokenBanned(playerId, bannedPlayers[i].tokens, NumPlayerTokens)
+        local isIdBanned = IsIdBanned(player, bannedPlayers[i].ids)
 
-        for name, id in pairs(playerIds) do
-            if player[name] and player[name] == id then
-                local day, month, year, hour, minute = timeUntil:match("(%d+)-(%d+)-(%d+) (%d+):(%d+)")
-                local time = os.time({day = day, month = month, year = year, hour = hour, min = minute})
-                logging('debug', os.date('%d-%m-%Y %H:%M', os.time()), os.date('%d-%m-%Y %H:%M', time))
+        if isTokenBanned or isIdBanned then
+            local day, month, year, hour, minute = timeUntil:match("(%d+)-(%d+)-(%d+) (%d+):(%d+)")
+            local time = os.time({day = day, month = month, year = year, hour = hour, min = minute})
 
-                if os.time() > time then
-                    return bannedPlayers[i], true
-                end
-                return bannedPlayers[i], false
+            if os.time() > time then
+                return bannedPlayers[i], true
             end
+            return bannedPlayers[i], false
         end
     end
 
-    return false
+    return false, true
 end
 exports('IsPlayerBanned', MSK.IsPlayerBanned)
 exports('isPlayerBanned', MSK.IsPlayerBanned) -- Support for old Version
@@ -127,21 +164,27 @@ MSK.BanPlayer = function(playerId, targetId, time, reason)
 
     local identifiers = GetPlayerIdentifiers(targetId)
     local timestamp, banTime = formatTime(time)
-    local player = {}
+    local player, tokens = {}, {}
 
     player.name = targetName
     for k, v in pairs(identifiers) do
         player[MSK.Split(v, ':')[1]] = v
     end
 
+    local num = GetNumPlayerTokens(targetId)
+    for i = 0, num - 1 do
+        tokens[#tokens + 1] = GetPlayerToken(targetId, i)
+    end
+
     local bannedby = 'System'
     if playerId then bannedby = GetPlayerName(playerId) end
 
-    MySQL.query('INSERT INTO msk_bansystem (ids, time, reason, bannedby) VALUES (@ids, @time, @reason, @bannedby)', { 
+    MySQL.query('INSERT INTO msk_bansystem (ids, time, reason, bannedby, tokens) VALUES (@ids, @time, @reason, @bannedby, @tokens)', { 
         ['@ids'] = json.encode(player),
         ['@time'] = banTime,
         ['@reason'] = reason,
-        ['@bannedby'] = bannedby
+        ['@bannedby'] = bannedby,
+        ['@tokens'] = json.encode(tokens)
     }, function(response)
         if response then
             local banId = tonumber(response.insertId)
@@ -151,7 +194,7 @@ MSK.BanPlayer = function(playerId, targetId, time, reason)
                 MSK.Notification(playerId, 'MSK Bansystem', ('Player with ID ~y~%s~s~ was banned until ~y~%s~s~ for Reason ~y~%s~s~. BanID: ~y~%s~s~'):format(targetId, banTime, reason, banId)) 
             end
 
-            bannedPlayers[#bannedPlayers + 1] = {id = banId, ids = player, reason = reason, time = banTime, from = bannedby}
+            bannedPlayers[#bannedPlayers + 1] = {id = banId, ids = player, reason = reason, time = banTime, from = bannedby, tokens = tokens}
             banLog(playerId, bannedby, targetId, targetName, banTime, reason, json.encode(player), banId)
             DropPlayer(targetId, ('Banned by %s for %s until %s. BanID: %s'):format(bannedby, reason, banTime, banId))
         end

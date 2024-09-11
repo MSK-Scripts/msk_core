@@ -10,7 +10,7 @@ Config.Framework = 'AUTO'
 -- Supported Inventories: default, custom, ox_inventory
 -- Set to 'custom' if you use another inventory
 -- You can add your own inventory in: server/inventories/custom.lua
-Config.Inventory = 'ox_inventory'
+Config.Inventory = 'default'
 ----------------------------------------------------------------
 Config.showCoords = {
     enable = true,

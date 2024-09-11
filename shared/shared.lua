@@ -134,7 +134,6 @@ MSK.DumpTable = function(tbl, n)
         for i = 1, n, 1 do s = s .. "    " end
         s = s .. '    ['..k..'] = ' .. MSK.DumpTable(v, n + 1) .. ',\n'
     end
-
     for i = 1, n, 1 do s = s .. "    " end
 
     return s .. '}'
@@ -142,26 +141,16 @@ end
 exports('DumpTable', MSK.DumpTable)
 
 MSK.Logging = function(code, ...)
-    local script = "[^2"..GetInvokingResource().."^0]"
-
-    if not MSK.TableContains({'error', 'debug', 'info'}, code) then
-        -- Support for old Versions
-        script = code
-        local action = ...
-        local args = {...}
-        table.remove(args, 1)
-
-        print(('%s %s'):format(script, Config.LoggingTypes[action]), ...)
-    else
-        assert(code and type(code) == 'string', 'Parameter "code" has to be a string on function MSK.Logging')
-        print(('%s %s'):format(script, Config.LoggingTypes[code]), ...)
-    end
+    assert(code and type(code) == 'string', 'Parameter "code" has to be a string on function MSK.Logging')
+    local script = ('[^2%s^0]'):format(GetInvokingResource() or 'msk_core')
+    print(('%s %s'):format(script, Config.LoggingTypes[code] or Config.LoggingTypes['debug']), ...)
 end
 MSK.logging = MSK.Logging -- Support for old Versions
 exports('Logging', MSK.Logging)
 
 logging = function(code, ...)
     if not Config.Debug then return end
-    local script = "[^2"..GetCurrentResourceName().."^0]"
+    assert(code and type(code) == 'string', 'Parameter "code" has to be a string on function MSK.Logging')
+    local script = ('[^2%s^0]'):format(GetCurrentResourceName())
     print(('%s %s'):format(script, Config.LoggingTypes[code]), ...)
 end

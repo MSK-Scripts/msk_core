@@ -88,3 +88,11 @@ end)
 MSK.Register('msk_core:hasItem', function(source, item)
     return MSK.HasItem(source, item)
 end)
+
+----------------------------------------------------------------
+-- Server Callbacks with Method [cb]
+----------------------------------------------------------------
+MSK.Register('msk_core:ThisIsATest', function(source, cb, param1, param2, param3)
+    cb(param1, param2, param3)
+    print(param1, param2, param3)
+end)
