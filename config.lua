@@ -7,7 +7,7 @@ Config.VersionChecker = true
 -- AUTO will search for your framework
 Config.Framework = 'AUTO'
 
--- Supported Inventories: default, custom, ox_inventory
+-- Supported Inventories: default, custom, ox_inventory, qs-inventory
 -- Set to 'custom' if you use another inventory
 -- You can add your own inventory in: server/inventories/custom.lua
 Config.Inventory = 'default'

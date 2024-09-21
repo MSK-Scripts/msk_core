@@ -30,6 +30,9 @@ GetPlayerData = function()
     if MSK.Bridge.Inventory == 'ox_inventory' then
         self.inventory = exports.ox_inventory:GetPlayerItems()
         self.loadout = self.inventory
+    elseif MSK.Bridge.Inventory == 'qs-inventory' then
+        self.inventory = exports['qs-inventory']:getUserInventory()
+        self.loadout = self.inventory
     end
 
     self.Notification = function(title, message, typ, duration)

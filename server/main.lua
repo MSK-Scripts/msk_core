@@ -8,20 +8,17 @@ MSK.Bridge.Framework.Events = {
     setJob = 'msk_core:setJob',
 }
 
-MSK.Bridge.Inventory = Config.Inventory
-if GetResourceState('ox_inventory') ~= 'missing' then
-    MSK.Bridge.Inventory = 'ox_inventory'
-end
-
 if Config.Framework == 'AUTO' then
     if GetResourceState('es_extended') ~= 'missing' then
         ESX = exports["es_extended"]:getSharedObject()
         MSK.Bridge.Framework.Type = 'ESX'
         MSK.Bridge.Framework.Core = ESX
+        print(('[^2%s^0] [^4Info^0] Framework ^3ESX^0 found'):format(GetCurrentResourceName()))
     elseif GetResourceState('qb-core') ~= 'missing' then
         QBCore = exports['qb-core']:GetCoreObject()
         MSK.Bridge.Framework.Type = 'QBCore'
         MSK.Bridge.Framework.Core = QBCore
+        print(('[^2%s^0] [^4Info^0] Framework ^3QBCore^0 found'):format(GetCurrentResourceName()))
     end
 elseif Config.Framework == 'ESX' then
     ESX = exports["es_extended"]:getSharedObject()
@@ -31,6 +28,15 @@ elseif Config.Framework == 'QBCore' then
     QBCore = exports['qb-core']:GetCoreObject()
     MSK.Bridge.Framework.Type = 'QBCore'
     MSK.Bridge.Framework.Core = QBCore
+end
+
+MSK.Bridge.Inventory = Config.Inventory
+if GetResourceState('ox_inventory') ~= 'missing' then
+    MSK.Bridge.Inventory = 'ox_inventory'
+    print(('[^2%s^0] [^4Info^0] Inventory ^3ox_inventory^0 found'):format(GetCurrentResourceName()))
+elseif GetResourceState('qs-inventory') ~= 'missing' then
+    MSK.Bridge.Inventory = 'qs-inventory'
+    print(('[^2%s^0] [^4Info^0] Inventory ^3qs-inventory^0 found'):format(GetCurrentResourceName()))
 end
 
 if MSK.Bridge.Framework.Type == 'ESX' then

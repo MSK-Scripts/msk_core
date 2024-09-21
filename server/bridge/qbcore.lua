@@ -53,9 +53,7 @@ GetPlayerData = function(Player)
         return Player.accounts[account:lower()]
     end
 
-    if MSK.Bridge.Inventory == 'ox_inventory' then
-        Player = FunctionOverride(Player)
-    elseif MSK.Bridge.Inventory == 'custom' then
+    if MSK.Bridge.Inventory ~= 'default' then
         Player = FunctionOverride(Player)
     end
 

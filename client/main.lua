@@ -9,13 +9,6 @@ MSK.Bridge.Framework.Events = {
     onPlayerDeath = 'msk_core:onPlayerDeath',
 }
 
-MSK.Bridge.Inventory = Config.Inventory
-if GetResourceState('ox_inventory') ~= 'missing' then
-    MSK.Bridge.Inventory = 'ox_inventory'
-end
-
-MSK.Bridge.isPlayerLoaded = false
-
 if Config.Framework == 'AUTO' then
     if GetResourceState('es_extended') ~= 'missing' then
         ESX = exports["es_extended"]:getSharedObject()
@@ -35,6 +28,15 @@ elseif Config.Framework == 'QBCore' then
     MSK.Bridge.Framework.Type = 'QBCore'
     MSK.Bridge.Framework.Core = QBCore
 end
+
+MSK.Bridge.Inventory = Config.Inventory
+if GetResourceState('ox_inventory') ~= 'missing' then
+    MSK.Bridge.Inventory = 'ox_inventory'
+elseif GetResourceState('qs-inventory') ~= 'missing' then
+    MSK.Bridge.Inventory = 'qs-inventory'
+end
+
+MSK.Bridge.isPlayerLoaded = false
 
 if MSK.Bridge.Framework.Type == 'ESX' then
     RegisterNetEvent('esx:setPlayerData', function(key, val)

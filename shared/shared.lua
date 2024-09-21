@@ -97,7 +97,7 @@ end
 exports('Comma', MSK.Comma)
 
 local Timeout = 0
-MSK.SetTimeout = function(ms, cb)
+MSK.SetTimeout = function(ms, cb, data)
     assert(ms and tonumber(ms), 'Parameter "ms" has to be a number on function MSK.SetTimeout')
     local requestId = Timeout + 1
 
@@ -107,7 +107,7 @@ MSK.SetTimeout = function(ms, cb)
             return 
         end
 
-        cb()
+        cb(data)
     end)
 
     Timeout = requestId
