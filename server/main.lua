@@ -13,13 +13,12 @@ if Config.Framework == 'AUTO' then
         ESX = exports["es_extended"]:getSharedObject()
         MSK.Bridge.Framework.Type = 'ESX'
         MSK.Bridge.Framework.Core = ESX
-        print(('[^2%s^0] [^4Info^0] Framework ^3ESX^0 found'):format(GetCurrentResourceName()))
     elseif GetResourceState('qb-core') ~= 'missing' then
         QBCore = exports['qb-core']:GetCoreObject()
         MSK.Bridge.Framework.Type = 'QBCore'
         MSK.Bridge.Framework.Core = QBCore
-        print(('[^2%s^0] [^4Info^0] Framework ^3QBCore^0 found'):format(GetCurrentResourceName()))
     end
+    print(('[^2%s^0] [^4Info^0] Framework ^3%s^0 found'):format(GetCurrentResourceName(), MSK.Bridge.Framework.Type))
 elseif Config.Framework == 'ESX' then
     ESX = exports["es_extended"]:getSharedObject()
     MSK.Bridge.Framework.Type = 'ESX'

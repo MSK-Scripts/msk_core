@@ -8,7 +8,7 @@ AddEventHandler('playerDropped', function(reason)
     local coords = GetEntityCoords(GetPlayerPed(src))
     local time = os.date('%d.%m.%Y %H:%M', os.time())
 
-	TriggerClientEvent('msk_core:anticombatlog', -1, {
+	TriggerClientEvent('msk_core:discLogger', -1, {
         playerId = src,
         playerName = playerName,
         coords = coords,

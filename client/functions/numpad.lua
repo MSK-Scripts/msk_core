@@ -1,9 +1,10 @@
+MSK.Numpad = {}
+
 local isNumpadOpen = false
 local callback = nil
 
-MSK.Numpad = function(pin, show, cb)
+MSK.Numpad.Open = function(pin, show, cb)
     if isNumpadOpen then return end
-    logging('debug', 'MSK.Numpad')
     isNumpadOpen = true
     callback = cb
     
@@ -28,10 +29,17 @@ MSK.Numpad = function(pin, show, cb)
         return result
     end
 end
-exports('Numpad', MSK.Numpad)
+exports('Numpad', MSK.Numpad.Open)
 
-MSK.CloseNumpad = function()
-    logging('debug', 'MSK.CloseNumpad')
+-- Support for old Scripts
+setmetatable(MSK.Numpad, {
+    __call = function(_, pin, show, cb)
+        -- Ruft MSK.Numpad.Open auf, wenn MSK.Numpad() aufgerufen wird
+        return MSK.Numpad.Open(pin, show, cb)
+    end
+})
+
+MSK.Numpad.Close = function()
     isNumpadOpen = false
     callback = nil
     SetNuiFocus(false, false)
@@ -39,24 +47,25 @@ MSK.CloseNumpad = function()
         action = 'closeNumpad'
     })
 end
-exports('CloseNumpad', MSK.CloseNumpad)
-RegisterNetEvent('msk_core:closeNumpad', MSK.CloseNumpad)
+MSK.CloseNumpad = MSK.Numpad.Close
+exports('CloseNumpad', MSK.Numpad.Close)
+RegisterNetEvent('msk_core:closeNumpad', MSK.Numpad.Close)
 
 MSK.Register('msk_core:numpad', function(source, pin, show)
-    return MSK.Numpad(pin, show)
+    return MSK.Numpad.Open(pin, show)
 end)
 
 RegisterNUICallback('submitNumpad', function(data)
     callback(true)
-    MSK.CloseNumpad()
+    MSK.Numpad.Close()
 end)
 
 RegisterNUICallback('closeNumpad', function()
-    MSK.CloseNumpad()
+    MSK.Numpad.Close()
 end)
 
 AddEventHandler('onResourceStop', function(resource)
     if GetCurrentResourceName() ~= resource then return end
-    MSK.CloseNumpad()
+    MSK.Numpad.Close()
 end)
   

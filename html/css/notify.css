@@ -20,7 +20,7 @@
       rgba(56, 56, 56, 0.4), 1.0vh,
       rgba(56, 56, 56, 0.4) 2.0vh
     );
-    background-color:rgba(0, 0, 0, 0);
+    background-color: rgb(0, 0, 0);
     border-radius:0.6vh;
     box-shadow:0vh 0vh 2vh 0vh rgba(0, 0, 0, 0.8) inset;
 }

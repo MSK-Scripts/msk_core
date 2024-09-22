@@ -1,19 +1,32 @@
+MSK.Coords = {}
+
 local showCoords = false
 
-MSK.ShowCoords = function()
-	showCoords = not showCoords
-
+MSK.Coords.Show = function()
 	if showCoords then
-		CreateThread(startShowCoordsThread)
+		showCoords = false
+		return
 	end
-end
-exports('ShowCoords', MSK.ShowCoords)
-RegisterNetEvent('msk_core:showCoords', MSK.ShowCoords)
 
-MSK.DoesShowCoords = function()
+	showCoords = true
+	CreateThread(startShowCoordsThread)
+end
+MSK.ShowCoords = MSK.Coords.Show -- Support for old Scripts
+exports('ShowCoords', MSK.Coords.Show)
+RegisterNetEvent('msk_core:showCoords', MSK.Coords.Show)
+
+MSK.Coords.Active = function()
 	return showCoords
 end
-exports('DoesShowCoords', MSK.DoesShowCoords)
+MSK.DoesShowCoords = MSK.Coords.Active -- Support for old Scripts
+exports('CoordsActive', MSK.Coords.Active)
+exports('DoesShowCoords', MSK.Coords.Active) -- Support for old Scripts
+
+MSK.Coords.Hide = function()
+	showCoords = false
+end
+exports('HideCoords', MSK.Coords.Hide)
+RegisterNetEvent('msk_core:hideCoords', MSK.Coords.Hide)
 
 MSK.Register('msk_core:doesShowCoords', function(source)
 	return showCoords
@@ -39,7 +52,7 @@ startShowCoordsThread = function()
 		local playerX, playerY, playerZ = table.unpack(GetEntityCoords(playerPed))
 		local playerH = GetEntityHeading(playerPed)
 
-		DrawGenericText(("~g~X~w~ = ~r~%s ~g~Y~w~ = ~r~%s ~g~Z~w~ = ~r~%s ~g~H~w~ = ~r~%s~s~"):format(MSK.Round(playerX, 2), MSK.Round(playerY, 2), MSK.Round(playerZ, 2), MSK.Round(playerH, 2)))
+		DrawGenericText(("~g~X~w~ = ~r~%s ~g~Y~w~ = ~r~%s ~g~Z~w~ = ~r~%s ~g~H~w~ = ~r~%s~s~"):format(MSK.Math.Round(playerX, 2), MSK.Math.Round(playerY, 2), MSK.Math.Round(playerZ, 2), MSK.Math.Round(playerH, 2)))
 
 		Wait(sleep)
 	end

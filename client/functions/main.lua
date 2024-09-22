@@ -167,32 +167,6 @@ MSK.HasItem = function(item)
 end
 exports('HasItem', MSK.HasItem)
 
-MSK.GetVehicleInDirection = function()
-    local playerPed = PlayerPedId()
-    local playerCoords = GetEntityCoords(playerPed)
-    local inDirection = GetOffsetFromEntityInWorldCoords(playerPed, 0.0, 5.0, 0.0)
-    local rayHandle = StartExpensiveSynchronousShapeTestLosProbe(playerCoords, inDirection, 10, playerPed, 0)
-    local numRayHandle, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
-
-    if hit == 1 and GetEntityType(entityHit) == 2 then
-        local entityCoords = GetEntityCoords(entityHit)
-        local entityDistance = #(playerCoords - entityCoords)
-        return entityHit, entityCoords, entityDistance
-    end
-
-    return nil
-end
-exports('GetVehicleInDirection', MSK.GetVehicleInDirection)
-
-MSK.IsVehicleEmpty = function(vehicle)
-    assert(vehicle and DoesEntityExist(vehicle), 'Parameter "vehicle" is nil or the Vehicle does not exist')
-    local passengers = GetVehicleNumberOfPassengers(vehicle)
-    local driverSeatFree = IsVehicleSeatFree(vehicle, -1)
-
-    return passengers == 0 and driverSeatFree
-end
-exports('IsVehicleEmpty', MSK.IsVehicleEmpty)
-
 MSK.IsSpawnPointClear = function(coords, maxDistance)
     local nearbyVehicles = {}
 
@@ -213,17 +187,6 @@ MSK.IsSpawnPointClear = function(coords, maxDistance)
     return #nearbyVehicles == 0
 end
 exports('IsSpawnPointClear', MSK.IsSpawnPointClear)
-
-MSK.GetPedVehicleSeat = function(ped, vehicle)
-    if not ped then ped = PlayerPedId() end
-    if not vehicle then GetVehiclePedIsIn(ped, false) end
-    
-    for i = -1, 16 do
-        if (GetPedInVehicleSeat(vehicle, i) == ped) then return i end
-    end
-    return -1
-end
-exports('GetPedVehicleSeat', MSK.GetPedVehicleSeat)
 
 MSK.GetPedMugshot = function(ped, transparent)
     assert(ped and DoesEntityExist(ped), 'Parameter "ped" is nil or the PlayerPed does not exist')
@@ -283,3 +246,13 @@ MSK.LoadModel = function(modelHash)
     end
 end
 exports('LoadModel', MSK.LoadModel)
+
+MSK.GetClosestPlayer = function(coords)
+    return GetClosestEntity(true, coords)
+end
+exports('GetClosestPlayer', MSK.GetClosestPlayer)
+
+MSK.GetClosestPlayers = function(coords, distance)
+    return GetClosestEntities(true, coords, distance)
+end
+exports('GetClosestPlayers', MSK.GetClosestPlayers)

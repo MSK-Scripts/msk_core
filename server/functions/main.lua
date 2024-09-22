@@ -105,16 +105,15 @@ MSK.IsSpawnPointClear = function(coords, maxDistance)
 end
 exports('IsSpawnPointClear', MSK.IsSpawnPointClear)
 
-MSK.GetPedVehicleSeat = function(ped, vehicle)
-    if not ped then return end
-    if not vehicle then GetVehiclePedIsIn(ped, false) end
-    
-    for i = -1, 16 do
-        if (GetPedInVehicleSeat(vehicle, i) == ped) then return i end
-    end
-    return -1
+MSK.GetClosestPlayer = function(playerId, coords)
+    return GetClosestEntity(playerId, coords)
 end
-exports('GetPedVehicleSeat', MSK.GetPedVehicleSeat)
+exports('GetClosestPlayer', MSK.GetClosestPlayer)
+
+MSK.GetClosestPlayers = function(playerId, coords, distance)
+    return GetClosestEntities(playerId, coords, distance)
+end
+exports('GetClosestPlayers', MSK.GetClosestPlayers)
 
 MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
     local content = {}
@@ -186,12 +185,10 @@ MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)
     end
 
     if RegisteredCommands[name] then
-        logging('debug', ('Command ^3%s^0 is already registerd. Overriding Command...'):format(name))
+        logging('info', ('Command ^3%s^0 is already registerd. Overriding Command...'):format(name))
     end
     
-    local added = addChatSuggestions(name, suggestion)
-    while not added do Wait(1) end
-    
+    addChatSuggestions(name, suggestion)    
     RegisteredCommands[name] = {group = group, cb = cb, console = console, suggestion = suggestion}
 
     RegisterCommand(name, function(source, args, rawCommand)
@@ -201,40 +198,73 @@ MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)
         if not Command.console and source == 0 then 
             logging('error', 'You can not run this Command in Server Console!')
         else
-            if Command.suggestion and Command.suggestion.arguments then 
-                local newArgs = {}
-
-                for k, v in ipairs(Command.suggestion.arguments) do 
-                    if v.action == 'number' then
-                        if args[k] then
-                            if tonumber(args[k]) then
-                                newArgs[v.name] = args[k]
-                            else
-                                error = ('Argument %s is not a number!'):format(v.name)
-                            end
-                        end
-                    elseif v.action == 'playerId' then
-                        if args[k] then
-                            local targetId = args[k]
-                            if targetId == 'me' then targetId = source end
-
-                            if tonumber(targetId) > 0 and doesPlayerIdExist(targetId) then
-                                newArgs[v.name] = targetId
-                            else
-                                error = ('PlayerId %s does not exist!'):format(targetId)
-                            end
-                        end
-                    else
-                        newArgs[v.name] = args[k]
+            if Command.suggestion then 
+                if Command.suggestion.validate or Command.suggestion.val then
+                    if not Command.suggestion.arguments or #args ~= #Command.suggestion.arguments then
+                        error = ('Invalid Argument Count (passed %s, wanted %s)'):format(#args, #Command.suggestion.arguments)
                     end
-
-                    if not error and not newArgs[v.name] and v.val then 
-                        error = ('Argument Mismatch with Argument %s'):format(v.name)
-                    end
-                    if error then break end
                 end
 
-                args = newArgs
+                if not error and Command.suggestion.arguments then
+                    local newArgs = {}
+
+                    for k, v in ipairs(Command.suggestion.arguments) do
+                        local action = v.action or v.type
+                        
+                        if action then
+                            if action == 'number' then
+                                local newArg = tonumber(args[k])
+
+                                if newArg then
+									newArgs[v.name] = newArg
+								else
+									error = ('Invalid Argument %s data type (passed string, wanted number)'):format(v.name)
+								end
+                            elseif action == 'string' then
+                                local newArg = tonumber(args[k])
+
+                                if not newArg then
+									newArgs[v.name] = args[k]
+								else
+									error = ('Invalid Argument %s data type (passed number, wanted string)'):format(v.name)
+								end
+                            elseif action == 'playerId' or action == 'player' then
+                                local targetId = tonumber(targetId)
+                                if args[k] == 'me' then targetId = source end
+
+                                if targetId and doesPlayerIdExist(targetId) then
+                                    if action == 'player' then
+                                        if (MSK.Bridge.Framework.Type == 'ESX' or MSK.Bridge.Framework.Type == 'QBCore') then
+                                            local Player = MSK.GetPlayer({source = targetId})
+
+                                            if Player then
+                                                newArgs[v.name] = Player
+                                            else
+                                                error = ('Specified Player (ID: %s) is not online'):format(targetId)
+                                            end
+                                        else
+                                            error = ('Specified Player not found on Argument %s (Framework not compatible)'):format(v.name)
+                                        end
+                                    else
+                                        newArgs[v.name] = targetId
+                                    end
+                                else
+                                    error = ('Specified PlayerId %s is not online'):format(targetId)
+                                end
+                            else
+                                newArgs[v.name] = args[k]
+                            end
+                        end
+
+                        -- Backwards compatibility
+                        if not error and not newArgs[v.name] and v.val then 
+                            error = ('Invalid Argument Count (passed %s, wanted %s)'):format(#args, #Command.suggestion.arguments)
+                        end
+                        if error then break end
+                    end
+
+                    args = newArgs
+                end
             end
 
             if error then
@@ -244,7 +274,7 @@ MSK.RegisterCommand = function(name, group, cb, console, framework, suggestion)
                     MSK.Notification(source, error)
                 end
             else
-                if Config.Framework ~= 'Standalone' and framework then
+                if framework and (MSK.Bridge.Framework.Type == 'ESX' or MSK.Bridge.Framework.Type == 'QBCore') then
                     local Player = MSK.GetPlayer({source = source})
                     cb(Player, args, rawCommand)
                 else
@@ -286,6 +316,4 @@ addChatSuggestions = function(name, suggestion)
     
         TriggerClientEvent('chat:addSuggestion', -1, '/' .. name, suggestion.help, suggestion.arguments)
     end
-
-    return true
 end

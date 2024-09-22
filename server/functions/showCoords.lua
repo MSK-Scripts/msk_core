@@ -1,16 +1,27 @@
+MSK.Coords = {}
+
 if Config.showCoords.enable then
 	MSK.RegisterCommand(Config.showCoords.command, Config.showCoords.groups, function(source, args, rawCommand)
-		MSK.ShowCoords(source)
+		MSK.Coords.Show(source)
 	end, false --[[console]], false --[[framework]], {help = 'Show your own Coords'})
 end
 
-MSK.ShowCoords = function(src)
-	TriggerClientEvent('msk_core:showCoords', src)
+MSK.Coords.Show = function(playerId)
+	if not playerId or playerId == 0 then return end
+	TriggerClientEvent('msk_core:showCoords', playerId)
 end
-exports('ShowCoords', MSK.ShowCoords)
+MSK.ShowCoords = MSK.Coords.Show -- Support for old Scripts
+exports('ShowCoords', MSK.Coords.Show)
 
-MSK.DoesShowCoords = function(src)
-	if not src or src == 0 then return end
-	return MSK.Trigger('msk_core:doesShowCoords', src)
+MSK.Coords.Active = function(playerId)
+	if not playerId or playerId == 0 then return end
+	return MSK.Trigger('msk_core:doesShowCoords', playerId)
 end
-exports('DoesShowCoords', MSK.DoesShowCoords)
+MSK.DoesShowCoords = MSK.Coords.Active -- Support for old Scripts
+exports('DoesShowCoords', MSK.Coords.Active)
+
+MSK.Coords.Hide = function(playerId)
+	if not playerId or playerId == 0 then return end
+	TriggerClientEvent('msk_core:hideCoords', playerId)
+end
+exports('HideCoords', MSK.Coords.Hide)

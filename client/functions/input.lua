@@ -1,9 +1,10 @@
+MSK.Input = {}
+
 local isInputOpen = false
 local callback = nil
 
-MSK.Input = function(header, placeholder, field, cb)
+MSK.Input.Open = function(header, placeholder, field, cb)
     if isInputOpen then return end
-    logging('debug', 'MSK.Input')
     isInputOpen = true
     callback = cb
     if not callback then callback = field end
@@ -27,11 +28,17 @@ MSK.Input = function(header, placeholder, field, cb)
         return result
     end
 end
-exports('Input', MSK.Input)
-exports('openInput', MSK.Input) -- Support for old Scripts
+exports('Input', MSK.Input.Open)
+exports('openInput', MSK.Input.Open) -- Support for old Scripts
 
-MSK.CloseInput = function()
-    logging('debug', 'MSK.CloseInput')
+-- Support for old Scripts
+setmetatable(MSK.Input, {
+    __call = function(_, header, placeholder, field, cb)
+        return MSK.Input.Open(header, placeholder, field, cb)
+    end
+})
+
+MSK.Input.Close = function()
 	isInputOpen = false
     callback = nil
     SetNuiFocus(false, false)
@@ -39,26 +46,26 @@ MSK.CloseInput = function()
         action = 'closeInput'
     })
 end
-exports('CloseInput', MSK.CloseInput)
-exports('closeInput', MSK.CloseInput) -- Support for old Scripts
-RegisterNetEvent('msk_core:closeInput', MSK.CloseInput)
+MSK.CloseInput = MSK.Input.Close -- Support for old Scripts
+exports('CloseInput', MSK.Input.Close)
+RegisterNetEvent('msk_core:closeInput', MSK.Input.Close)
 
 MSK.Register('msk_core:input', function(source, header, placeholder, field)
-    return MSK.Input(header, placeholder, field)
+    return MSK.Input.Open(header, placeholder, field)
 end)
 
 RegisterNUICallback('submitInput', function(data)
     if data.input == '' then data.input = nil end
     if tonumber(data.input) then data.input = tonumber(data.input) end
 	callback(data.input)
-    MSK.CloseInput()
+    MSK.Input.Close()
 end)
 
 RegisterNUICallback('closeInput', function(data)
-    MSK.CloseInput()
+    MSK.Input.Close()
 end)
 
 AddEventHandler('onResourceStop', function(resource)
     if GetCurrentResourceName() ~= resource then return end
-    MSK.CloseInput()
+    MSK.Input.Close()
 end)

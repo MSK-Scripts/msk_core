@@ -57,11 +57,6 @@ if MSK.Bridge.Framework.Type == 'ESX' then
     RegisterNetEvent('esx:setJob', function(newJob, lastJob)
         TriggerEvent(MSK.Bridge.Framework.Events.setJob, MSK.Bridge.Player, newJob, lastJob)
     end)
-
-    RegisterNetEvent('esx:onPlayerDeath', function()
-        TriggerEvent(MSK.Bridge.Framework.Events.onPlayerDeath, MSK.Bridge.Player)
-        TriggerServerEvent(MSK.Bridge.Framework.Events.onPlayerDeath)
-    end)
 elseif MSK.Bridge.Framework.Type == 'QBCore' then
     RegisterNetEvent('QBCore:Player:SetPlayerData', function(PlayerData)
         TriggerEvent(MSK.Bridge.Framework.Events.setPlayerData, MSK.Bridge.Player)
@@ -83,11 +78,6 @@ elseif MSK.Bridge.Framework.Type == 'QBCore' then
     RegisterNetEvent('QBCore:Client:OnJobUpdate', function(newJob)
         TriggerEvent(MSK.Bridge.Framework.Events.setJob, MSK.Bridge.Player, newJob)
         TriggerServerEvent(MSK.Bridge.Framework.Events.playerLogout, newJob)
-    end)
-
-    RegisterNetEvent('QBCore:Client:OnPlayerDeath', function()
-        TriggerEvent(MSK.Bridge.Framework.Events.onPlayerDeath, MSK.Bridge.Player)
-        TriggerServerEvent(MSK.Bridge.Framework.Events.onPlayerDeath)
     end)
 end
 

@@ -39,8 +39,8 @@ local CheckVersionCallback = function(status, response, header)
         return 
     end
 
-    local current = MSK.Split(currentVersion, '.')
-	local latest = MSK.Split(latestVersion, '.')
+    local current = MSK.String.Split(currentVersion, '.')
+	local latest = MSK.String.Split(latestVersion, '.')
 
     for i = 1, #current do
         if current[i] > latest[i] then

@@ -31,7 +31,7 @@ FunctionOverride = function(Player)
     end
 
     Player.AddWeapon = function(weapon, count, metadata, slot)
-        exports.ox_inventory:AddItem(playerId, weapon, count or 1, metadata, slot)
+        exports.ox_inventory:AddItem(playerId, weapon, 1, metadata or {ammo = count}, slot)
     end
 
     Player.RemoveWeapon = function(weapon, count, metadata, slot)

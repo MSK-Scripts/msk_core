@@ -52,4 +52,4 @@ local display = function(data)
         end
     end)
 end
-RegisterNetEvent('msk_core:anticombatlog', display)
+RegisterNetEvent('msk_core:discLogger', display)

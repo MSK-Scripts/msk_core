@@ -130,7 +130,7 @@ MSK.IsPlayerBanned = function(playerId)
 
     player.name = GetPlayerName(playerId)
     for _, v in pairs(identifiers) do
-        player[MSK.Split(v, ':')[1]] = v
+        player[MSK.String.Split(v, ':')[1]] = v
     end
 
     for i = 1, #bannedPlayers do
@@ -168,7 +168,7 @@ MSK.BanPlayer = function(playerId, targetId, time, reason)
 
     player.name = targetName
     for k, v in pairs(identifiers) do
-        player[MSK.Split(v, ':')[1]] = v
+        player[MSK.String.Split(v, ':')[1]] = v
     end
 
     local num = GetNumPlayerTokens(targetId)
