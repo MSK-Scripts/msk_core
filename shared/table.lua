@@ -99,10 +99,10 @@ exports('TableReverse', MSK.Table.Reverse)
 MSK.Table.Clone = function(tbl)
     assert(tbl and type(tbl) == 'table', 'Parameter "tbl" has to be a table on function MSK.Table.Clone')
 
-    local metatable = getmetatable(t)
+    local metatable = getmetatable(tbl)
     local clone = {}
 
-    for k, v in pairs(t) do
+    for k, v in pairs(tbl) do
 		if type(v) == 'table' then
 			target[k] = MSK.Table.Clone(v)
 		else
