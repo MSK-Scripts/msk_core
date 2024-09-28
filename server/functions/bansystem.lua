@@ -86,12 +86,9 @@ local formatTime = function(time)
     return banTime, os.date('%d-%m-%Y %H:%M', banTime)
 end
 
-RegisterCommand('isBanned', function(source, args)
-    local isBanned, expired = MSK.IsPlayerBanned(source)
-    print('isBanned', isBanned, expired)
-end)
-
 local IsTokenMatching = function(token, tokens)
+    if not tokens then return false end
+
     for i = 0, #tokens do
         if tokens[i] == token then
             return true
