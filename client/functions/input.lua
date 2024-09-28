@@ -54,6 +54,11 @@ MSK.Register('msk_core:input', function(source, header, placeholder, field)
     return MSK.Input.Open(header, placeholder, field)
 end)
 
+MSK.Input.Active = function()
+    return isInputOpen
+end
+exports('InputActive', MSK.Input.Active)
+
 RegisterNUICallback('submitInput', function(data)
     if data.input == '' then data.input = nil end
     if tonumber(data.input) then data.input = tonumber(data.input) end

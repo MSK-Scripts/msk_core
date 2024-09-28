@@ -55,6 +55,11 @@ MSK.Register('msk_core:numpad', function(source, pin, show)
     return MSK.Numpad.Open(pin, show)
 end)
 
+MSK.Numpad.Active = function()
+    return isNumpadOpen
+end
+exports('NumpadActive', MSK.Numpad.Active)
+
 RegisterNUICallback('submitNumpad', function(data)
     callback(true)
     MSK.Numpad.Close()

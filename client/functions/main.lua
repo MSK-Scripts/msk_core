@@ -200,27 +200,6 @@ MSK.GetPedMugshot = function(ped, transparent)
 end
 exports('GetPedMugshot', MSK.GetPedMugshot)
 
-MSK.Progressbar = function(time, text, color)
-    SendNUIMessage({
-        action = 'progressBarStart',
-        time = time,
-        text = text or '',
-        color = color or Config.progressColor,
-    })
-end
-MSK.ProgressStart = MSK.Progressbar -- Support for old Scripts
-exports('Progressbar', MSK.Progressbar)
-exports('ProgressStart', MSK.Progressbar) -- Support for old Scripts
-RegisterNetEvent("msk_core:progressbar", MSK.Progressbar)
-
-MSK.ProgressStop = function()
-    SendNUIMessage({
-        action = 'progressBarStop',
-    })
-end
-exports('ProgressStop', MSK.ProgressStop)
-RegisterNetEvent("msk_core:progressbarStop", MSK.ProgressStop)
-
 MSK.LoadAnimDict = function(dict)
     assert(dict and DoesAnimDictExist(dict), 'Parameter "dict" is nil or the AnimDict does not exist')
 
