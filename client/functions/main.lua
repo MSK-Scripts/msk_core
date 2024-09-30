@@ -47,25 +47,16 @@ exports('AdvancedNotification', MSK.AdvancedNotification)
 RegisterNetEvent("msk_core:advancedNotification", MSK.AdvancedNotification)
 
 MSK.ScaleformAnnounce = function(header, text, typ, duration)
-    local scaleform = ''
-
-    local loadScaleform = function(sclform)
-        if not HasScaleformMovieLoaded(scaleform) then
-            scaleform = RequestScaleformMovie(sclform)
-            while not HasScaleformMovieLoaded(scaleform) do
-                Wait(1)
-            end
-        end
-    end
+    local scaleform = nil
 
     if typ == 1 then
-        loadScaleform("MP_BIG_MESSAGE_FREEMODE")
+        scaleform = MSK.Request.ScaleformMovie("MP_BIG_MESSAGE_FREEMODE")
         BeginScaleformMovieMethod(scaleform, "SHOW_SHARD_WASTED_MP_MESSAGE")
         ScaleformMovieMethodAddParamTextureNameString(header)
         ScaleformMovieMethodAddParamTextureNameString(text)
         EndScaleformMovieMethod()
     elseif typ == 2 then
-        loadScaleform("POPUP_WARNING")
+        scaleform = MSK.Request.ScaleformMovie("POPUP_WARNING")
         BeginScaleformMovieMethod(scaleform, "SHOW_POPUP_WARNING")
         ScaleformMovieMethodAddParamFloat(500.0)
         ScaleformMovieMethodAddParamTextureNameString(header)
@@ -73,13 +64,15 @@ MSK.ScaleformAnnounce = function(header, text, typ, duration)
         EndScaleformMovieMethod()
     end
 
+    if not scaleform then return end
+
     local draw = true
     while draw do
         local sleep = 1
 
         DrawScaleformMovieFullscreen(scaleform, 255, 255, 255, 255, 0)
 
-        MSK.SetTimeout(duration or 8000, function()
+        MSK.Timeout.Set(duration or 8000, function()
             draw = false
         end)
 
@@ -103,7 +96,7 @@ MSK.Spinner = function(text, typ, duration)
     AddTextComponentSubstringPlayerName(text)
     EndTextCommandBusyspinnerOn(typ or 4) -- 4 or 5, all others are useless // 4 = orange // 5 = white
 
-    MSK.SetTimeout(duration or 5000, function()
+    MSK.Timeout.Set(duration or 5000, function()
         BusyspinnerOff()
     end)
 end
@@ -199,32 +192,6 @@ MSK.GetPedMugshot = function(ped, transparent)
     return mugshot, GetPedheadshotTxdString(mugshot)
 end
 exports('GetPedMugshot', MSK.GetPedMugshot)
-
-MSK.LoadAnimDict = function(dict)
-    assert(dict and DoesAnimDictExist(dict), 'Parameter "dict" is nil or the AnimDict does not exist')
-
-    if not HasAnimDictLoaded(dict) then
-        RequestAnimDict(dict)
-
-        while not HasAnimDictLoaded(dict) do
-            Wait(1)
-        end
-    end
-end
-exports('LoadAnimDict', MSK.LoadAnimDict)
-
-MSK.LoadModel = function(modelHash)
-    assert(modelHash and IsModelValid(modelHash), 'Parameter "modelHash" is nil or the Model does not exist')
-
-    if not HasModelLoaded(modelHash) then
-        RequestModel(modelHash)
-    
-        while not HasModelLoaded(modelHash) do
-            Wait(1)
-        end
-    end
-end
-exports('LoadModel', MSK.LoadModel)
 
 MSK.GetClosestPlayer = function(coords)
     return GetClosestEntity(true, coords)

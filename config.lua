@@ -37,7 +37,7 @@ Config.NotifyTypes = {
 
 Config.customNotification = function(title, message, typ, duration)
     -- Set Config.Notification = 'custom'
-    -- Add your own clientside Notification here    
+    -- Add your own clientside Notification here
 end
 ----------------------------------------------------------------
 Config.progressColor = "#5eb131" -- Default Color for ProgressBar
