@@ -1,10 +1,10 @@
-MSK.GetClosestVehicle = function(coords)
-    return GetClosestEntity(false, coords)
+MSK.GetClosestVehicle = function(coords, vehicles)
+    return GetClosestEntity(false, coords, vehicles)
 end
 exports('GetClosestVehicle', MSK.GetClosestVehicle)
 
-MSK.GetClosestVehicles = function(coords, distance)
-    return GetClosestEntities(false, coords, distance)
+MSK.GetClosestVehicles = function(coords, distance, vehicles)
+    return GetClosestEntities(false, coords, distance, vehicles)
 end
 exports('GetClosestVehicles', MSK.GetClosestVehicles)
 
