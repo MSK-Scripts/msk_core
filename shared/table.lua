@@ -24,19 +24,8 @@ MSK.TableContains = MSK.Table.Contains -- Support for old Versions
 MSK.Table_Contains = MSK.Table.Contains -- Support for old Versions
 exports('TableContains', MSK.Table.Contains)
 
-MSK.Table.Dump = function(tbl, n)
-    if not n then n = 0 end
-    if type(tbl) ~= "table" then return tostring(tbl) end
-    local s = '{\n'
-
-    for k, v in pairs(tbl) do
-        if type(k) ~= 'number' then k = '"'..k..'"' end
-        for i = 1, n, 1 do s = s .. "    " end
-        s = s .. '    ['..k..'] = ' .. MSK.Table.Dump(v, n + 1) .. ',\n'
-    end
-    for i = 1, n, 1 do s = s .. "    " end
-
-    return s .. '}'
+MSK.Table.Dump = function(tbl)
+    return type(tbl) == "table" and json.encode(tbl, { indent = true }) or tostring(tbl)
 end
 MSK.DumpTable = MSK.Table.Dump -- Support for old Versions
 exports('TableDump', MSK.Table.Dump)
@@ -98,21 +87,17 @@ exports('TableReverse', MSK.Table.Reverse)
 
 MSK.Table.Clone = function(tbl)
     assert(tbl and type(tbl) == 'table', 'Parameter "tbl" has to be a table on function MSK.Table.Clone')
-
-    local metatable = getmetatable(tbl)
     local clone = {}
 
     for k, v in pairs(tbl) do
 		if type(v) == 'table' then
-			target[k] = MSK.Table.Clone(v)
+			clone[k] = MSK.Table.Clone(v)
 		else
-			target[k] = v
+			clone[k] = v
 		end
 	end
 
-    setmetatable(clone, metatable)
-
-    return clone
+    return setmetatable(clone, getmetatable(tbl))
 end
 exports('TableClone', MSK.Table.Clone)
 
