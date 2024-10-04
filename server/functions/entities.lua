@@ -16,9 +16,9 @@ GetEntities = function(isPlayerEntity)
     return entities
 end
 
-GetClosestEntity = function(isPlayerEntity, coords)
+GetClosestEntity = function(isPlayerEntity, coords, entities)
     local closestEntity, closestDistance = -1, -1
-    local entites = GetEntities(isPlayerEntity)
+    local entites = entities or GetEntities(isPlayerEntity)
 
     if coords then
         coords = vector3(coords.x, coords.y, coords.z)
@@ -37,8 +37,8 @@ GetClosestEntity = function(isPlayerEntity, coords)
     return closestEntity, closestDistance
 end
 
-GetClosestEntities = function(isPlayerEntity, coords, distance)
-    local entites = GetEntities(isPlayerEntity)
+GetClosestEntities = function(isPlayerEntity, coords, distance, entities)
+    local entites = entities or GetEntities(isPlayerEntity)
     local closestEntities = {}
 
     if coords then
