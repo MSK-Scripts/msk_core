@@ -23,31 +23,40 @@ MSK.GetVehicleWithPlate = function(plate, coords, distance)
 end
 exports('GetVehicleWithPlate', MSK.GetVehicleWithPlate)
 
-MSK.GetVehicleInDirection = function()
+MSK.GetVehicleInDirection = function(distance)
     local playerPed = PlayerPedId()
     local playerCoords = GetEntityCoords(playerPed)
-    local inDirection = GetOffsetFromEntityInWorldCoords(playerPed, 0.0, 5.0, 0.0)
-    local rayHandle = StartExpensiveSynchronousShapeTestLosProbe(playerCoords, inDirection, 10, playerPed, 0)
-    local numRayHandle, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
+    local destination = GetOffsetFromEntityInWorldCoords(playerPed, 0.0, distance or 5.0, 0.0)
+    local handle = StartShapeTestCapsule(playerCoords, destination, distance or 5.0, 2, playerPed, 4)
 
-    if hit == 1 and GetEntityType(entityHit) == 2 then
-        local entityCoords = GetEntityCoords(entityHit)
-        local entityDistance = #(playerCoords - entityCoords)
-        return entityHit, entityCoords, entityDistance
+    local entity = MSK.Timeout.Await(1000, function()
+        local retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(handle)
+
+        if retval ~= 1 and hit then
+            return entityHit ~= 0 and entityHit
+        end
+    end, "No result received from GetShapeTestResult on function GetVehicleInFront")
+
+    if DoesEntityExist(entity) then
+        local entityCoords = GetEntityCoords(entity)
+        return entity, entityCoords, ('%.2f'):format(#(playerCoords - entityCoords))
     end
 
-    return nil
+    return entity
 end
 exports('GetVehicleInDirection', MSK.GetVehicleInDirection)
 
-MSK.GetPedVehicleSeat = function(ped, vehicle)
-    if not ped then ped = PlayerPedId() end
-    if not vehicle then GetVehiclePedIsIn(ped, false) end
+MSK.GetPedVehicleSeat = function(playerPed, vehicle)
+    if not playerPed then playerPed = PlayerPedId() end
+    if not vehicle then GetVehiclePedIsIn(playerPed, false) end
     
     for i = -1, 16 do
-        if (GetPedInVehicleSeat(vehicle, i) == ped) then return i end
+        if GetPedInVehicleSeat(vehicle, i) == playerPed then 
+            return i 
+        end
     end
-    return -1
+
+    return false
 end
 exports('GetPedVehicleSeat', MSK.GetPedVehicleSeat)
 
@@ -60,9 +69,29 @@ MSK.IsVehicleEmpty = function(vehicle)
 end
 exports('IsVehicleEmpty', MSK.IsVehicleEmpty)
 
-MSK.GetVehicleLabel = function(vehicle)
-    assert(vehicle and DoesEntityExist(vehicle), 'Parameter "vehicle" is nil or the Vehicle does not exist on function MSK.GetVehicleLabel')
-    local vehicleModel = GetEntityModel(vehicle)
+MSK.GetVehicleLabel = function(vehicle, model)
+    if not vehicle and not model then 
+        return 'Unknown', error(('Paramters vehicle (%s) and model (%s) are not defined on function MSK.GetVehicleLabel'):format(vehicle, model))
+    end
+    
+    local vehicleModel = nil
+
+    if vehicle then
+        if not DoesEntityExist(vehicle) then
+            return 'Unknown', error(('The Vehicle does not exist on function MSK.GetVehicleLabel (reveived %s)'):format(vehicle))
+        end
+
+        vehicleModel = GetEntityModel(vehicle)
+    end
+
+    if model then
+        if not IsModelValid(model) then
+            return 'Unknown', error(('The Model does not exist on function MSK.GetVehicleLabel (reveived %s)'):format(model))
+        end
+
+        vehicleModel = model
+    end
+
     local vehicleLabel = GetDisplayNameFromVehicleModel(vehicleModel):lower()
 
     if not vehicleLabel or vehicleLabel == 'null' or vehicleLabel == 'carnotfound' then
@@ -80,20 +109,8 @@ end
 exports('GetVehicleLabel', MSK.GetVehicleLabel)
 
 MSK.GetVehicleLabelFromModel = function(model)
-    assert(model and IsModelValid(model), 'Parameter "model" is nil or the Model does not exist on function MSK.GetVehicleLabelFromModel')
-    local vehicleLabel = GetDisplayNameFromVehicleModel(model):lower()
-
-    if not vehicleLabel or vehicleLabel == 'null' or vehicleLabel == 'carnotfound' then
-        vehicleLabel = 'Unknown'
-    else
-        local labelText = GetLabelText(vehicleLabel)
-
-        if labelText:lower() ~= 'null' then
-            vehicleLabel = labelText
-        end
-    end
-
-    return vehicleLabel
+    assert(model, ('Parameter "model" is nil on function GetVehicleLabelFromModel (reveived %s)'):format(model))
+    return GetVehicleLabel(nil, model)
 end
 exports('GetVehicleLabelFromModel', MSK.GetVehicleLabelFromModel)
 
