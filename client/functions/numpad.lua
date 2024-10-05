@@ -29,15 +29,8 @@ MSK.Numpad.Open = function(pin, show, cb)
         return result
     end
 end
+MSK.OpenNumpad = MSK.Numpad.Open
 exports('Numpad', MSK.Numpad.Open)
-
--- Support for old Scripts
-setmetatable(MSK.Numpad, {
-    __call = function(_, pin, show, cb)
-        -- Ruft MSK.Numpad.Open auf, wenn MSK.Numpad() aufgerufen wird
-        return MSK.Numpad.Open(pin, show, cb)
-    end
-})
 
 MSK.Numpad.Close = function()
     isNumpadOpen = false
