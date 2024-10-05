@@ -100,3 +100,34 @@ if Config.BanSystem.enable and Config.BanSystem.commands.enable then
         })
     end)
 end
+
+MSK.Player = {}
+MSK.Player.clientId = PlayerId()
+MSK.Player.playerId = GetPlayerServerId(MSK.Player.clientId)
+
+CreateThread(function()
+	while true do
+        local sleep = 100
+        local playerPed = PlayerPedId()
+        MSK.Player.playerPed = playerPed
+
+        local vehicle = GetVehiclePedIsIn(playerPed, false)
+
+        if vehicle > 0 and DoesEntityExist(vehicle) then
+            MSK.Player.vehicle = vehicle
+
+            if not MSK.Player.seat or GetPedInVehicleSeat(vehicle, MSK.Player.seat) ~= playerPed then
+                MSK.Player.seat = MSK.GetPedVehicleSeat(playerPed, vehicle)
+                TriggerEvent('msk_core:onSeatChange', MSK.Player.vehicle, MSK.Player.seat)
+            end
+        else
+            MSK.Player.vehicle = false
+            MSK.Player.seat = false
+        end
+
+        local hasWeapon, currentWeapon = GetCurrentPedWeapon(playerPed, true)
+        MSK.Player.weapon = hasWeapon and currentWeapon or false
+
+        Wait(sleep)
+    end
+end)
