@@ -8,8 +8,8 @@ MSK.GetClosestVehicles = function(coords, distance, vehicles)
 end
 exports('GetClosestVehicles', MSK.GetClosestVehicles)
 
-MSK.GetVehicleWithPlate = function(plate, coords, distance)
-    local vehicles = GetClosestEntities(false, coords, distance)
+MSK.GetClosestVehicleWithPlate = function(plate, coords, distance, vehicles)
+    local vehicles = GetClosestEntities(false, coords, distance, vehicles)
     plate = MSK.String.Trim(plate)
 
     for i=1, #vehicles do
@@ -21,7 +21,7 @@ MSK.GetVehicleWithPlate = function(plate, coords, distance)
     end
     return false
 end
-exports('GetVehicleWithPlate', MSK.GetVehicleWithPlate)
+exports('GetClosestVehicleWithPlate', MSK.GetClosestVehicleWithPlate)
 
 MSK.GetPedVehicleSeat = function(ped, vehicle)
     if not ped then return end
