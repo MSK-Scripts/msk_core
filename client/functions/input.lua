@@ -28,15 +28,9 @@ MSK.Input.Open = function(header, placeholder, field, cb)
         return result
     end
 end
+MSK.OpenInput = MSK.Input.Open
 exports('Input', MSK.Input.Open)
 exports('openInput', MSK.Input.Open) -- Support for old Scripts
-
--- Support for old Scripts
-setmetatable(MSK.Input, {
-    __call = function(_, header, placeholder, field, cb)
-        return MSK.Input.Open(header, placeholder, field, cb)
-    end
-})
 
 MSK.Input.Close = function()
 	isInputOpen = false
