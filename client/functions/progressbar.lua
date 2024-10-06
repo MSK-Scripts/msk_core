@@ -20,10 +20,10 @@ local Controls = {
 
 local interrupted = function(data)
     if not data.useWhileDead and IsEntityDead(MSK.Player.playerPed) then return true end
-    if not data.allowRagdoll and IsPedRagdoll(MSK.Player.playerPed) then return true end
-    if not data.allowCuffed and IsPedCuffed(MSK.Player.playerPed) then return true end
-    if not data.allowFalling and IsPedFalling(MSK.Player.playerPed) then return true end
-    if not data.allowSwimming and IsPedSwimming(MSK.Player.playerPed) then return true end
+    if not data.useWhileRagdoll and IsPedRagdoll(MSK.Player.playerPed) then return true end
+    if not data.useWhileCuffed and IsPedCuffed(MSK.Player.playerPed) then return true end
+    if not data.useWhileFalling and IsPedFalling(MSK.Player.playerPed) then return true end
+    if not data.useWhileSwimming and IsPedSwimming(MSK.Player.playerPed) then return true end
 end
 
 local setProgressData = function(data)
