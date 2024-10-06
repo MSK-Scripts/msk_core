@@ -104,10 +104,16 @@ end
 MSK.Player = {}
 MSK.Player.clientId = PlayerId()
 MSK.Player.playerId = GetPlayerServerId(MSK.Player.clientId)
+MSK.Player.serverId = MSK.Player.playerId
 
 CreateThread(function()
 	while true do
         local sleep = 100
+
+        MSK.Player.clientId = PlayerId()
+        MSK.Player.playerId = GetPlayerServerId(MSK.Player.clientId)
+        MSK.Player.serverId = MSK.Player.playerId
+
         local playerPed = PlayerPedId()
         MSK.Player.playerPed = playerPed
 

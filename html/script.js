@@ -202,6 +202,7 @@ progressBarStop = (id) => {
     }
 
     progressId = progressId + 1
+    $.post(`https://${GetParentResourceName()}/progressEnd`)
 }
 
 /* ----------------

@@ -44,6 +44,7 @@ MSK.GetVehicleInDirection = function(distance)
 
     return entity
 end
+MSK.GetVehicleInFront = MSK.GetVehicleInDirection
 exports('GetVehicleInDirection', MSK.GetVehicleInDirection)
 
 MSK.GetPedVehicleSeat = function(playerPed, vehicle)
