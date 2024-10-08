@@ -1,5 +1,5 @@
-# msk_core
-**[STANDALONE]** Core functions for MSK Scripts
+# MSK Core/Lib
+**[STANDALONE]** Functions for MSK Scripts
 
 [Documentation](https://docu.msk-scripts.de/msk-core/installation)
 
