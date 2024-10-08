@@ -52,40 +52,6 @@ MSK.DrawGenericText = function(src, text, outline, font, size, color, position)
 end
 exports('DrawGenericText', MSK.DrawGenericText)
 
-MSK.Progressbar = function(src, time, text, color)
-    if not src or src == 0 then return end
-    TriggerClientEvent('msk_core:progressbar', src, time, text, color)
-end
-exports('Progressbar', MSK.Progressbar)
-
-MSK.ProgressStop = function(src)
-    if not src or src == 0 then return end
-    TriggerClientEvent('msk_core:progressbarStop', src)
-end
-exports('ProgressStop', MSK.ProgressStop)
-
-MSK.Input = function(src, header, placeholder, field)
-    return MSK.Trigger('msk_core:input', src, header, placeholder, field)
-end
-exports('Input', MSK.Input)
-
-MSK.CloseInput = function(src)
-    if not src or src == 0 then return end
-    TriggerClientEvent('msk_core:closeInput', src)
-end
-exports('CloseInput', MSK.CloseInput)
-
-MSK.Numpad = function(src, pin, show)
-    return MSK.Trigger('msk_core:numpad', src, pin, show)
-end
-exports('Numpad', MSK.Numpad)
-
-MSK.CloseNumpad = function(src)
-    if not src or src == 0 then return end
-    TriggerClientEvent('msk_core:closeNumpad', src)
-end
-exports('CloseNumpad', MSK.CloseNumpad)
-
 MSK.IsSpawnPointClear = function(coords, maxDistance)
     if not coords then return end
     if not maxDistance then maxDistance = 5.0 end

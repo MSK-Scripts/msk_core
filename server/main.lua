@@ -119,7 +119,7 @@ MSK.GetPlayers = function(key, val)
 end
 exports('GetPlayers', MSK.GetPlayers)
 
-GetLib = function()
+local GetLib = function()
     return MSK
 end
 exports('GetLib', GetLib)

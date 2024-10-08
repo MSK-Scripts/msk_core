@@ -32,6 +32,12 @@ MSK.OpenInput = MSK.Input.Open
 exports('Input', MSK.Input.Open)
 exports('openInput', MSK.Input.Open) -- Support for old Scripts
 
+setmetatable(MSK.Input, {
+    __call = function(self, header, placeholder, field, cb)
+        self.Open(header, placeholder, field, cb)
+    end
+})
+
 MSK.Input.Close = function()
 	isInputOpen = false
     callback = nil

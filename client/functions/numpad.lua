@@ -3,7 +3,7 @@ MSK.Numpad = {}
 local isNumpadOpen = false
 local callback = nil
 
-MSK.Numpad.Open = function(pin, show, cb)
+MSK.Numpad.Open = function(pin, showPin, cb)
     if isNumpadOpen then return end
     isNumpadOpen = true
     callback = cb
@@ -13,7 +13,7 @@ MSK.Numpad.Open = function(pin, show, cb)
         action = 'openNumpad',
         code = tostring(pin),
         length = string.len(tostring(pin)),
-        show = show,
+        show = showPin,
         EnterCode = 'Enter Code',
         WrongCode = 'Incorrect',
     })
@@ -32,6 +32,12 @@ end
 MSK.OpenNumpad = MSK.Numpad.Open
 exports('Numpad', MSK.Numpad.Open)
 
+setmetatable(MSK.Numpad, {
+    __call = function(self, pin, showPin, cb)
+        self.Open(pin, showPin, cb)
+    end
+})
+
 MSK.Numpad.Close = function()
     isNumpadOpen = false
     callback = nil
@@ -44,8 +50,8 @@ MSK.CloseNumpad = MSK.Numpad.Close
 exports('CloseNumpad', MSK.Numpad.Close)
 RegisterNetEvent('msk_core:closeNumpad', MSK.Numpad.Close)
 
-MSK.Register('msk_core:numpad', function(source, pin, show)
-    return MSK.Numpad.Open(pin, show)
+MSK.Register('msk_core:numpad', function(source, pin, showPin)
+    return MSK.Numpad.Open(pin, showPin)
 end)
 
 MSK.Numpad.Active = function()

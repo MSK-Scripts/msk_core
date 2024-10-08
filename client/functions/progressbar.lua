@@ -120,8 +120,13 @@ MSK.Progress.Start = function(data, text, color)
 end
 MSK.Progressbar = MSK.Progress.Start -- Support for old Scripts
 exports('Progressbar', MSK.Progress.Start)
-exports('ProgressbarStart', MSK.Progress.Start) -- Support for old Scripts
 RegisterNetEvent("msk_core:progressbar", MSK.Progress.Start)
+
+setmetatable(MSK.Progress, {
+    __call = function(self, data, text, color)
+        self.Start(data, text, color)
+    end
+})
 
 MSK.Progress.Stop = function()
     if not isProgressActive then return end

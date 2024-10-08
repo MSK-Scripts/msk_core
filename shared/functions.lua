@@ -2,6 +2,7 @@ MSK.GetConfig = function()
     return Config
 end
 exports('GetConfig', MSK.GetConfig)
+exports('Config', MSK.GetConfig)
 
 MSK.Logging = function(code, ...)
     assert(code and type(code) == 'string', 'Parameter "code" has to be a string on function MSK.Logging')
