@@ -2,7 +2,7 @@
 -- General Stuff
 ----------------------------------------------------------------
 if not _VERSION:find('5.4') then
-    error("Enable Lua 5.4 in the fxmanifest.lua! (shared_script '@msk_core/import.lua')", 2)
+    error("Enable Lua 5.4 in the fxmanifest.lua! (lua54 'yes')", 2)
 end
 
 local resourceName = GetCurrentResourceName()
