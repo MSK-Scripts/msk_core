@@ -18,6 +18,8 @@ if GetResourceState(msk_core) ~= 'started' then
     error('^1msk_core must be started before this resource.^0', 0)
 end
 
+local context = IsDuplicityVersion() and 'server' or 'client'
+
 ----------------------------------------------------------------
 -- Export for MSK Library
 ----------------------------------------------------------------
@@ -50,35 +52,28 @@ setmetatable(MSK.Progress, {
 ----------------------------------------------------------------
 -- MSK.Player
 ----------------------------------------------------------------
-if not IsDuplicityVersion() then
-    MSK.Player = {}
+if context == 'client' then
+    local Player = {
+        clientId = MSK.Player.clientId,
+        serverId = MSK.Player.serverId,
+        playerId = MSK.Player.playerId,
+        source = MSK.Player.source,
+        ped = MSK.Player.ped,
+        playerPed = MSK.Player.ped,
+        vehicle = MSK.Player.vehicle,
+        seat = MSK.Player.seat,
+        weapon = MSK.Player.weapon,
+        isDead = MSK.Player.isDead,
+        Notify = MSK.Player.Notify,
+    }
 
-    MSK.Player.clientId = PlayerId()
-    MSK.Player.serverId = GetPlayerServerId(MSK.Player.clientId)
-    MSK.Player.playerId = MSK.Player.serverId
-
-    CreateThread(function()
-        local playerPed = PlayerPedId()
-        MSK.Player.playerPed = playerPed
-
-        local vehicle = GetVehiclePedIsIn(playerPed, false)
-
-        if vehicle > 0 and DoesEntityExist(vehicle) then
-            MSK.Player.vehicle = vehicle
-
-            if not MSK.Player.seat or GetPedInVehicleSeat(vehicle, MSK.Player.seat) ~= playerPed then
-                MSK.Player.seat = MSK.GetPedVehicleSeat(playerPed, vehicle)
-            end
-        else
-            MSK.Player.vehicle = false
-            MSK.Player.seat = false
-        end
-
-        local hasWeapon, currentWeapon = GetCurrentPedWeapon(playerPed, true)
-        MSK.Player.weapon = hasWeapon and currentWeapon or false
-    end)
+    MSK.Player = Player
 
     AddEventHandler('msk_core:onPlayer', function(key, value, oldValue)
         MSK.Player[key] = value
+    end)
+
+    AddEventHandler('msk_core:onPlayerRemove', function(key, value)
+        MSK.Player[key] = nil
     end)
 end

@@ -4,7 +4,7 @@ games { 'gta5' }
 author 'Musiker15 - MSK Scripts'
 name 'msk_core'
 description 'Functions for MSK Scripts'
-version '2.5.0'
+version '2.5.1'
 
 lua54 'yes'
 
@@ -37,5 +37,7 @@ files {
 }
 
 dependencies {
+    '/server:7290',
+    '/onesync',
     'oxmysql'
 }
