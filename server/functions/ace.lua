@@ -1,7 +1,7 @@
 MSK.IsAceAllowed = function(playerId, command)
     return IsPlayerAceAllowed(playerId, ('command.%s'):format(command))
 end
-exports('IsAceAllowed', IsAceAllowed)
+exports('IsAceAllowed', MSK.IsAceAllowed)
 
 local allowAce = function(allow)
     return allow == false and 'deny' or 'allow'

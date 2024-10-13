@@ -206,6 +206,7 @@ exports('GetClosestPlayers', MSK.GetClosestPlayers)
 MSK.IsAceAllowed = function(command)
     return MSK.Trigger('msk_core:isAceAllowed', ('command.%s'):format(command))
 end
+exports('IsAceAllowed', MSK.IsAceAllowed)
 
 MSK.RegisterCommand = function(command, cb, restricted)
     RegisterCommand(command, function(source, args, raw)
@@ -214,3 +215,4 @@ MSK.RegisterCommand = function(command, cb, restricted)
         end
     end)
 end
+exports('RegisterCommand', MSK.RegisterCommand)

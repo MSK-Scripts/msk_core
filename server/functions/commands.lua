@@ -48,7 +48,7 @@ local parseArgs = function(source, args, raw, params)
                 value = false
             end
 
-            if value then
+            if value and MSK.GetPlayer then
                 value = MSK.GetPlayer({source = value})
             end
         else
