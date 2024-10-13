@@ -84,20 +84,6 @@ elseif MSK.Bridge.Framework.Type == 'QBCore' then
     end)
 end
 
-if Config.BanSystem.enable and Config.BanSystem.commands.enable then
-    CreateThread(function()
-        TriggerEvent('chat:addSuggestion', '/' .. Config.BanSystem.commands.ban, 'Ban a Player', {
-            {name = "targetId", help = "ServerId"},
-            {name = "time", help = "1M = 1 Minute / 1H = 1 Hour / 1D = 1 Day / 1W = 1 Week / P = Permanent"},
-            {name = "reason", help = "Reason"},
-        })
-
-        TriggerEvent('chat:addSuggestion', '/' .. Config.BanSystem.commands.unban, 'Unban a Player', {
-            {name = "banId", help = "BanId"}
-        })
-    end)
-end
-
 local GetLib = function()
     return MSK
 end

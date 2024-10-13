@@ -3,6 +3,7 @@ local Player = {}
 function Player:set(key, value)
     if self[key] ~= value then
         TriggerEvent('msk_core:onPlayer', key, value, self[key])
+        TriggerServerEvent('msk_core:onPlayer', key, key == 'vehicle' and DoesEntityExist(value) and NetworkGetNetworkIdFromEntity(value) or value, key == 'vehicle' and DoesEntityExist(self[key]) and NetworkGetNetworkIdFromEntity(self[key]) or self[key])
         self[key] = value
 
         return true
@@ -12,6 +13,7 @@ end
 function Player:remove(key)
     if self[key] then
         TriggerEvent('msk_core:onPlayerRemove', key, self[key])
+        TriggerServerEvent('msk_core:onPlayerRemove', key, key == 'vehicle' and DoesEntityExist(self[key]) and NetworkGetNetworkIdFromEntity(self[key]) or self[key])
         self[key] = nil
 
         return true

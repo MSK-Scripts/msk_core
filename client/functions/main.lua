@@ -202,3 +202,15 @@ MSK.GetClosestPlayers = function(coords, distance)
     return GetClosestEntities(true, coords, distance)
 end
 exports('GetClosestPlayers', MSK.GetClosestPlayers)
+
+MSK.IsAceAllowed = function(command)
+    return MSK.Trigger('msk_core:isAceAllowed', ('command.%s'):format(command))
+end
+
+MSK.RegisterCommand = function(command, cb, restricted)
+    RegisterCommand(command, function(source, args, raw)
+        if not restricted or MSK.IsAceAllowed(command) then
+            cb(source, args, raw)
+        end
+    end)
+end

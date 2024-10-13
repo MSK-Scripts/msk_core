@@ -85,9 +85,8 @@ end)
 ----------------------------------------------------------------
 -- Server Callbacks with Method [return]
 ----------------------------------------------------------------
-MSK.Register('msk_core:hasItem', function(source, item)
-    return MSK.HasItem(source, item)
-end)
+MSK.Register('msk_core:hasItem', MSK.HasItem)
+MSK.Register('msk_core:isAceAllowed', MSK.IsAceAllowed)
 
 ----------------------------------------------------------------
 -- Server Callbacks with Method [cb]

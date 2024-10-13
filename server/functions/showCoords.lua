@@ -1,9 +1,16 @@
 MSK.Coords = {}
 
 if Config.showCoords.enable then
-	MSK.RegisterCommand(Config.showCoords.command, Config.showCoords.groups, function(source, args, rawCommand)
-		MSK.Coords.Show(source)
-	end, false --[[console]], false --[[framework]], {help = 'Show your own Coords'})
+	MSK.RegisterCommand(Config.showCoords.command, function(source, args, raw)
+		MSK.Coords.Show(args.playerId or source)
+	end, {
+		allowConsole = false,
+		restricted = Config.showCoords.groups,
+		help = 'Show your own Coords',
+		params = {
+			{name = 'playerId', type = 'playerId', help = 'Target players server id', optional = true}
+		}
+	})
 end
 
 MSK.Coords.Show = function(playerId)

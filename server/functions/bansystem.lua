@@ -74,13 +74,13 @@ local formatTime = function(time)
     if time:find('P') then
         banTime = os.time() + (60 * 60 * 24 * 7 * 52 * 100)
     elseif time:find('M') then
-        banTime = os.time() + (60 * MSK.Split(time, 'M')[1])
+        banTime = os.time() + (60 * MSK.String.Split(time, 'M')[1])
     elseif time:find('H') then
-        banTime = os.time() + (60 * 60 * MSK.Split(time, 'H')[1])
+        banTime = os.time() + (60 * 60 * MSK.String.Split(time, 'H')[1])
     elseif time:find('D') then
-        banTime = os.time() + (60 * 60 * 24 * MSK.Split(time, 'D')[1])
+        banTime = os.time() + (60 * 60 * 24 * MSK.String.Split(time, 'D')[1])
     elseif time:find('W') then
-        banTime = os.time() + (60 * 60 * 24 * 7 * MSK.Split(time, 'W')[1])
+        banTime = os.time() + (60 * 60 * 24 * 7 * MSK.String.Split(time, 'W')[1])
     end
 
     return banTime, os.date('%d-%m-%Y %H:%M', banTime)
@@ -230,50 +230,34 @@ exports('UnbanPlayer', MSK.UnbanPlayer)
 exports('unbanPlayer', MSK.UnbanPlayer) -- Support for old Scripts
 
 if Config.BanSystem.enable and Config.BanSystem.commands.enable then
-    for i = 1, #Config.BanSystem.commands.groups do
-        local group = Config.BanSystem.commands.groups[i]
-        ExecuteCommand(('add_ace group.%s command.%s allow'):format(group, Config.BanSystem.commands.ban))
-        ExecuteCommand(('add_ace group.%s command.%s allow'):format(group, Config.BanSystem.commands.unban))
-    end
-
-    local IsPlayerAllowed = function(playerId, command)
-        return IsPlayerAceAllowed(playerId, ('command.%s'):format(command))
-    end
-
-    RegisterCommand(Config.BanSystem.commands.ban, function(source, args, raw)
+    MSK.RegisterCommand(Config.BanSystem.commands.ban, function(source, args, raw)
         local playerId = source
-        local targetId, time, reason = args[1], args[2], args[3]
+        local targetId, time, reason = args.playerId, args.time, args.reason,
 
-        if not targetId or not time then return end
-        if not reason then reason = 'Unknown' end
-
-        if playerId == 0 then 
-            MSK.BanPlayer(nil, targetId, time, reason)
-            return
+        if not reason then
+            reason = 'Unknown reason'
         end
 
-        if IsPlayerAllowed(playerId, Config.BanSystem.commands.ban) then
-            MSK.BanPlayer(playerId, targetId, time, reason)
-        else
-            MSK.Notification(playerId, 'MSK Bansystem', 'You don\'t have permission to do that!')
-        end
-    end)
+        MSK.BanPlayer(playerId, targetId, time, reason)
+    end, {
+        allowConsole = true,
+        restricted = Config.BanSystem.commands.groups,
+        help = 'Ban a Player',
+        params = {
+			{name = "playerId", type = 'playerId', help = "Target players server id"},
+            {name = "time", type = 'string', help = "1M = 1 Minute / 1H = 1 Hour / 1D = 1 Day / 1W = 1 Week / P = Permanent"},
+            {name = "reason", type = 'string', help = "Ban Reason", optional = true},
+		}
+    })
 
-    RegisterCommand(Config.BanSystem.commands.unban, function(source, args, raw)
-        local playerId = source
-        local banId = args[1]
-
-        if not banId then return end
-
-        if playerId == 0 then 
-            MSK.UnbanPlayer(nil, banId)
-            return
-        end
-
-        if IsPlayerAllowed(playerId, Config.BanSystem.commands.unban) then
-            MSK.UnbanPlayer(playerId, banId)
-        else
-            MSK.Notification(playerId, 'MSK Bansystem', 'You don\'t have permission to do that!')
-        end
-    end)
+    MSK.RegisterCommand(Config.BanSystem.commands.unban, function(source, args, raw)
+        MSK.UnbanPlayer(source, args.banId)
+    end, {
+        allowConsole = true,
+        restricted = Config.BanSystem.commands.groups,
+        help = 'Unban a Player',
+        params = {
+			{name = 'banId', type = 'number', help = 'Banned players BanId'}
+		}
+    })
 end

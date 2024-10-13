@@ -77,3 +77,18 @@ if context == 'client' then
         MSK.Player[key] = nil
     end)
 end
+
+if context == 'server' then
+    AddEventHandler('msk_core:OnPlayer', function(playerId, key, value, oldValue)
+        if not MSK.Player[playerId] then
+            MSK.Player[playerId] = {}
+        end
+
+        MSK.Player[playerId][key] = value
+    end)
+
+    AddEventHandler('msk_core:OnPlayerRemove', function(playerId, key, value)
+        if not MSK.Player[playerId] then return end
+        MSK.Player[playerId][key] = nil
+    end)
+end
