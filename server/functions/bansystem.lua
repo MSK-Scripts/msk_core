@@ -232,7 +232,7 @@ exports('unbanPlayer', MSK.UnbanPlayer) -- Support for old Scripts
 if Config.BanSystem.enable and Config.BanSystem.commands.enable then
     MSK.RegisterCommand(Config.BanSystem.commands.ban, function(source, args, raw)
         local playerId = source
-        local targetId, time, reason = args.playerId, args.time, args.reason,
+        local targetId, time, reason = args.playerId, args.time, args.reason
 
         if not reason then
             reason = 'Unknown reason'
