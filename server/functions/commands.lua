@@ -139,13 +139,13 @@ MSK.RegisterCommand = function(commandName, callback, properties, ...)
     if restricted then
         local ace = ('command.%s'):format(commandName)
 
-        if type(restricted) == 'string' and not IsPrincipalAceAllowed(restricted, ace) then
+        if type(restricted) == 'string' and not MSK.IsPrincipalAceAllowed(restricted, ace) then
             MSK.AddAce(restricted, ace)
         elseif type(restricted) == 'table' then
             for i = 1, #restricted do
                 local res = restricted[i]
 
-                if not IsPrincipalAceAllowed(res, ace) then
+                if not MSK.IsPrincipalAceAllowed(res, ace) then
                     MSK.AddAce(res, ace)
                 end
             end

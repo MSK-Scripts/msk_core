@@ -3,8 +3,16 @@ MSK.IsAceAllowed = function(playerId, command)
 end
 exports('IsAceAllowed', MSK.IsAceAllowed)
 
-MSK.IsPrincipalAceAllowed = function(restricted, ace)
-    return IsPrincipalAceAllowed(restricted, ace)
+MSK.IsPrincipalAceAllowed = function(principal, ace)
+    if not MSK.String.StartsWith(principal, 'group.') and not MSK.String.StartsWith(principal, 'player.') then
+        if type(principal) == 'string' then
+            principal = 'group.'..principal
+        elseif tonumber(principal) then
+            principal = 'player.'..tostring(principal)
+        end
+    end
+
+    return IsPrincipalAceAllowed(principal, ace)
 end
 exports('IsPrincipalAceAllowed', MSK.IsPrincipalAceAllowed)
 
