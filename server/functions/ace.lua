@@ -3,6 +3,11 @@ MSK.IsAceAllowed = function(playerId, command)
 end
 exports('IsAceAllowed', MSK.IsAceAllowed)
 
+MSK.IsPrincipalAceAllowed = function(restricted, ace)
+    return IsPrincipalAceAllowed(restricted, ace)
+end
+exports('IsPrincipalAceAllowed', MSK.IsPrincipalAceAllowed)
+
 local allowAce = function(allow)
     return allow == false and 'deny' or 'allow'
 end

@@ -3,11 +3,12 @@ Config = {}
 Config.Debug = false
 Config.VersionChecker = true
 ----------------------------------------------------------------
--- Supported Frameworks: AUTO, ESX, QBCore
+-- Supported Frameworks: AUTO, ESX, QBCore, STANDALONE
 -- AUTO will search for your framework
 Config.Framework = 'AUTO'
 
 -- Supported Inventories: default, custom, ox_inventory, qs-inventory
+-- For ESX Default Inventory or Chezza Inventory, set to 'default'
 -- Set to 'custom' if you use another inventory
 -- You can add your own inventory in: server/inventories/custom.lua
 Config.Inventory = 'default'
@@ -43,9 +44,10 @@ end
 Config.progressColor = "#5eb131" -- Default Color for ProgressBar
 ----------------------------------------------------------------
 Config.LoggingTypes = {
-    ['info'] = '[^4Info^0]',
     ['debug'] = '[^3DEBUG^0]',
-    ['error'] = '[^1ERROR^0]',
+    ['info'] = '[^4Info^0]',
+    ['warn'] = '[^3Warning^0]^3',
+    ['error'] = '[^1ERROR^0]^1',
 }
 ----------------------------------------------------------------
 -- If enabled it will display a 3D Text on the position the player disconnected

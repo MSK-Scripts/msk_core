@@ -125,12 +125,12 @@ exports('AddWebhook', MSK.AddWebhook)
 
 MSK.HasItem = function(playerId, item)
     if not playerId then 
-        logging('error', 'Player on Function MSK.HasItem does not exist!') 
+        MSK.Logging('error', 'Player on Function MSK.HasItem does not exist!') 
         return
     end
 
     if MSK.Bridge.Framework.Type ~= 'ESX' and MSK.Bridge.Framework.Type ~= 'QBCore' then 
-        logging('error', ('Function %s can not used without Framework!'):format('^3MSK.HasItem^0'))
+        MSK.Logging('error', ('Function %s can not used without Framework!'):format('^3MSK.HasItem^0'))
         return
     end
 

@@ -57,7 +57,7 @@ local parseArgs = function(source, args, raw, params)
 
         if not value and (not param.optional or param.optional and arg) then
             if source == 0 then
-                return MSK.Logging('error', ("^1Command '%s' received an invalid %s for argument %s (%s), received '%s'^0"):format(MSK.String.Split(raw, ' ')[1] or raw, param.type, i, param.name, arg))
+                return MSK.Logging('error', ("Command '%s' received an invalid %s for argument %s (%s), received '%s'^0"):format(MSK.String.Split(raw, ' ')[1] or raw, param.type, i, param.name, arg))
             else
                 return MSK.Notification(source, 'Command Error', ("Command '%s' received an invalid %s for argument %s (%s), received '%s'"):format(MSK.String.Split(raw, ' ')[1] or raw, param.type, i, param.name, arg), 'error')
             end
@@ -73,7 +73,7 @@ end
 MSK.RegisterCommand = function(commandName, callback, properties, ...)
     if ... ~= nil then
         -- Backwards compatibility
-        warn(('Command "%s" is using deprecated syntax for MSK.RegisterCommand. Please update to to new syntax.'):format(commandName))
+        MSK.Logging('warn', ('Command "%s" is using deprecated syntax for MSK.RegisterCommand. Please update to to new syntax.'):format(commandName))
         return MSK._RegisterCommand(commandName, callback, properties, ...)
     end
 
@@ -89,14 +89,14 @@ MSK.RegisterCommand = function(commandName, callback, properties, ...)
     end
 
     RegisteredCommands[commandName] = {commandName = commandName, callback = callback, properties = properties}
-    local params, restricted, showSuggestion, allowConsole, framework
+    local params, restricted, showSuggestion, allowConsole, returnPlayer
 
     if properties then
         params = properties.params
         restricted = properties.restricted
         showSuggestion = properties.showSuggestion == nil or properties.showSuggestion
         allowConsole = properties.allowConsole == nil or properties.allowConsole
-        framework = properties.framework
+        returnPlayer = properties.returnPlayer
 
         RegisteredCommands[commandName].showSuggestion = showSuggestion
         RegisteredCommands[commandName].allowConsole = allowConsole
@@ -114,7 +114,7 @@ MSK.RegisterCommand = function(commandName, callback, properties, ...)
 
     local commandHandler = function(source, args, raw)
         if source == 0 and not allowConsole then
-            return MSK.Logging('error', ('^1You cannot run Command ^3%s^1 in Console!^0'):format(commandName))
+            return MSK.Logging('error', ('You cannot run Command ^3%s^1 in Console!^0'):format(commandName))
         end
 
         args = parseArgs(source, args, raw, params)
@@ -122,8 +122,7 @@ MSK.RegisterCommand = function(commandName, callback, properties, ...)
 
         local success, response
 
-        -- Backwards compatibility
-        if framework and (MSK.Bridge.Framework.Type == 'ESX' or MSK.Bridge.Framework.Type == 'QBCore') then
+        if returnPlayer and (MSK.Bridge.Framework.Type == 'ESX' or MSK.Bridge.Framework.Type == 'QBCore') then
             local Player = MSK.GetPlayer({source = source})
             success, response = pcall(callback, Player, args, raw)
         else
@@ -131,7 +130,7 @@ MSK.RegisterCommand = function(commandName, callback, properties, ...)
         end
 
         if not success then
-            MSK.Logging('error', ("^1Command '%s' failed to execute! (response: %s)"):format(MSK.String.Split(raw, ' ')[1] or raw, response))
+            MSK.Logging('error', ("Command '%s' failed to execute! (response: %s)"):format(MSK.String.Split(raw, ' ')[1] or raw, response))
         end
     end
 
@@ -158,12 +157,14 @@ MSK.RegisterCommand = function(commandName, callback, properties, ...)
         properties.restricted = nil
         properties.showSuggestion = nil
         properties.allowConsole = nil
-        properties.framework = nil -- Backwards compatibility
+        properties.returnPlayer = nil
 
         RegisteredCommands[commandName].properties = properties
 
         TriggerClientEvent('chat:addSuggestion', -1, properties.name, properties.help, properties.params)
     end
+
+    return RegisteredCommands[commandName]
 end
 exports('RegisterCommand', MSK.RegisterCommand)
 
@@ -180,7 +181,7 @@ MSK._RegisterCommand = function(commandName, group, cb, console, framework, sugg
             restricted = group,
             showSuggestion = true,
             allowConsole = console,
-            framework = framework
+            returnPlayer = framework
         }
     end
 

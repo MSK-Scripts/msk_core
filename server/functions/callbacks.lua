@@ -8,10 +8,8 @@ MSK.Register = function(eventName, cb)
     Callbacks[eventName] = cb
 end
 MSK.RegisterCallback = MSK.Register -- Support for old Scripts
-MSK.RegisterServerCallback = MSK.Register -- Support for old Scripts
 exports('Register', MSK.Register)
 exports('RegisterCallback', MSK.Register) -- Support for old Scripts
-exports('RegisterServerCallback', MSK.Register) -- Support for old Scripts
 
 RegisterNetEvent('msk_core:server:triggerCallback', function(eventName, requestId, cb, ...)
     local playerId = source
@@ -67,10 +65,8 @@ MSK.Trigger = function(eventName, playerId, ...)
     return table.unpack(result)
 end
 MSK.TriggerCallback = MSK.Trigger -- Support for old Scripts
-MSK.TriggerClientCallback = MSK.Trigger -- Support for old Scripts
 exports('Trigger', MSK.Trigger)
 exports('TriggerCallback', MSK.Trigger) -- Support for old Scripts
-exports('TriggerClientCallback', MSK.Trigger) -- Support for old Scripts
 
 RegisterNetEvent("msk_core:server:callbackResponse", function(requestId, ...)
 	if not CallbackHandler[requestId] then return end
@@ -87,11 +83,23 @@ end)
 ----------------------------------------------------------------
 MSK.Register('msk_core:hasItem', MSK.HasItem)
 MSK.Register('msk_core:isAceAllowed', MSK.IsAceAllowed)
+MSK.Register('msk_core:isPrincipalAceAllowed', MSK.IsPrincipalAceAllowed)
+
+-- For clientside MSK.RegisterCommand
+MSK.Register('msk_core:doesPlayerExist', function(source, targetId)
+    return DoesPlayerExist(targetId)
+end)
+
+-- For clientside MSK.RegisterCommand
+MSK.Register('msk_core:getPlayerData', function(source, targetId)
+    return MSK.GetPlayer({source = targetId})
+end)
 
 ----------------------------------------------------------------
 -- Server Callbacks with Method [cb]
 ----------------------------------------------------------------
-MSK.Register('msk_core:ThisIsATest', function(source, cb, param1, param2, param3)
-    cb(param1, param2, param3)
-    print(param1, param2, param3)
+MSK.Register('msk_core:ThisIsATest', function(source, cb, params, ...)
+    cb(params, ...)
+    
+    -- Do something here with params, ...
 end)
