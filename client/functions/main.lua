@@ -150,13 +150,13 @@ end
 exports('DrawGenericText', MSK.DrawGenericText)
 RegisterNetEvent("msk_core:drawGenericText", MSK.DrawGenericText)
 
-MSK.HasItem = function(item)
-    if MSK.Bridge.Framework.Type ~= 'ESX' and MSK.Bridge.Framework.Type ~= 'QBCore' then 
-        logging('error', ('Function %s can not used without Framework!'):format('MSK.HasItem'))
+MSK.HasItem = function(itemName, metadata)
+    if MSK.Bridge.Framework.Type == 'STANDALONE' then 
+        MSK.Logging('error', 'Function "MSK.HasItem" cannot be used without Framework!')
         return
     end
 
-    return MSK.Trigger('msk_core:hasItem', item)
+    return MSK.Trigger('msk_core:hasItem', itemName, metadata)
 end
 exports('HasItem', MSK.HasItem)
 

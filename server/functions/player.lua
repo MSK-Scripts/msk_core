@@ -7,7 +7,7 @@ local onPlayer = function(key, value, oldValue)
         Player[playerId] = {}
     end
 
-    if Player[playerId] and Player[playerId][key] ~= value then
+    if Player[playerId][key] ~= value then
         Player[playerId][key] = value
 
         if key == 'vehicle' then
@@ -27,11 +27,16 @@ local onPlayerRemove = function(key, value)
         Player[playerId] = {}
     end
 
-    if Player[playerId] and Player[playerId][key] then
+    if Player[playerId][key] then
         Player[playerId][key] = nil
+
+        if key == 'vehicle' then
+            Player[playerId]['vehNetId'] = nil
+        end
+
         TriggerEvent('msk_core:OnPlayerRemove', playerId, key, value)
     end
 end
-AddEventHandler('msk_core:onPlayerRemove', onPlayerRemove)
+RegisterNetEvent('msk_core:onPlayerRemove', onPlayerRemove)
 
 MSK.Player = Player

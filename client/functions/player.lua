@@ -1,9 +1,10 @@
+local PlayerState = Player
 local Player = {}
 
 function Player:set(key, value)
     if self[key] ~= value then
         TriggerEvent('msk_core:onPlayer', key, value, self[key])
-        TriggerServerEvent('msk_core:onPlayer', key, key == 'vehicle' and DoesEntityExist(value) and NetworkGetNetworkIdFromEntity(value) or value, key == 'vehicle' and DoesEntityExist(self[key]) and NetworkGetNetworkIdFromEntity(self[key]) or self[key])
+        TriggerServerEvent('msk_core:onPlayer', key, key == 'vehicle' and NetworkGetNetworkIdFromEntity(value) or value, self[key])
         self[key] = value
 
         return true
@@ -13,7 +14,7 @@ end
 function Player:remove(key)
     if self[key] then
         TriggerEvent('msk_core:onPlayerRemove', key, self[key])
-        TriggerServerEvent('msk_core:onPlayerRemove', key, key == 'vehicle' and DoesEntityExist(self[key]) and NetworkGetNetworkIdFromEntity(self[key]) or self[key])
+        TriggerServerEvent('msk_core:onPlayerRemove', key, self[key])
         self[key] = nil
 
         return true
@@ -23,7 +24,6 @@ end
 Player:set('clientId', PlayerId())
 Player:set('serverId', GetPlayerServerId(Player.clientId))
 Player:set('playerId', Player.serverId)
-Player:set('source', Player.serverId)
 
 local Notify = function(title, message, typ, duration)
     MSK.Notification(title, message, typ, duration)
@@ -31,7 +31,7 @@ end
 Player:set('Notify', Notify)
 
 local GetPlayerDeath = function()
-    local isDead = IsPlayerDead(Player.clientId) or IsEntityDead(Player.playerPed) or IsPedFatallyInjured(Player.playerPed)
+    local isDead = IsPlayerDead(Player.clientId) or IsEntityDead(Player.ped) or IsPedFatallyInjured(Player.ped)
 
     if GetResourceState("visn_are") == "started" then
         local healthBuffer = exports.visn_are:GetHealthBuffer()
@@ -50,7 +50,10 @@ CreateThread(function()
 	while true do
         Player:set('ped', PlayerPedId())
         Player:set('playerPed', Player.ped)
-
+        Player:set('coords', GetEntityCoords(Player.ped))
+        Player:set('heading', GetEntityHeading(Player.ped))
+        Player:set('state', PlayerState(Player.serverId).state)
+        
         local vehicle = GetVehiclePedIsIn(Player.ped, false)
 
         if vehicle > 0 and DoesEntityExist(vehicle) then

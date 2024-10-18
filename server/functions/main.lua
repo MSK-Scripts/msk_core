@@ -123,19 +123,19 @@ MSK.AddWebhook = function(webhook, botColor, botName, botAvatar, title, descript
 end
 exports('AddWebhook', MSK.AddWebhook)
 
-MSK.HasItem = function(playerId, item)
+MSK.HasItem = function(playerId, itemName, metadata)
     if not playerId then 
         MSK.Logging('error', 'Player on Function MSK.HasItem does not exist!') 
-        return
+        return false
     end
 
-    if MSK.Bridge.Framework.Type ~= 'ESX' and MSK.Bridge.Framework.Type ~= 'QBCore' then 
-        MSK.Logging('error', ('Function %s can not used without Framework!'):format('^3MSK.HasItem^0'))
-        return
+    if MSK.Bridge.Framework.Type == 'STANDALONE' then 
+        MSK.Logging('error', 'Function "MSK.HasItem" cannot be used without Framework!')
+        return false
     end
 
-    local Player = MSK.GetPlayerFromId(playerId)
+    local Player = MSK.GetPlayer({source = playerId})
     
-    return Player.HasItem(item)
+    return Player.HasItem(itemName, metadata)
 end
 exports('HasItem', MSK.HasItem)

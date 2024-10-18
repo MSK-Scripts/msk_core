@@ -81,9 +81,17 @@ end)
 ----------------------------------------------------------------
 -- Server Callbacks with Method [return]
 ----------------------------------------------------------------
-MSK.Register('msk_core:hasItem', MSK.HasItem)
-MSK.Register('msk_core:isAceAllowed', MSK.IsAceAllowed)
-MSK.Register('msk_core:isPrincipalAceAllowed', MSK.IsPrincipalAceAllowed)
+MSK.Register('msk_core:hasItem', function(source, itemName, metadata)
+    return MSK.HasItem(source, itemName, metadata)
+end)
+
+MSK.Register('msk_core:isAceAllowed', function(source, command)
+    return MSK.IsAceAllowed(source, command)
+end)
+
+MSK.Register('msk_core:isPrincipalAceAllowed', function(source, principal, ace)
+    return MSK.IsPrincipalAceAllowed(principal, ace)
+end)
 
 -- For clientside MSK.RegisterCommand
 MSK.Register('msk_core:doesPlayerExist', function(source, targetId)
