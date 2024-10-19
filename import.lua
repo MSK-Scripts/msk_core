@@ -30,22 +30,22 @@ MSK = exports.msk_core:GetLib()
 ----------------------------------------------------------------
 -- MSK.Input(header, placeholder, field, cb)
 setmetatable(MSK.Input, {
-    __call = function(self, header, placeholder, field, cb)
-        self.Open(header, placeholder, field, cb)
+    __call = function(self, ...)
+        self.Open(...)
     end
 })
 
 -- MSK.Numpad(pin, showPin, cb)
 setmetatable(MSK.Numpad, {
-    __call = function(self, pin, showPin, cb)
-        self.Open(pin, showPin, cb)
+    __call = function(self, ...)
+        self.Open(...)
     end
 })
 
 -- MSK.Progress(data)
 setmetatable(MSK.Progress, {
-    __call = function(self, data, text, color)
-        self.Start(data, text, color)
+    __call = function(self, ...)
+        self.Start(...)
     end
 })
 
@@ -53,23 +53,17 @@ setmetatable(MSK.Progress, {
 -- MSK.Player
 ----------------------------------------------------------------
 if context == 'client' then
-    local Player = {
-        clientId = MSK.Player.clientId,
-        serverId = MSK.Player.serverId,
-        playerId = MSK.Player.playerId,
-        state = Player(MSK.Player.serverId).state,
-        ped = MSK.Player.ped,
-        playerPed = MSK.Player.ped,
-        coords = MSK.Player.coords,
-        heading = MSK.Player.heading,
-        vehicle = MSK.Player.vehicle,
-        seat = MSK.Player.seat,
-        weapon = MSK.Player.weapon,
-        isDead = MSK.Player.isDead,
-        Notify = MSK.Player.Notify,
-    }
-
-    MSK.Player = Player
+    setmetatable(MSK.Player, {
+        __index = function(self, key)
+            if key == 'coords' then
+                return GetEntityCoords(self.ped)
+            elseif key == 'heading' then
+                return GetEntityHeading(self.ped)
+            elseif key == 'state' then
+                return PlayerState(self.serverId).state
+            end
+        end
+    })
 
     AddEventHandler('msk_core:onPlayer', function(key, value, oldValue)
         MSK.Player[key] = value
@@ -81,9 +75,31 @@ if context == 'client' then
 end
 
 if context == 'server' then
+    local metatable = {
+        __index = function(self, key)
+            if type(key) == "string" then
+                return rawget(self, tonumber(key))
+            end
+        end
+    }
+    setmetatable(MSK.Player, metatable)
+
+    local playerMeta = {
+        __index = function(self, key)
+            if key == 'coords' then
+                return GetEntityCoords(self.ped)
+            elseif key == 'heading' then
+                return GetEntityHeading(self.ped)
+            elseif key == 'state' then
+                return PlayerState(self.serverId).state
+            end
+        end
+    }
+
     AddEventHandler('msk_core:OnPlayer', function(playerId, key, value, oldValue)
         if not MSK.Player[playerId] then
             MSK.Player[playerId] = {}
+            setmetatable(MSK.Player[playerId], playerMeta)
         end
 
         MSK.Player[playerId][key] = value
@@ -93,4 +109,10 @@ if context == 'server' then
         if not MSK.Player[playerId] then return end
         MSK.Player[playerId][key] = nil
     end)
+
+    for playerId, data in pairs(MSK.Player) do
+        if not getmetatable(MSK.Player[playerId]) then
+            setmetatable(MSK.Player[playerId], playerMeta)
+        end
+    end
 end

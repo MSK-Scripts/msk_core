@@ -46,13 +46,22 @@ local GetPlayerDeath = function()
     return isDead
 end
 
+setmetatable(Player, {
+    __index = function(self, key)
+        if key == 'coords' then
+            return GetEntityCoords(self.ped)
+        elseif key == 'heading' then
+            return GetEntityHeading(self.ped)
+        elseif key == 'state' then
+            return PlayerState(self.serverId).state
+        end
+    end
+})
+
 CreateThread(function()
 	while true do
         Player:set('ped', PlayerPedId())
         Player:set('playerPed', Player.ped)
-        Player:set('coords', GetEntityCoords(Player.ped))
-        Player:set('heading', GetEntityHeading(Player.ped))
-        Player:set('state', PlayerState(Player.serverId).state)
         
         local vehicle = GetVehiclePedIsIn(Player.ped, false)
 

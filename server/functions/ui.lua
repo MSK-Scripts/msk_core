@@ -13,8 +13,8 @@ exports('Input', MSK.Input.Open)
 exports('OpenInput', MSK.Input.Open)
 
 setmetatable(MSK.Input, {
-    __call = function(self, header, placeholder, field, cb)
-        self.Open(header, placeholder, field, cb)
+    __call = function(self, ...)
+        self.Open(...)
     end
 })
 
@@ -35,8 +35,8 @@ end
 exports('Numpad', MSK.Numpad.Open)
 
 setmetatable(MSK.Numpad, {
-    __call = function(self, pin, showPin, cb)
-        self.Open(pin, showPin, cb)
+    __call = function(self, ...)
+        self.Open(...)
     end
 })
 
@@ -57,8 +57,8 @@ MSK.Progressbar = MSK.Progress.Start
 exports('Progressbar', MSK.Progress.Start)
 
 setmetatable(MSK.Progress, {
-    __call = function(self, data, text, color)
-        self.Start(data, text, color)
+    __call = function(self, ...)
+        self.Start(...)
     end
 })
 
