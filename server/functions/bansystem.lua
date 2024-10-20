@@ -230,6 +230,10 @@ exports('UnbanPlayer', MSK.UnbanPlayer)
 exports('unbanPlayer', MSK.UnbanPlayer) -- Support for old Scripts
 
 if Config.BanSystem.enable and Config.BanSystem.commands.enable then
+    while not MSK.RegisterCommand do
+        Wait(10)
+    end
+
     MSK.RegisterCommand(Config.BanSystem.commands.ban, function(source, args, raw)
         local playerId = source
         local targetId, time, reason = args.playerId, args.time, args.reason

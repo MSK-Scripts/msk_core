@@ -9,7 +9,7 @@ Config.Framework = 'AUTO'
 
 -- Supported Inventories: default, custom, ox_inventory, qs-inventory
 -- For ESX Default Inventory or Chezza Inventory, set to 'default'
--- Set to 'custom' if you use another inventory
+-- Set to 'custom' if you use another inventory and add your own functions
 -- You can add your own inventory in: server/inventories/custom.lua
 Config.Inventory = 'default'
 ----------------------------------------------------------------
@@ -57,7 +57,7 @@ Config.DisconnectLogger = {
     console = {
         enable = false,
         -- German: "Der Spieler ^3%s^0 mit der ^3ID %s^0 hat den Server verlassen.\n^4Uhrzeit:^0 %s\n^4Grund:^0 %s\n^4Identifier:^0\n    %s\n    %s\n    %s\n^4Koordinaten:^0 %s"
-        -- English: "The player ^3%s^0 with the ^3ID %s^0 has left the server.\n^4Time:^0 %s\n^4Reason:^0 %s\n^4Identifier:^0\n %s\n %s\n %s\n^4Coordinates:^0 %s"
+        -- English: "The player ^3%s^0 with the ^3ID %s^0 has left the server.\n^4Time:^0 %s\n^4Reason:^0 %s\n^4Identifier:^0\n    %s\n    %s\n    %s\n^4Coordinates:^0 %s"
         text = "Der Spieler ^3%s^0 mit der ^3ID %s^0 hat den Server verlassen.\n^4Uhrzeit:^0 %s\n^4Grund:^0 %s\n^4Identifier:^0\n    %s\n    %s\n    %s\n^4Koordinaten:^0 %s"
     },
 
@@ -73,7 +73,7 @@ Config.DisconnectLogger = {
     }
 }
 ----------------------------------------------------------------
--- For more Information go to: https://github.com/MSK-Scripts/msk_bansystem/blob/main/README.md
+-- For more Information go to: https://docu.msk-scripts.de/msk-core/functions/server/ban-system
 Config.BanSystem = {
     enable = true, -- Set to true if you want to use this Feature
 
@@ -83,7 +83,7 @@ Config.BanSystem = {
     botAvatar = "https://i.imgur.com/PizJGsh.png",
 
     commands = {
-        enable = false,
+        enable = true,
         groups = {'superadmin', 'admin', 'god'},
         ban = 'banPlayer',
         unban = 'unbanPlayer'
