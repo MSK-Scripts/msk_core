@@ -35,6 +35,10 @@ local onPlayer = function(key, value, oldValue)
 
         if key == 'ped' or key == 'playerPed' then
             Player[playerId][key] = GetPlayerPed(playerId)
+        elseif key == 'Notify' then
+            Player[playerId][key] = value(function(...)
+                MSK.Notification(playerId, ...)
+            end)
         elseif key == 'vehicle' then
             Player[playerId][key] = NetworkGetEntityFromNetworkId(value)
             Player[playerId]['vehNetId'] = value
@@ -44,19 +48,5 @@ local onPlayer = function(key, value, oldValue)
     end
 end
 RegisterNetEvent('msk_core:onPlayer', onPlayer)
-
-local onPlayerRemove = function(key, value)
-    local playerId = tonumber(source)
-    if not Player[playerId] then return end
-
-    Player[playerId][key] = nil
-
-    if key == 'vehicle' then
-        Player[playerId]['vehNetId'] = nil
-    end
-
-    TriggerEvent('msk_core:OnPlayerRemove', playerId, key, value)
-end
-RegisterNetEvent('msk_core:onPlayerRemove', onPlayerRemove)
 
 MSK.Player = Player

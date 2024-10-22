@@ -24,22 +24,11 @@ end
 exports('GetVehicleWithPlate', MSK.GetVehicleWithPlate)
 
 MSK.GetVehicleInDirection = function(distance)
-    local playerPed = PlayerPedId()
-    local playerCoords = GetEntityCoords(playerPed)
-    local destination = GetOffsetFromEntityInWorldCoords(playerPed, 0.0, distance or 5.0, 0.0)
-    local handle = StartShapeTestCapsule(playerCoords, destination, distance or 5.0, 2, playerPed, 4)
-
-    local entity = MSK.Timeout.Await(1000, function()
-        local retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(handle)
-
-        if retval ~= 1 and hit then
-            return entityHit ~= 0 and entityHit
-        end
-    end, "No result received from GetShapeTestResult on function GetVehicleInFront")
+    local entity = MSK.Request.Raycast(distance, 2)
 
     if DoesEntityExist(entity) then
         local entityCoords = GetEntityCoords(entity)
-        return entity, entityCoords, ('%.2f'):format(#(playerCoords - entityCoords))
+        return entity, entityCoords, ('%.2f'):format(#(MSK.Player.coords - entityCoords))
     end
 
     return entity
@@ -48,8 +37,10 @@ MSK.GetVehicleInFront = MSK.GetVehicleInDirection
 exports('GetVehicleInDirection', MSK.GetVehicleInDirection)
 
 MSK.GetPedVehicleSeat = function(playerPed, vehicle)
-    if not playerPed then playerPed = PlayerPedId() end
-    if not vehicle then GetVehiclePedIsIn(playerPed, false) end
+    if not playerPed then playerPed = MSK.Player.ped end
+    if not vehicle then vehicle = MSK.Player.vehicle end
+
+    if not DoesEntityExist(vehicle) then return false end
     
     for i = -1, 16 do
         if GetPedInVehicleSeat(vehicle, i) == playerPed then 
@@ -85,7 +76,7 @@ MSK.GetVehicleLabel = function(vehicle, model)
         vehicleModel = GetEntityModel(vehicle)
     end
 
-    if model then
+    if model and not vehicleModel then
         if not IsModelValid(model) then
             return 'Unknown', error(('The Model does not exist on function MSK.GetVehicleLabel (reveived %s)'):format(model))
         end
@@ -132,9 +123,9 @@ local isInVehicle, isEnteringVehicle = false, false
 CreateThread(function()
 	while true do
 		local sleep = 200
-		local playerPed = PlayerPedId()
+		local playerPed = MSK.Player.ped
 
-		if not isInVehicle and not IsPlayerDead(PlayerId()) then
+		if not isInVehicle and not IsPlayerDead(MSK.Player.clientId) then
 			if DoesEntityExist(GetVehiclePedIsTryingToEnter(playerPed)) and not isEnteringVehicle then
 				local vehicle = GetVehiclePedIsTryingToEnter(playerPed)
                 local plate = GetVehicleNumberPlateText(vehicle)
@@ -162,7 +153,7 @@ CreateThread(function()
                 TriggerServerEvent('msk_core:enteredVehicle', currentVehicle.plate, currentVehicle.seat, currentVehicle.netId, currentVehicle.isEngineOn, currentVehicle.isDamaged)
 			end
 		elseif isInVehicle then
-			if not IsPedInAnyVehicle(playerPed, false) or IsPlayerDead(PlayerId()) then
+			if not IsPedInAnyVehicle(playerPed, false) or IsPlayerDead(MSK.Player.clientId) then
 				isInVehicle = false
 				TriggerEvent('msk_core:exitedVehicle', currentVehicle.vehicle, currentVehicle.plate, currentVehicle.seat, currentVehicle.netId, currentVehicle.isEngineOn, currentVehicle.isDamaged)
                 TriggerServerEvent('msk_core:exitedVehicle', currentVehicle.plate, currentVehicle.seat, currentVehicle.netId, currentVehicle.isEngineOn, currentVehicle.isDamaged)

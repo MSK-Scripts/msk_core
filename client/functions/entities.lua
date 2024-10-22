@@ -5,7 +5,7 @@ GetEntities = function(isPlayerEntity)
         for _, player in ipairs(GetActivePlayers()) do
             local ped = GetPlayerPed(player)
 
-            if DoesEntityExist(ped) and ped ~= PlayerPedId() then
+            if DoesEntityExist(ped) and ped ~= MSK.Player.ped then
                 entities[player] = ped
             end
         end
@@ -23,7 +23,7 @@ GetClosestEntity = function(isPlayerEntity, coords)
     if coords then
         coords = vector3(coords.x, coords.y, coords.z)
     else
-        coords = GetEntityCoords(PlayerPedId())
+        coords = MSK.Player.coords
     end
 
     for k, entity in pairs(entites) do
@@ -44,7 +44,7 @@ GetClosestEntities = function(isPlayerEntity, coords, distance)
     if coords then
         coords = vector3(coords.x, coords.y, coords.z)
     else
-        coords = GetEntityCoords(PlayerPedId())
+        coords = MSK.Player.coords
     end
 
     for k, entity in pairs(entites) do
@@ -59,14 +59,14 @@ GetClosestEntities = function(isPlayerEntity, coords, distance)
 end
 
 PlayerDied = function(deathCause, killer, killerServerId)
-    local playerPed = PlayerPedId()
-	local playerCoords = GetEntityCoords(playerPed)
+    local playerPed = MSK.Player.ped
+	local playerCoords = MSK.Player.coords
 
     local data = {
         killedByPlayer = false,
         victim = playerPed,
         victimCoords = playerCoords,
-        victimServerId = GetPlayerServerId(PlayerId())
+        victimServerId = MSK.Player.serverId
     }
 
     if killer and killerServerId then
@@ -93,7 +93,7 @@ AddEventHandler('gameEventTriggered', function(event, data)
             local playerPed = entity
             local playerDied = data[4]
 
-            if playerDied and NetworkGetPlayerIndexFromPed(playerPed) == PlayerId() and (IsPedDeadOrDying(playerPed, true) or IsPedFatallyInjured(playerPed)) then
+            if playerDied and NetworkGetPlayerIndexFromPed(playerPed) == MSK.Player.clientId and (IsPedDeadOrDying(playerPed, true) or IsPedFatallyInjured(playerPed)) then
                 local deathCause, killerEntity = GetPedCauseOfDeath(playerPed), GetPedSourceOfDeath(playerPed)
                 local killer = NetworkGetPlayerIndexFromPed(killerEntity)
 

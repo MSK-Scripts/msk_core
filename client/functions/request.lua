@@ -23,12 +23,6 @@ MSK.Request.ScaleformMovie = function(scaleformName, timeout)
 end
 exports('RequestScaleformMovie', MSK.Request.ScaleformMovie)
 
-setmetatable(MSK.Request, {
-    __call = function(_, request, hasLoaded, assetType, asset, timeout, ...)
-        return MSK.Request.Streaming(request, hasLoaded, assetType, asset, timeout, ...)
-    end
-})
-
 MSK.Request.AnimDict = function(animDict)
     assert(animDict and type(animDict) == 'string', ("Parameter 'animDict' has to be a 'string' (reveived %s)"):format(type(animDict)))
     assert(DoesAnimDictExist(animDict), ("attempted to load invalid animDict '%s'"):format(animDict))
@@ -79,3 +73,36 @@ MSK.Request.TextureDict = function(textureDict)
     return MSK.Request(RequestStreamedTextureDict, HasStreamedTextureDictLoaded, 'textureDict', textureDict)
 end
 exports('RequestTextureDict', MSK.Request.TextureDict)
+
+MSK.Request.Raycast = function(distance, flag)
+    local flags = {
+        none = 0,
+        all = -1,
+        world = 1,
+        vehicle = 2,
+        ped = 4,
+        object = 16,
+        water = 32,
+        glass = 64,
+        river = 128,
+        foliage = 256,
+    }
+
+    if type(flag) ~= 'number' then
+        flag = flags[flag] or -1
+    end
+
+    local destination = GetOffsetFromEntityInWorldCoords(MSK.Player.ped, 0.0, distance or 5.0, 0.0)
+    local handle = StartShapeTestCapsule(MSK.Player.coords, destination, distance or 5.0, flag or -1, MSK.Player.ped, 4)
+
+    local entity = MSK.Timeout.Await(1000, function()
+        local retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(handle)
+
+        if retval ~= 1 and hit then
+            return entityHit ~= 0 and entityHit
+        end
+    end, ("Function 'MSK.Request.Raycast' timed out after 1s - no result received from GetShapeTestResult (%s) on function MSK.Request.Raycast"):format(handle))
+
+    return entity
+end
+exports('RequestRaycast', MSK.Request.Raycast)

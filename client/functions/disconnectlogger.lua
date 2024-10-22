@@ -35,11 +35,8 @@ local display = function(data)
     CreateThread(function()
         while showDisplay do
             local sleep = 500
-
-            local playerPed = PlayerPedId()
-            local playerCoords = GetEntityCoords(playerPed)
-            local dist = #(data.coords - playerCoords)
-
+            
+            local dist = #(data.coords - MSK.Player.coords)
             local coordsUsed = vec3(data.coords.x, data.coords.y, data.coords.z + 0.2)
 
             if dist <= 20.0 then

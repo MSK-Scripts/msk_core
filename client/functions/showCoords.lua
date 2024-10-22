@@ -48,9 +48,9 @@ end
 startShowCoordsThread = function()
 	while showCoords do
 		local sleep = 1
-		local playerPed = PlayerPedId()
-		local playerX, playerY, playerZ = table.unpack(GetEntityCoords(playerPed))
-		local playerH = GetEntityHeading(playerPed)
+		
+		local playerX, playerY, playerZ = table.unpack(MSK.Player.coords)
+		local playerH = MSK.Player.heading
 
 		DrawGenericText(("~g~X~w~ = ~r~%s ~g~Y~w~ = ~r~%s ~g~Z~w~ = ~r~%s ~g~H~w~ = ~r~%s~s~"):format(MSK.Math.Round(playerX, 2), MSK.Math.Round(playerY, 2), MSK.Math.Round(playerZ, 2), MSK.Math.Round(playerH, 2)))
 

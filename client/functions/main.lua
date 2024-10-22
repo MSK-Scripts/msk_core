@@ -166,7 +166,7 @@ MSK.IsSpawnPointClear = function(coords, maxDistance)
     if coords then
         coords = vector3(coords.x, coords.y, coords.z)
     else
-        coords = GetEntityCoords(PlayerPedId())
+        coords = MSK.Player.coords
     end
 
     for k, vehicle in pairs(GetGamePool('CVehicle')) do

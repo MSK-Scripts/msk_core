@@ -19,11 +19,11 @@ local Controls = {
 }
 
 local interrupted = function(data)
-    if not data.useWhileDead and IsEntityDead(MSK.Player.playerPed) then return true end
-    if not data.useWhileRagdoll and IsPedRagdoll(MSK.Player.playerPed) then return true end
-    if not data.useWhileCuffed and IsPedCuffed(MSK.Player.playerPed) then return true end
-    if not data.useWhileFalling and IsPedFalling(MSK.Player.playerPed) then return true end
-    if not data.useWhileSwimming and IsPedSwimming(MSK.Player.playerPed) then return true end
+    if not data.useWhileDead and IsEntityDead(MSK.Player.ped) then return true end
+    if not data.useWhileRagdoll and IsPedRagdoll(MSK.Player.ped) then return true end
+    if not data.useWhileCuffed and IsPedCuffed(MSK.Player.ped) then return true end
+    if not data.useWhileFalling and IsPedFalling(MSK.Player.ped) then return true end
+    if not data.useWhileSwimming and IsPedSwimming(MSK.Player.ped) then return true end
 end
 
 local setProgressData = function(data)
@@ -33,10 +33,10 @@ local setProgressData = function(data)
     if anim then
         if anim.dict then
             MSK.Request.AnimDict(anim.dict)
-            TaskPlayAnim(MSK.Player.playerPed, anim.dict, anim.anim, anim.blendIn or 3.0, anim.blendOut or 1.0, anim.duration or -1, anim.flag or 49, anim.playbackRate or 0, anim.lockX, anim.lockY, anim.lockZ)
+            TaskPlayAnim(MSK.Player.ped, anim.dict, anim.anim, anim.blendIn or 3.0, anim.blendOut or 1.0, anim.duration or -1, anim.flag or 49, anim.playbackRate or 0, anim.lockX, anim.lockY, anim.lockZ)
             RemoveAnimDict(anim.dict)
         elseif anim.scenario then
-            TaskStartScenarioInPlace(MSK.Player.playerPed, anim.scenario, 0, anim.playEnter ~= nil and anim.playEnter or true)
+            TaskStartScenarioInPlace(MSK.Player.ped, anim.scenario, 0, anim.playEnter ~= nil and anim.playEnter or true)
         end
     end
 
@@ -84,10 +84,10 @@ local setProgressData = function(data)
 
     if anim then
         if anim.dict then
-            StopAnimTask(MSK.Player.playerPed, anim.dict, anim.clip, 1.0)
-            ClearPedTasks(MSK.Player.playerPed)
+            StopAnimTask(MSK.Player.ped, anim.dict, anim.clip, 1.0)
+            ClearPedTasks(MSK.Player.ped)
         else
-            ClearPedTasks(MSK.Player.playerPed)
+            ClearPedTasks(MSK.Player.ped)
         end
     end
 end

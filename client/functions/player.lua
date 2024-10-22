@@ -11,16 +11,6 @@ function Player:set(key, value)
     end
 end
 
-function Player:remove(key)
-    if self[key] then
-        TriggerEvent('msk_core:onPlayerRemove', key, self[key])
-        TriggerServerEvent('msk_core:onPlayerRemove', key, self[key])
-        self[key] = nil
-
-        return true
-    end
-end
-
 Player:set('clientId', PlayerId())
 Player:set('serverId', GetPlayerServerId(Player.clientId))
 Player:set('playerId', Player.serverId)
@@ -47,7 +37,7 @@ local GetPlayerDeath = function()
 end
 
 setmetatable(Player, {
-    __index = function(self, key)
+    __index = function(self, key, ...)
         if key == 'coords' then
             return GetEntityCoords(self.ped)
         elseif key == 'heading' then

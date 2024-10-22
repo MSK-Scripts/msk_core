@@ -4,7 +4,7 @@ games { 'gta5' }
 author 'Musiker15 - MSK Scripts'
 name 'msk_core'
 description 'Functions for MSK Scripts'
-version '2.6.6'
+version '2.6.7'
 
 lua54 'yes'
 

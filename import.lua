@@ -26,7 +26,7 @@ local context = IsDuplicityVersion() and 'server' or 'client'
 MSK = exports.msk_core:GetLib()
 
 ----------------------------------------------------------------
--- Support for old Scripts
+-- Quick function access
 ----------------------------------------------------------------
 -- MSK.Input(header, placeholder, field, cb)
 setmetatable(MSK.Input, {
@@ -49,6 +49,15 @@ setmetatable(MSK.Progress, {
     end
 })
 
+if context == 'server' then
+    -- MSK.Check(repo)
+    setmetatable(MSK.Check, {
+        __call = function(self, ...)
+            self.Version(...)
+        end
+    })
+end
+
 ----------------------------------------------------------------
 -- MSK.Player
 ----------------------------------------------------------------
@@ -67,10 +76,6 @@ if context == 'client' then
 
     AddEventHandler('msk_core:onPlayer', function(key, value, oldValue)
         MSK.Player[key] = value
-    end)
-
-    AddEventHandler('msk_core:onPlayerRemove', function(key, value)
-        MSK.Player[key] = nil
     end)
 end
 
@@ -103,11 +108,6 @@ if context == 'server' then
         end
 
         MSK.Player[playerId][key] = value
-    end)
-
-    AddEventHandler('msk_core:OnPlayerRemove', function(playerId, key, value)
-        if not MSK.Player[playerId] then return end
-        MSK.Player[playerId][key] = nil
     end)
 
     for playerId, data in pairs(MSK.Player) do

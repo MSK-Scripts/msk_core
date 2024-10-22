@@ -3,8 +3,12 @@ local RegisteredPoints = {}
 local closestPoint
 
 local RemovePoint = function(self)
-    if closestPoint.id and closestPoint.id == self.id then
+    if closestPoint and closestPoint.id and closestPoint.id == self.id then
         closestPoint = nil
+    end
+
+    if self.onRemove then
+        self.onRemove(self)
     end
 
     RegisteredPoints[self.id] = nil
@@ -93,13 +97,32 @@ Points.Add = function(properties)
 
     return self
 end
+exports('AddPoint', Points.Add)
+
+Points.Remove = function(pointId)
+    if not RegisteredPoints[pointId] then return false end
+    RegisteredPoints[pointId].Remove()
+    return true
+end
+exports('RemovePoint', Points.Remove)
+
+Points.RemoveAllPoints = function()
+    for k, point in pairs(RegisteredPoints) do
+        point.Remove()
+    end
+
+    RegisteredPoints = {}
+end
+exports('RemoveAllPoints', Points.RemoveAllPoints)
 
 Points.GetAllPoints = function()
     return RegisteredPoints
 end
+exports('GetAllPoints', Points.GetAllPoints)
 
 Points.GetClosestPoint = function()
     return closestPoint
 end
+exports('GetClosestPoint', Points.GetClosestPoint)
 
 MSK.Points = Points
