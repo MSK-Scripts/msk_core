@@ -96,7 +96,7 @@ MSK.Check.Dependency = function(resource, minimumVersion, showMessage)
     if currentVersion ~= minimumVersion then
         local cV = MSK.String.Split(currentVersion, '.')
 	    local mV = MSK.String.Split(minimumVersion, '.')
-        local errMsg = ("^1Resource %s requires a minimum version of '%s' of resource '%s'! ^5Current Version: ^1%s^0"):format(GetInvokingResource() or GetCurrentResourceName(), minimumVersion, resource, currentVersion)
+        local errMsg = ("^1resource %s requires minimum version '%s' of resource '%s'! (current version: %s)^0"):format(GetInvokingResource() or GetCurrentResourceName(), minimumVersion, resource, currentVersion)
         
         for i = 1, #cV do
             local current, minimum = tonumber(cV[i]), tonumber(mV[i])
@@ -104,7 +104,7 @@ MSK.Check.Dependency = function(resource, minimumVersion, showMessage)
             if current ~= minimum then
                 if not current or current < minimum then
                     if showMessage then
-                        print(errMsg)
+                        MSK.Logging('error', errMsg)
                     end
 
                     return false, errMsg

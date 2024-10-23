@@ -36,9 +36,9 @@ local onPlayer = function(key, value, oldValue)
         if key == 'ped' or key == 'playerPed' then
             Player[playerId][key] = GetPlayerPed(playerId)
         elseif key == 'Notify' then
-            Player[playerId][key] = value(function(...)
+            Player[playerId][key] = function(...)
                 MSK.Notification(playerId, ...)
-            end)
+            end
         elseif key == 'vehicle' then
             Player[playerId][key] = NetworkGetEntityFromNetworkId(value)
             Player[playerId]['vehNetId'] = value

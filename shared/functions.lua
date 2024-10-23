@@ -6,8 +6,7 @@ exports('Config', MSK.GetConfig)
 
 MSK.Logging = function(code, ...)
     assert(code and type(code) == 'string', 'Parameter "code" has to be a string on function MSK.Logging')
-    local script = ('[^2%s^0]'):format(GetInvokingResource() or 'msk_core')
-    print(('%s %s'):format(script, Config.LoggingTypes[code] or Config.LoggingTypes['debug']), ..., '^0')
+    print(('%s %s'):format(('[^2%s^0]'):format(GetInvokingResource() or 'msk_core'), Config.LoggingTypes[code] or Config.LoggingTypes['debug']), ..., '^0')
 end
 MSK.logging = MSK.Logging -- Support for old Versions
 exports('Logging', MSK.Logging)

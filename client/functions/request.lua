@@ -12,6 +12,12 @@ MSK.Request.Streaming = function(request, hasLoaded, assetType, asset, timeout, 
 end
 exports('RequestStreaming', MSK.Request.Streaming)
 
+setmetatable(MSK.Request, {
+    __call = function(_, request, hasLoaded, assetType, asset, timeout, ...)
+        return MSK.Request.Streaming(request, hasLoaded, assetType, asset, timeout, ...)
+    end
+})
+
 MSK.Request.ScaleformMovie = function(scaleformName, timeout)
     assert(scaleformName and type(scaleformName) == 'string', ("Parameter 'scaleformName' has to be a 'string' (reveived %s)"):format(type(scaleformName)))
 
@@ -29,7 +35,7 @@ MSK.Request.AnimDict = function(animDict)
 
     if HasAnimDictLoaded(animDict) then return animDict end
 
-    return MSK.Request(RequestAnimDict, HasAnimDictLoaded, 'animDict', animDict)
+    return MSK.Request.Streaming(RequestAnimDict, HasAnimDictLoaded, 'animDict', animDict)
 end
 MSK.LoadAnimDict = MSK.Request.AnimDict -- Support for old Versions
 exports('LoadAnimDict', MSK.Request.AnimDict) -- Support for old Versions
@@ -42,7 +48,7 @@ MSK.Request.Model = function(model)
 
     if HasModelLoaded(model) then return model end
 
-    return MSK.Request(RequestModel, HasModelLoaded, 'model', model)
+    return MSK.Request.Streaming(RequestModel, HasModelLoaded, 'model', model)
 end
 MSK.LoadModel = MSK.Request.Model -- Support for old Versions
 exports('LoadModel', MSK.Request.Model) -- Support for old Versions
@@ -52,7 +58,7 @@ MSK.Request.AnimSet = function(animSet)
     assert(animSet and type(animSet) == 'string', ("Parameter 'animSet' has to be a 'string' (reveived %s)"):format(type(animSet)))
     if HasAnimSetLoaded(animSet) then return animSet end
 
-    return MSK.Request(RequestAnimSet, HasAnimSetLoaded, 'animSet', animSet)
+    return MSK.Request.Streaming(RequestAnimSet, HasAnimSetLoaded, 'animSet', animSet)
 end
 exports('RequestAnimSet', MSK.Request.AnimSet)
 
@@ -61,7 +67,7 @@ MSK.Request.PtfxAsset = function(ptFxName)
 
     if HasNamedPtfxAssetLoaded(ptFxName) then return ptFxName end
 
-    return MSK.Request(RequestNamedPtfxAsset, HasNamedPtfxAssetLoaded, 'ptFxName', ptFxName)
+    return MSK.Request.Streaming(RequestNamedPtfxAsset, HasNamedPtfxAssetLoaded, 'ptFxName', ptFxName)
 end
 exports('RequestPtfxAsset', MSK.Request.PtfxAsset)
 
@@ -70,7 +76,7 @@ MSK.Request.TextureDict = function(textureDict)
 
     if HasStreamedTextureDictLoaded(textureDict) then return textureDict end
 
-    return MSK.Request(RequestStreamedTextureDict, HasStreamedTextureDictLoaded, 'textureDict', textureDict)
+    return MSK.Request.Streaming(RequestStreamedTextureDict, HasStreamedTextureDictLoaded, 'textureDict', textureDict)
 end
 exports('RequestTextureDict', MSK.Request.TextureDict)
 

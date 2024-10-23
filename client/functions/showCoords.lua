@@ -28,6 +28,20 @@ end
 exports('HideCoords', MSK.Coords.Hide)
 RegisterNetEvent('msk_core:hideCoords', MSK.Coords.Hide)
 
+MSK.Coords.Copy = function(coords)
+	if not coords then coords = MSK.Player.coords end
+	local x, y, z, h = table.unpack(coords)
+	local newCoords = {x = MSK.Math.Round(x, 2), y = MSK.Math.Round(y, 2), z = MSK.Math.Round(z, 2)}
+	newCoords.h = h and MSK.Math.Round(h, 2)
+
+	SendNUIMessage({
+		action = "copyCoords",
+		value = MSK.CoordsToString(newCoords),
+	})
+end
+exports('CopyCoords', MSK.Coords.Copy)
+RegisterNetEvent('msk_core:copyCoords', MSK.Coords.Copy)
+
 MSK.Register('msk_core:doesShowCoords', function(source)
 	return showCoords
 end)

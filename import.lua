@@ -49,6 +49,14 @@ setmetatable(MSK.Progress, {
     end
 })
 
+if context == 'client' then
+    setmetatable(MSK.Request, {
+        __call = function(_, request, hasLoaded, assetType, asset, timeout, ...)
+            return MSK.Request.Streaming(request, hasLoaded, assetType, asset, timeout, ...)
+        end
+    })
+end
+
 if context == 'server' then
     -- MSK.Check(repo)
     setmetatable(MSK.Check, {

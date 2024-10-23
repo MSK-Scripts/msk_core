@@ -48,6 +48,8 @@ $(document).ready(function() {
             openNumpad(data);
         } else if (data.action == 'closeNumpad') {
             closeNumpad();
+        } else if (data.action == 'copyCoords') {
+            copyCoords(data.value);
         }
     })
 })
@@ -68,6 +70,18 @@ function playSound(sound, volume) {
     var audio = new Audio(`./sounds/${sound}`);
     audio.volume = volume;
     audio.play();
+}
+
+function copyCoords(value) {
+    console.log(`Copying ${value} to your clipboard`);
+    const el = document.createElement('textarea');
+
+    el.value = value;
+    document.body.appendChild(el);
+    el.select();
+    
+    document.execCommand('copy');
+    document.body.removeChild(el);
 }
 
 /* ----------------

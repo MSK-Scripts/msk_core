@@ -18,6 +18,12 @@ Config.showCoords = {
     command = 'coords',
     groups = {'superadmin', 'admin'}
 }
+
+Config.copyCoords = {
+    enable = true,
+    command = 'copyCoords',
+    groups = {'superadmin', 'admin'}
+}
 ----------------------------------------------------------------
 -- Set to 'msk' for MSK UI Notification
 -- Set to 'custom' for Config.customNotification()
