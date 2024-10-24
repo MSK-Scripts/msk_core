@@ -106,15 +106,6 @@ Points.Remove = function(pointId)
 end
 exports('RemovePoint', Points.Remove)
 
-Points.RemoveAllPoints = function()
-    for k, point in pairs(RegisteredPoints) do
-        point.Remove()
-    end
-
-    RegisteredPoints = {}
-end
-exports('RemoveAllPoints', Points.RemoveAllPoints)
-
 Points.GetAllPoints = function()
     return RegisteredPoints
 end
