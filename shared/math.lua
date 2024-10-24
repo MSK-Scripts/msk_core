@@ -9,7 +9,7 @@ MSK.Math.Number = function(length)
 
 	return length > 0 and MSK.Math.Number(length - 1) .. Numbers[math.random(1, #Numbers)] or ''
 end
-MSK.GetRandomNumber = MSK.Math.Number
+MSK.GetRandomNumber = MSK.Math.Number -- Backwards compatibility
 exports('GetRandomNumber', MSK.Math.Number)
 
 MSK.Math.Round = function(num, decimal)
@@ -17,7 +17,7 @@ MSK.Math.Round = function(num, decimal)
     assert(not decimal or decimal and tonumber(decimal), 'Parameter "decimal" has to be a number on function MSK.Math.Round')
     return tonumber(string.format("%." .. (decimal or 0) .. "f", num))
 end
-MSK.Round = MSK.Math.Round
+MSK.Round = MSK.Math.Round -- Backwards compatibility
 exports('Round', MSK.Math.Round)
 
 MSK.Math.Comma = function(int, tag)
@@ -36,5 +36,5 @@ MSK.Math.Comma = function(int, tag)
 
     return newInt
 end
-MSK.Comma = MSK.Math.Comma
+MSK.Comma = MSK.Math.Comma -- Backwards compatibility
 exports('Comma', MSK.Math.Comma)
