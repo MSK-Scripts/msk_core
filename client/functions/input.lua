@@ -30,11 +30,10 @@ MSK.Input.Open = function(header, placeholder, field, cb)
 end
 MSK.OpenInput = MSK.Input.Open
 exports('Input', MSK.Input.Open)
-exports('openInput', MSK.Input.Open) -- Support for old Scripts
 
 setmetatable(MSK.Input, {
-    __call = function(self, header, placeholder, field, cb)
-        self.Open(header, placeholder, field, cb)
+    __call = function(self, ...)
+        self.Open(...)
     end
 })
 
@@ -46,7 +45,7 @@ MSK.Input.Close = function()
         action = 'closeInput'
     })
 end
-MSK.CloseInput = MSK.Input.Close -- Support for old Scripts
+MSK.CloseInput = MSK.Input.Close -- Backwards compatibility
 exports('CloseInput', MSK.Input.Close)
 RegisterNetEvent('msk_core:closeInput', MSK.Input.Close)
 
