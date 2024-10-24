@@ -30,14 +30,14 @@ MSK.Coords.Show = function(playerId)
 	if not playerId or playerId == 0 then return end
 	TriggerClientEvent('msk_core:showCoords', playerId)
 end
-MSK.ShowCoords = MSK.Coords.Show -- Support for old Scripts
+MSK.ShowCoords = MSK.Coords.Show -- Backwards compatibility
 exports('ShowCoords', MSK.Coords.Show)
 
 MSK.Coords.Active = function(playerId)
 	if not playerId or playerId == 0 then return end
 	return MSK.Trigger('msk_core:doesShowCoords', playerId)
 end
-MSK.DoesShowCoords = MSK.Coords.Active -- Support for old Scripts
+MSK.DoesShowCoords = MSK.Coords.Active -- Backwards compatibility
 exports('DoesShowCoords', MSK.Coords.Active)
 
 MSK.Coords.Hide = function(playerId)
