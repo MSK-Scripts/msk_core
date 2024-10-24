@@ -73,7 +73,7 @@ end
 MSK.RegisterCommand = function(commandName, callback, properties, ...)
     if ... ~= nil then
         -- Backwards compatibility
-        MSK.Logging('warn', ('Command "%s" is using deprecated syntax for MSK.RegisterCommand. Please update to to new syntax.'):format(commandName))
+        MSK.Logging('warn', ('Command "%s" is using deprecated syntax for MSK.RegisterCommand. Please update to new syntax!'):format(commandName))
         return MSK._RegisterCommand(commandName, callback, properties, ...)
     end
 
@@ -169,7 +169,7 @@ end
 exports('RegisterCommand', MSK.RegisterCommand)
 
 ----------------------------------------------------------------
--- Do NOT use this! Old syntax!
+-- Do NOT use this! Old syntax! Backwards compatibility
 ----------------------------------------------------------------
 MSK._RegisterCommand = function(commandName, group, cb, console, framework, suggestion)
     local properties
