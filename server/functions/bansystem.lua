@@ -149,7 +149,6 @@ MSK.IsPlayerBanned = function(playerId)
     return false, true
 end
 exports('IsPlayerBanned', MSK.IsPlayerBanned)
-exports('isPlayerBanned', MSK.IsPlayerBanned) -- Support for old Version
 
 MSK.BanPlayer = function(playerId, targetId, time, reason)
     local targetName = GetPlayerName(targetId)
@@ -198,7 +197,6 @@ MSK.BanPlayer = function(playerId, targetId, time, reason)
     end)
 end
 exports('BanPlayer', MSK.BanPlayer)
-exports('banPlayer', MSK.BanPlayer) -- Support for old Scripts
 
 MSK.UnbanPlayer = function(playerId, banId)
     banId = tonumber(banId)
@@ -227,7 +225,6 @@ MSK.UnbanPlayer = function(playerId, banId)
     end)
 end
 exports('UnbanPlayer', MSK.UnbanPlayer)
-exports('unbanPlayer', MSK.UnbanPlayer) -- Support for old Scripts
 
 if Config.BanSystem.enable and Config.BanSystem.commands.enable then
     while not MSK.RegisterCommand do
