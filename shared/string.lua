@@ -10,8 +10,7 @@ MSK.String.Random = function(length)
 
 	return length > 0 and MSK.String.Random(length - 1) .. Charset[math.random(1, #Charset)] or ''
 end
-MSK.GetRandomString = MSK.String.Random
-MSK.GetRandomLetter = MSK.String.Random -- Support for old Versions
+MSK.GetRandomString = MSK.String.Random -- Backwards compatibility
 exports('GetRandomString', MSK.String.Random)
 
 MSK.String.StartsWith = function(str, startStr)
@@ -19,7 +18,7 @@ MSK.String.StartsWith = function(str, startStr)
     assert(startStr and type(startStr) == 'string', 'Parameter "startStr" has to be a string on function MSK.String.StartsWith')
     return str:sub(1, #startStr) == startStr
 end
-MSK.StartsWith = MSK.String.StartsWith
+MSK.StartsWith = MSK.String.StartsWith -- Backwards compatibility
 exports('StartsWith', MSK.String.StartsWith)
 
 MSK.String.Trim = function(str, bool)
@@ -30,7 +29,7 @@ MSK.String.Trim = function(str, bool)
 end
 exports('Trim', MSK.String.Trim)
 
--- Support for old Versions
+-- Backwards compatibility
 MSK.Trim = function(str, bool)
     if bool then return MSK.String.Trim(str) end
     return MSK.String.Trim(str, true)
@@ -47,5 +46,5 @@ MSK.String.Split = function(str, delimiter)
 
     return result 
 end
-MSK.Split = MSK.String.Split -- Support for old Versions
+MSK.Split = MSK.String.Split -- Backwards compatibility
 exports('Split', MSK.String.Split)
