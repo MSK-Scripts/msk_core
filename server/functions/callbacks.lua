@@ -7,9 +7,8 @@ local CallbackHandler = {}
 MSK.Register = function(eventName, cb)
     Callbacks[eventName] = cb
 end
-MSK.RegisterCallback = MSK.Register -- Support for old Scripts
+MSK.RegisterCallback = MSK.Register -- Backwards compatibility
 exports('Register', MSK.Register)
-exports('RegisterCallback', MSK.Register) -- Support for old Scripts
 
 RegisterNetEvent('msk_core:server:triggerCallback', function(eventName, requestId, cb, ...)
     local playerId = source
@@ -64,9 +63,8 @@ MSK.Trigger = function(eventName, playerId, ...)
     local result = Citizen.Await(p)
     return table.unpack(result)
 end
-MSK.TriggerCallback = MSK.Trigger -- Support for old Scripts
+MSK.TriggerCallback = MSK.Trigger -- Backwards compatibility
 exports('Trigger', MSK.Trigger)
-exports('TriggerCallback', MSK.Trigger) -- Support for old Scripts
 
 RegisterNetEvent("msk_core:server:callbackResponse", function(requestId, ...)
 	if not CallbackHandler[requestId] then return end
