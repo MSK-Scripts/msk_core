@@ -33,8 +33,8 @@ MSK.OpenNumpad = MSK.Numpad.Open
 exports('Numpad', MSK.Numpad.Open)
 
 setmetatable(MSK.Numpad, {
-    __call = function(self, pin, showPin, cb)
-        self.Open(pin, showPin, cb)
+    __call = function(self, ...)
+        self.Open(...)
     end
 })
 
