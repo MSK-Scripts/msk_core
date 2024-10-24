@@ -13,8 +13,8 @@ end
 exports('RequestStreaming', MSK.Request.Streaming)
 
 setmetatable(MSK.Request, {
-    __call = function(_, request, hasLoaded, assetType, asset, timeout, ...)
-        return MSK.Request.Streaming(request, hasLoaded, assetType, asset, timeout, ...)
+    __call = function(self, ...)
+        return self.Streaming(...)
     end
 })
 
@@ -37,8 +37,7 @@ MSK.Request.AnimDict = function(animDict)
 
     return MSK.Request.Streaming(RequestAnimDict, HasAnimDictLoaded, 'animDict', animDict)
 end
-MSK.LoadAnimDict = MSK.Request.AnimDict -- Support for old Versions
-exports('LoadAnimDict', MSK.Request.AnimDict) -- Support for old Versions
+MSK.LoadAnimDict = MSK.Request.AnimDict -- Backwards compatibility
 exports('RequestAnimDict', MSK.Request.AnimDict)
 
 MSK.Request.Model = function(model)
@@ -50,8 +49,7 @@ MSK.Request.Model = function(model)
 
     return MSK.Request.Streaming(RequestModel, HasModelLoaded, 'model', model)
 end
-MSK.LoadModel = MSK.Request.Model -- Support for old Versions
-exports('LoadModel', MSK.Request.Model) -- Support for old Versions
+MSK.LoadModel = MSK.Request.Model -- Backwards compatibility
 exports('RequestModel', MSK.Request.Model)
 
 MSK.Request.AnimSet = function(animSet)
