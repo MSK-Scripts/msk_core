@@ -1,0 +1,61 @@
+.textui {
+  position: absolute;
+  bottom:6vh;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+.textui-key {
+  position: relative;
+  width: 4vh;
+  height:4vh;
+  line-height:4vh;
+  left:50%;
+  font-size:2vh;
+  font-weight:bold;
+  color:white;
+  text-align:center;
+  transform:translateX(-50%);
+  transition: 200ms;
+  background: repeating-linear-gradient(
+    -55deg,
+    rgb(24, 198, 0),
+    rgb(24, 198, 0) 0.6vh,
+    rgb(18, 158, 0) 0.6vh,
+    rgb(18, 158, 0) 1.6vh
+  );
+  border-radius:0.4vh;
+  outline:0.2vh solid rgb(30, 255, 0);
+  box-shadow:0 1.2vh 2vh rgb(30, 255, 0);
+  animation:moveLines 2s infinite;
+  margin-bottom:2vh;
+}
+
+@keyframes moveLines {
+  0% {
+    /* opacity:1.0; */
+    background-position-x: 6vh;
+    margin-bottom:1.6vh;
+  }
+  50% {
+    /* opacity:0.4; */
+    margin-bottom:3.0vh;
+  }
+  100% {
+    /* opacity:1.0; */
+    background-position-x: 2vh;
+    margin-bottom:1.6vh;
+  }
+}
+
+.textui-text {
+  position: relative;
+  max-width:30vh;
+  font-size:2vh;
+  /* color:rgb(204, 204, 204); */
+  color:rgb(255, 255, 255);
+  font-weight:600;
+  text-align: center;
+
+  text-shadow:0vh 0vh 0.5vh black;
+}

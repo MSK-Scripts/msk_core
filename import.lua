@@ -49,16 +49,31 @@ setmetatable(MSK.Progress, {
     end
 })
 
+-- MSK.Timeout(ms, cb, data)
+setmetatable(MSK.Timeout, {
+    __call = function(self, ...)
+        return self.Set(...)
+    end
+})
+
+-- MSK.TextUI(key, text, color)
+setmetatable(MSK.TextUI, {
+    __call = function(self, ...)
+        self.Show(...)
+    end
+})
+
 if context == 'client' then
+    -- MSK.Request(request, hasLoaded, assetType, asset, timeout, ...)
     setmetatable(MSK.Request, {
-        __call = function(_, request, hasLoaded, assetType, asset, timeout, ...)
-            return MSK.Request.Streaming(request, hasLoaded, assetType, asset, timeout, ...)
+        __call = function(self, ...)
+            return self.Streaming(...)
         end
     })
 end
 
 if context == 'server' then
-    -- MSK.Check(repo)
+    -- MSK.Check({auhtor = 'MSK-Scripts', name = 'msk_core', download? = 'url'})
     setmetatable(MSK.Check, {
         __call = function(self, ...)
             self.Version(...)

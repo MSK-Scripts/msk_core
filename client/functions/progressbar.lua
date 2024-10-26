@@ -99,7 +99,7 @@ MSK.Progress.Start = function(data, text, color)
     if type(data) == 'table' then
         duration = data.duration
         text = data.text
-        color = data.color or Config.progressColor
+        color = data.color or Config.ProgressColor or Config.progressColor
         forceOverride = data.forceOverride or forceOverride
     end
 
@@ -111,20 +111,20 @@ MSK.Progress.Start = function(data, text, color)
         action = 'progressBarStart',
         time = duration,
         text = text or '',
-        color = color or Config.progressColor,
+        color = color or Config.ProgressColor or Config.progressColor,
     })
 
     if type(data) == 'table' then
         return setProgressData(data)
     end
 end
-MSK.Progressbar = MSK.Progress.Start -- Support for old Scripts
+MSK.Progressbar = MSK.Progress.Start -- Backwards compatibility
 exports('Progressbar', MSK.Progress.Start)
 RegisterNetEvent("msk_core:progressbar", MSK.Progress.Start)
 
 setmetatable(MSK.Progress, {
-    __call = function(self, data, text, color)
-        self.Start(data, text, color)
+    __call = function(self, ...)
+        self.Start(...)
     end
 })
 
@@ -138,8 +138,7 @@ MSK.Progress.Stop = function()
     isProgressActive = false
     progressData = nil
 end
-MSK.ProgressStop = MSK.Progress.Stop -- Support for old Scripts
-exports('ProgressStop', MSK.Progress.Stop) -- Support for old Scripts
+MSK.ProgressStop = MSK.Progress.Stop -- Backwards compatibility
 RegisterNetEvent("msk_core:progressbarStop", MSK.Progress.Stop)
 
 MSK.Progress.Active = function()
@@ -159,3 +158,8 @@ RegisterCommand('stopProgress', function()
 end)
 RegisterKeyMapping('stopProgress', 'Cancel Progressbar', 'keyboard', 'X')
 TriggerEvent('chat:removeSuggestion', '/stopProgress')
+
+AddEventHandler('onResourceStop', function(resource)
+    if GetCurrentResourceName() ~= resource then return end
+    MSK.Progress.Stop()
+end)

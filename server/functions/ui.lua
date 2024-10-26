@@ -1,6 +1,7 @@
 MSK.Input = {}
 MSK.Numpad = {}
 MSK.Progress = {}
+MSK.TextUI = {}
 
 ----------------------------------------------------------------
 -- MSK.Input
@@ -67,3 +68,30 @@ MSK.Progress.Stop = function(playerId)
     TriggerClientEvent('msk_core:progressbarStop', playerId)
 end
 exports('ProgressStop', MSK.Progress.Stop)
+
+----------------------------------------------------------------
+-- MSK.TextUI
+----------------------------------------------------------------
+MSK.TextUI.Show = function(playerId, key, text, color)
+    if not playerId or playerId <= 0 then return end
+    TriggerClientEvent('msk_core:textUiShow', playerId, key, text, color)
+end
+exports('ShowTextUI', MSK.TextUI.Show)
+
+setmetatable(MSK.TextUI, {
+    __call = function(self, ...)
+        self.Show(...)
+    end
+})
+
+MSK.TextUI.ShowThread = function(playerId, key, text, color)
+    if not playerId or playerId <= 0 then return end
+    TriggerClientEvent('msk_core:textUiShowThread', playerId, key, text, color)
+end
+exports('ShowTextUIThread', MSK.TextUI.ShowThread)
+
+MSK.TextUI.Hide = function(playerId)
+    if not playerId or playerId <= 0 then return end
+    TriggerClientEvent('msk_core:textUiHide', playerId)
+end
+exports('HideTextUI', MSK.TextUI.Hide)

@@ -20,15 +20,32 @@ MSK.Table.Contains = function(tbl, val)
     end
     return false
 end
-MSK.TableContains = MSK.Table.Contains -- Support for old Versions
-MSK.Table_Contains = MSK.Table.Contains -- Support for old Versions
+MSK.TableContains = MSK.Table.Contains -- Backwards compatibility
+MSK.Table_Contains = MSK.Table.Contains -- Backwards compatibility
 exports('TableContains', MSK.Table.Contains)
 
 MSK.Table.Dump = function(tbl)
     return type(tbl) == "table" and json.encode(tbl, { indent = true }) or tostring(tbl)
 end
-MSK.DumpTable = MSK.Table.Dump -- Support for old Versions
+MSK.DumpTable = MSK.Table.Dump -- Backwards compatibility
 exports('TableDump', MSK.Table.Dump)
+
+MSK.Table.DumpString = function(tbl, n)
+    if not n then n = 0 end
+    if type(tbl) ~= "table" then return tostring(tbl) end
+    local s = '{\n'
+
+    for k, v in pairs(tbl) do
+        if type(k) ~= 'number' then k = '"'..k..'"' end
+        for i = 1, n, 1 do s = s .. "    " end
+        s = s .. '    ['..k..'] = ' .. MSK.Table.DumpString(v, n + 1) .. ',\n'
+    end
+
+    for i = 1, n, 1 do s = s .. "    " end
+
+    return s .. '}'
+end
+exports('TableDumpString', MSK.Table.DumpString)
 
 MSK.Table.Size = function(tbl)
     local count = 0

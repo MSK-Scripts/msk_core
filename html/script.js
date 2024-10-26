@@ -50,6 +50,8 @@ $(document).ready(function() {
             closeNumpad();
         } else if (data.action == 'copyCoords') {
             copyCoords(data.value);
+        } else if (data.action == "textUI") {
+            toggleTextui(data)
         }
     })
 })
@@ -92,6 +94,7 @@ const colors = {
     "~r~": "red",
     "~b~": "#378cbf",
     "~g~": "green",
+    "~lg~": "#5eb131",
     "~y~": "yellow",
     "~p~": "purple",
     "~c~": "grey",
@@ -292,5 +295,69 @@ submitNumpad = () => {
         $('#numpad-display').css('color', 'red')
         $('#numpad-display').text(numpadWrongCode)
         numpadInput = ''
+    }
+}
+
+/* ----------------
+MSK Textui 
+---------------- */
+
+convertHexToRgbA = (hexVal, alpha) => {
+    let ret;
+
+    if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hexVal)) {
+        ret = hexVal.slice(1);
+        ret = ret.split('');
+
+        if (ret.length == 3) {
+            let ar = [];
+            ar.push(ret[0]);
+            ar.push(ret[0]);
+            ar.push(ret[1]);
+            ar.push(ret[1]);
+            ar.push(ret[2]);
+            ar.push(ret[2]);
+            ret = ar;
+        }
+
+        ret = '0x' + ret.join('');
+
+        let r = (ret >> 16) & 255;
+        let g = (ret >> 8) & 255;
+        let b = ret & 255;
+
+        return 'rgba(' + [r, g, b, alpha || 1].join(',') + ')';
+    }
+}
+
+toggleTextui = (data) => {
+    if (data.show) {
+        const primaryColor = convertHexToRgbA(data.color, 0.8)
+        const secondaryColor = convertHexToRgbA(data.color, 0.68)
+        let text = data.text
+
+        for (color in colors) {
+            if (text.includes(color)) {
+                let obj = {};
+    
+                obj[color] = `<span style='color: ${colors[color]}'>`;
+                obj['~s~'] = '</span>';
+    
+                text = replaceColors(text, obj);
+            }
+        }
+        
+        $(".textui-key").text(data.key)
+        $(".textui-text").html(text)
+        
+        $(".textui-key").css({
+            background:`repeating-linear-gradient(-55deg, ${primaryColor}, ${primaryColor} 0.8vh, ${secondaryColor} 0.8vh, ${secondaryColor}  1.6vh )`,
+            outlineColor:data.color,
+            boxShadow:`0 1.2vh 2vh ${data.color}`,
+        })
+
+        $(".textui").fadeIn("fast")
+    } else {
+        $(".textui").fadeOut("fast")
     }
 }

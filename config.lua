@@ -47,7 +47,8 @@ Config.customNotification = function(title, message, typ, duration)
     -- Add your own clientside Notification here
 end
 ----------------------------------------------------------------
-Config.progressColor = "#5eb131" -- Default Color for ProgressBar
+Config.ProgressColor = "#5eb131" -- Default Color for ProgressBar
+Config.TextUIColor = "#5eb131" -- Default Color for TextUI
 ----------------------------------------------------------------
 Config.LoggingTypes = {
     ['debug'] = '[^3DEBUG^0]',

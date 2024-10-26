@@ -1,3 +1,7 @@
+local checkParams = function(str)
+    return MSK.String.StartsWith(str, 'player.') or MSK.String.StartsWith(str, 'group.') or MSK.String.StartsWith(str, 'identifier.')
+end
+
 MSK.IsAceAllowed = function(playerId, command)
     if not MSK.String.StartsWith(command, 'command.') then
         command = ('command.%s'):format(command)
@@ -8,11 +12,17 @@ end
 exports('IsAceAllowed', MSK.IsAceAllowed)
 
 MSK.IsPrincipalAceAllowed = function(principal, ace)
-    if not MSK.String.StartsWith(principal, 'group.') and not MSK.String.StartsWith(principal, 'player.') then
+    if not checkParams(principal) then
         if type(principal) == 'string' then
-            principal = 'group.'..principal
+            local result = MSK.String.Split(principal, ':')
+
+            if result[2] then
+                principal = 'identifier.' .. principal
+            else
+                principal = 'group.' .. principal
+            end
         elseif tonumber(principal) then
-            principal = 'player.'..tostring(principal)
+            principal = 'player.' .. tostring(principal)
         end
     end
 
@@ -25,11 +35,17 @@ local allowAce = function(allow)
 end
 
 MSK.AddAce = function(principal, ace, allow)
-    if not MSK.String.StartsWith(principal, 'group.') and not MSK.String.StartsWith(principal, 'player.') then
+    if not checkParams(principal) then
         if type(principal) == 'string' then
-            principal = 'group.' .. principal
-        elseif type(principal) == 'number' then
-            principal = 'player.' .. principal
+            local result = MSK.String.Split(principal, ':')
+
+            if result[2] then
+                principal = 'identifier.' .. principal
+            else
+                principal = 'group.' .. principal
+            end
+        elseif tonumber(principal) then
+            principal = 'player.' .. tostring(principal)
         end
     end
 
@@ -44,11 +60,17 @@ end
 exports('AddAce', MSK.AddAce)
 
 MSK.RemoveAce = function(principal, ace, allow)
-    if not MSK.String.StartsWith(principal, 'group.') and not MSK.String.StartsWith(principal, 'player.') then
+    if not checkParams(principal) then
         if type(principal) == 'string' then
-            principal = 'group.' .. principal
-        elseif type(principal) == 'number' then
-            principal = 'player.' .. principal
+            local result = MSK.String.Split(principal, ':')
+
+            if result[2] then
+                principal = 'identifier.' .. principal
+            else
+                principal = 'group.' .. principal
+            end
+        elseif tonumber(principal) then
+            principal = 'player.' .. tostring(principal)
         end
     end
 
