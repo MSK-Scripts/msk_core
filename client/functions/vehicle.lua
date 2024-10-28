@@ -102,7 +102,7 @@ exports('GetVehicleLabel', MSK.GetVehicleLabel)
 
 MSK.GetVehicleLabelFromModel = function(model)
     assert(model, ('Parameter "model" is nil on function GetVehicleLabelFromModel (reveived %s)'):format(model))
-    return GetVehicleLabel(nil, model)
+    return MSK.GetVehicleLabel(nil, model)
 end
 exports('GetVehicleLabelFromModel', MSK.GetVehicleLabelFromModel)
 

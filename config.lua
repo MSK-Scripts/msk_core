@@ -26,10 +26,11 @@ Config.copyCoords = {
 }
 ----------------------------------------------------------------
 -- Set to 'msk' for MSK UI Notification
+-- Set to 'native' for FiveM Native Notification
 -- Set to 'custom' for Config.customNotification()
 -- Set to 'okok' for OKOK Notification
 -- Set to 'qb-core' for QBCore Notification
--- Set to 'native' for FiveM Native Notification
+-- Set to 'bulletin' for bulletin notification (https://github.com/Mobius1/bulletin)
 Config.Notification = 'msk'
 
 -- Only for MSK Notification
@@ -45,6 +46,25 @@ Config.NotifyTypes = {
 Config.customNotification = function(title, message, typ, duration)
     -- Set Config.Notification = 'custom'
     -- Add your own clientside Notification here
+end
+----------------------------------------------------------------
+-- Set to 'native' for FiveM Native AdvancedNotification
+-- Set to 'custom' for Config.customAdvancedNotification()
+-- Set to 'bulletin' for bulletin AdvancedNotification (https://github.com/Mobius1/bulletin)
+Config.AdvancedNotification = 'native'
+
+Config.customAdvancedNotification = function(text, title, subtitle, icon, flash, icontype)
+    -- Set Config.AdvancedNotification = 'custom'
+    -- Add your own clientside AdvancedNotification here
+end
+----------------------------------------------------------------
+-- Set to 'msk' for MSK TextUI Notification
+-- Set to 'native' for FiveM Native HelpNotification
+-- Set to 'custom' for Config.customHelpNotification()
+Config.HelpNotification = 'msk'
+
+-- This will be called every frame -> Wait(0)
+Config.customHelpNotification = function(text)
 end
 ----------------------------------------------------------------
 Config.ProgressColor = "#5eb131" -- Default Color for ProgressBar

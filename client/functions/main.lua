@@ -7,6 +7,12 @@ MSK.Notification = function(title, message, typ, duration)
         exports.okokNotify:Alert(title, message, duration or 5000, typ or 'info')
     elseif Config.Notification == 'qb-core' then
         QBCore.Functions.Notify(message, typ, duration)
+    elseif Config.Notification == 'bulletin' then
+        exports.bulletin:Send({
+            message = message,
+            timeout = duration or 5000,
+            theme = typ or 'info'
+        })
     elseif Config.Notification == 'custom' then
         Config.customNotification(title, message, typ or 'info', duration or 5000)
     else
@@ -23,10 +29,16 @@ MSK.Notify = MSK.Notification
 exports('Notification', MSK.Notification)
 RegisterNetEvent("msk_core:notification", MSK.Notification)
 
-MSK.HelpNotification = function(text)
-    BeginTextCommandDisplayHelp('STRING')
-    AddTextComponentSubstringPlayerName(text)
-    EndTextCommandDisplayHelp(0, false, true, -1)
+MSK.HelpNotification = function(text, key)
+    if Config.HelpNotification == 'native' then
+        BeginTextCommandDisplayHelp('STRING')
+        AddTextComponentSubstringPlayerName(text)
+        EndTextCommandDisplayHelp(0, false, true, -1)
+    elseif Config.HelpNotification == 'custom' then
+        Config.customHelpNotification(text)
+    else
+        MSK.TextUI.ShowThread(key, text)
+    end
 end
 MSK.HelpNotify = MSK.HelpNotification
 exports('HelpNotification', MSK.HelpNotification)
@@ -37,10 +49,22 @@ MSK.AdvancedNotification = function(text, title, subtitle, icon, flash, icontype
     if not icontype then icontype = 1 end
     if not icon then icon = 'CHAR_HUMANDEFAULT' end
 
-    BeginTextCommandThefeedPost('STRING')
-    AddTextComponentSubstringPlayerName(text)
-    EndTextCommandThefeedPostMessagetext(icon, icon, flash, icontype, title, subtitle)
-	EndTextCommandThefeedPostTicker(false, true)
+    if Config.AdvancedNotification == 'bulletin' and GetResourceState('bulletin') == 'started' then
+        exports.bulletin:SendAdvanced({
+            message = text,
+            title = title,
+            subject = subtitle,
+            icon = icon,
+            timeout = 5000
+        })
+    elseif Config.AdvancedNotification == 'custom' then
+        Config.customAdvancedNotification(text, title, subtitle, icon, flash, icontype)
+    else
+        BeginTextCommandThefeedPost('STRING')
+        AddTextComponentSubstringPlayerName(text)
+        EndTextCommandThefeedPostMessagetext(icon, icon, flash, icontype, title, subtitle)
+	    EndTextCommandThefeedPostTicker(false, true)
+    end
 end
 MSK.AdvancedNotify = MSK.AdvancedNotification
 exports('AdvancedNotification', MSK.AdvancedNotification)
