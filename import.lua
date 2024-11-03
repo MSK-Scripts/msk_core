@@ -11,7 +11,7 @@ local msk_core = 'msk_core'
 if resourceName == msk_core then return end
 
 if MSK and MSK.name == msk_core then
-    error(("Duplicate entires for '@%s/fxmanifest.lua' detected! Please remove all duplicate entires in '%s/fxmanifest.lua'"):format(msk_core, resourceName))
+    error(("Duplicate entires for '@%s/import.lua' detected! Please remove all duplicate entires in '%s/fxmanifest.lua'"):format(msk_core, resourceName))
 end
 
 if GetResourceState(msk_core) ~= 'started' then
