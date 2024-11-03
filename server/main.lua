@@ -13,6 +13,8 @@ if Config.Framework == 'AUTO' then
         Config.Framework = 'ESX'
     elseif GetResourceState('qb-core') ~= 'missing' then
         Config.Framework = 'QBCore'
+    elseif GetResourceState('ox_core') ~= 'missing' then
+        Config.Framework = 'OXCore'
     else
         Config.Framework = 'STANDALONE'
         MSK.Bridge.Framework.Type = 'STANDALONE'
@@ -29,6 +31,9 @@ elseif Config.Framework == 'QBCore' then
     QBCore = exports['qb-core']:GetCoreObject()
     MSK.Bridge.Framework.Type = 'QBCore'
     MSK.Bridge.Framework.Core = QBCore
+elseif Config.Framework == 'OXCore' then
+    MSK.Bridge.Framework.Type = 'OXCore'
+    MSK.Bridge.Framework.Core = Ox or Citizen.Trace("^1SCRIPT ERROR: Please add '@ox_core/lib/init.lua' to the fxmanifest.lua^0\n")
 end
 
 MSK.Bridge.Inventory = Config.Inventory

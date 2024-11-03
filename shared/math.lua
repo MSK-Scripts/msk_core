@@ -3,14 +3,15 @@ local Numbers = {}
 
 for i = 48, 57 do table.insert(Numbers, string.char(i)) end
 
-MSK.Math.Number = function(length)
-    assert(length, 'Parameter "length" is nil on function MSK.Math.Number')
+MSK.Math.Random = function(length)
+    assert(length, 'Parameter "length" is nil on function MSK.Math.Random')
     math.randomseed(GetGameTimer())
 
-	return length > 0 and MSK.Math.Number(length - 1) .. Numbers[math.random(1, #Numbers)] or ''
+	return length > 0 and MSK.Math.Random(length - 1) .. Numbers[math.random(1, #Numbers)] or ''
 end
-MSK.GetRandomNumber = MSK.Math.Number -- Backwards compatibility
-exports('GetRandomNumber', MSK.Math.Number)
+MSK.Math.Number = MSK.Math.Random -- Backwards compatibility
+MSK.GetRandomNumber = MSK.Math.Random -- Backwards compatibility
+exports('GetRandomNumber', MSK.Math.Random)
 
 MSK.Math.Round = function(num, decimal)
     assert(num and tonumber(num), 'Parameter "num" has to be a number on function MSK.Math.Round')

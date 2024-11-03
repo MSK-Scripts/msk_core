@@ -135,7 +135,21 @@ MSK.HasItem = function(playerId, itemName, metadata)
     end
 
     local Player = MSK.GetPlayer({source = playerId})
+
+    if type(itemName) ~= 'table' then
+        return Player.HasItem(itemName, metadata)
+    end
+
+    for i = 1, #itemName do
+        local item = itemName[i]
+        local hasItem = Player.HasItem(item, metadata)
+
+        if hasItem then
+            return hasItem
+        end
+    end
     
-    return Player.HasItem(itemName, metadata)
+    return false
 end
 exports('HasItem', MSK.HasItem)
+MSK.Register('msk_core:hasItem', MSK.HasItem)

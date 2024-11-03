@@ -1,5 +1,15 @@
 local RegisteredCommands = {}
 
+-- For clientside MSK.RegisterCommand
+MSK.Register('msk_core:doesPlayerExist', function(source, targetId)
+    return DoesPlayerExist(targetId)
+end)
+
+-- For clientside MSK.RegisterCommand
+MSK.Register('msk_core:getPlayerData', function(source, targetId)
+    return MSK.GetPlayer({source = targetId})
+end)
+
 AddEventHandler('playerJoining', function()
     local playerId = source
 

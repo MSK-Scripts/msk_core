@@ -50,3 +50,14 @@ end
 RegisterNetEvent('msk_core:onPlayer', onPlayer)
 
 MSK.Player = Player
+
+-- For clientside MSK.Player[targetId] and MSK.Player.Get(targetId, key)
+MSK.Register('msk_core:player', function(source, targetId, key)
+    local targetId = tonumber(targetId)
+
+    if DoesPlayerExist(targetId) then        
+        return key and MSK.Player[targetId][key] or MSK.Player[targetId]
+    end
+
+    return false
+end)

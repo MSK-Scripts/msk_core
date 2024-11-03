@@ -8,6 +8,7 @@ MSK.Register = function(eventName, cb)
     Callbacks[eventName] = cb
 end
 MSK.RegisterCallback = MSK.Register -- Backwards compatibility
+MSK.RegisterServerCallback = MSK.Register -- Backwards compatibility
 exports('Register', MSK.Register)
 
 RegisterNetEvent('msk_core:server:triggerCallback', function(eventName, requestId, cb, ...)
@@ -35,11 +36,7 @@ end)
 local GenerateCallbackHandlerKey = function()
     local requestId = math.random(1, 999999999)
 
-    if not CallbackHandler[requestId] then 
-        return tostring(requestId)
-    else
-        GenerateCallbackHandlerKey()
-    end
+    return not CallbackHandler[requestId] and tostring(requestId) or GenerateCallbackHandlerKey()
 end
 
 MSK.Trigger = function(eventName, playerId, ...)
@@ -63,7 +60,6 @@ MSK.Trigger = function(eventName, playerId, ...)
     local result = Citizen.Await(p)
     return table.unpack(result)
 end
-MSK.TriggerCallback = MSK.Trigger -- Backwards compatibility
 exports('Trigger', MSK.Trigger)
 
 RegisterNetEvent("msk_core:server:callbackResponse", function(requestId, ...)
@@ -79,26 +75,12 @@ end)
 ----------------------------------------------------------------
 -- Server Callbacks with Method [return]
 ----------------------------------------------------------------
-MSK.Register('msk_core:hasItem', function(source, itemName, metadata)
-    return MSK.HasItem(source, itemName, metadata)
-end)
-
 MSK.Register('msk_core:isAceAllowed', function(source, command)
     return MSK.IsAceAllowed(source, command)
 end)
 
 MSK.Register('msk_core:isPrincipalAceAllowed', function(source, principal, ace)
     return MSK.IsPrincipalAceAllowed(principal, ace)
-end)
-
--- For clientside MSK.RegisterCommand
-MSK.Register('msk_core:doesPlayerExist', function(source, targetId)
-    return DoesPlayerExist(targetId)
-end)
-
--- For clientside MSK.RegisterCommand
-MSK.Register('msk_core:getPlayerData', function(source, targetId)
-    return MSK.GetPlayer({source = targetId})
 end)
 
 ----------------------------------------------------------------

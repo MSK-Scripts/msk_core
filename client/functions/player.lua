@@ -1,10 +1,14 @@
 local PlayerState = Player
 local Player = {}
 
+Player.Get = function(playerId, key)
+    return MSK.Trigger('msk_core:player', playerId, key)
+end
+
 function Player:set(key, value)
     if self[key] ~= value then
         TriggerEvent('msk_core:onPlayer', key, value, self[key])
-        TriggerServerEvent('msk_core:onPlayer', key, key == 'vehicle' and NetworkGetNetworkIdFromEntity(value) or value, self[key])
+        TriggerServerEvent('msk_core:onPlayer', key, key == 'vehicle' and DoesEntityExist(value) and NetworkGetNetworkIdFromEntity(value) or value, self[key])
         self[key] = value
 
         return true
@@ -24,12 +28,18 @@ local GetPlayerDeath = function()
     local isDead = IsPlayerDead(Player.clientId) or IsEntityDead(Player.ped) or IsPedFatallyInjured(Player.ped)
 
     if GetResourceState("visn_are") == "started" then
-        local healthBuffer = exports.visn_are:GetHealthBuffer()
+        local healthBuffer = MSK.Call(function() 
+            return exports.visn_are:GetHealthBuffer()
+        end)
+
         isDead = healthBuffer.unconscious
     end
 
     if GetResourceState("osp_ambulance") == "started" then
-        local data = exports.osp_ambulance:GetAmbulanceData(Player.serverId)
+        local data = MSK.Call(function() 
+            return exports.osp_ambulance:GetAmbulanceData(Player.serverId)
+        end)
+
         isDead = data.isDead or data.inLastStand
     end
 
@@ -37,13 +47,17 @@ local GetPlayerDeath = function()
 end
 
 setmetatable(Player, {
-    __index = function(self, key, ...)
+    __index = function(self, key)
         if key == 'coords' then
             return GetEntityCoords(self.ped)
         elseif key == 'heading' then
             return GetEntityHeading(self.ped)
         elseif key == 'state' then
             return PlayerState(self.serverId).state
+        end
+
+        if tonumber(key) then
+            return MSK.Trigger('msk_core:player', key)
         end
     end
 })

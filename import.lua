@@ -94,6 +94,10 @@ if context == 'client' then
             elseif key == 'state' then
                 return PlayerState(self.serverId).state
             end
+
+            if tonumber(key) then
+                return MSK.Trigger('msk_core:player', key)
+            end
         end
     })
 

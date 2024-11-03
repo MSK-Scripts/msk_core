@@ -39,8 +39,7 @@ MSK.DelTimeout = MSK.Timeout.Clear -- Backwards compatibility
 exports('ClearTimeout', MSK.Timeout.Clear)
 
 -- Credits to ox_lib (https://overextended.dev/ox_lib/Modules/WaitFor/Shared)
-MSK.Timeout.Await = function(ms, cb, errMessage)
-    assert(ms and tonumber(ms), 'Parameter "ms" has to be a number on function MSK.Timeout.Await')
+MSK.Timeout.Await = function(timeout, cb, errMessage)
     local value = cb()
 
     if value ~= nil then return value end

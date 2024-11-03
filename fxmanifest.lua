@@ -4,11 +4,12 @@ games { 'gta5' }
 author 'Musiker15 - MSK Scripts'
 name 'msk_core'
 description 'Functions for MSK Scripts'
-version '2.7.1'
+version '2.7.2'
 
 lua54 'yes'
 
 shared_scripts {
+    -- '@ox_core/lib/init.lua',
     'config.lua'
 }
 

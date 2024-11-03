@@ -6,6 +6,16 @@ end
 exports('Config', MSK.GetConfig)
 exports('GetConfig', MSK.GetConfig)
 
+MSK.Call = function(fn, timeout)
+    return MSK.Timeout.Await(timeout or 1000, function()
+        local success, result = pcall(fn)
+
+        if success then
+            return result
+        end
+    end)
+end
+
 MSK.Logging = function(code, ...)
     assert(code and type(code) == 'string', 'Parameter "code" has to be a string on function MSK.Logging')
     print(('[^2%s^0] %s'):format(GetInvokingResource() or 'msk_core', Config.LoggingTypes[code] or Config.LoggingTypes['debug']), ..., '^0')

@@ -4,11 +4,7 @@ local CallbackHandler = {}
 local GenerateCallbackHandlerKey = function()
     local requestId = math.random(1, 999999999)
 
-    if not CallbackHandler[requestId] then 
-        return tostring(requestId)
-    else
-        GenerateCallbackHandlerKey()
-    end
+    return not CallbackHandler[requestId] and tostring(requestId) or GenerateCallbackHandlerKey()
 end
 
 RegisterNetEvent("msk_core:client:callbackResponse", function(requestId, ...)
