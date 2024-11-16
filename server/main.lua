@@ -43,6 +43,9 @@ if GetResourceState('ox_inventory') ~= 'missing' then
 elseif GetResourceState('qs-inventory') ~= 'missing' then
     MSK.Bridge.Inventory = 'qs-inventory'
     print(('[^2%s^0] [^4Info^0] Inventory ^3qs-inventory^0 found'):format(GetCurrentResourceName()))
+elseif GetResourceState('core_inventory') ~= 'missing' then
+    MSK.Bridge.Inventory = 'core_inventory'
+    print(('[^2%s^0] [^4Info^0] Inventory ^3core_inventory^0 found'):format(GetCurrentResourceName()))
 end
 
 if MSK.Bridge.Framework.Type == 'ESX' then
@@ -59,6 +62,18 @@ if MSK.Bridge.Framework.Type == 'ESX' then
     end)
 elseif MSK.Bridge.Framework.Type == 'QBCore' then
     -- Nothing to add here
+elseif MSK.Bridge.Framework.Type == 'OXCore' then
+    RegisterNetEvent('ox:playerLoaded', function(playerId, userId, charId)
+        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, playerId)
+    end)
+
+    RegisterNetEvent('ox:playerLogout', function(playerId, userId, charId)
+        TriggerEvent(MSK.Bridge.Framework.Events.playerLogout, playerId)
+    end)
+
+    RegisterNetEvent('ox:setGroup', function(playerId, groupName, grade)
+        TriggerEvent(MSK.Bridge.Framework.Events.setJob, playerId, groupName, grade)
+    end)
 end
 
 if MSK.Bridge.Framework.Type ~= 'STANDALONE' then
@@ -113,7 +128,7 @@ if MSK.Bridge.Framework.Type ~= 'STANDALONE' then
                             qbPlayers[#qbPlayers + 1] = Player
                         end
                     elseif key == 'group' then
-                        if IsPlayerAceAllowed(Player.PlayerData.source, val) then
+                        if MSK.IsAceAllowed(Player.PlayerData.source, val) then
                             qbPlayers[#qbPlayers + 1] = Player
                         end
                     end
@@ -121,6 +136,8 @@ if MSK.Bridge.Framework.Type ~= 'STANDALONE' then
 
                 Players = qbPlayers
             end
+        elseif MSK.Bridge.Framework.Type == 'OXCore' then
+            Players = key and Ox.GetPlayers({[key] = val}) or Ox.GetPlayers()
         end
 
         return Players

@@ -21,14 +21,6 @@ FunctionOverride = function(Player)
         return -- Add your code here
     end
 
-    Player.AddMoney = function(accountName, money)
-        -- Add your code here
-    end
-
-    Player.RemoveMoney = function(accountName, money)
-        -- Add your code here
-    end
-
     Player.AddWeapon = function(weapon, count, metadata, slot)
         -- Add your code here
     end

@@ -19,13 +19,6 @@ end
 MSK.AdvancedNotify = MSK.AdvancedNotification
 exports('AdvancedNotification', MSK.AdvancedNotification)
 
-MSK.ScaleformAnnounce = function(src, header, text, typ, duration)
-    if not src or src == 0 then return end
-    TriggerClientEvent('msk_core:scaleformNotification', src, header, text, typ, duration)
-end
-MSK.Scaleform = MSK.ScaleformAnnounce
-exports('ScaleformAnnounce', MSK.ScaleformAnnounce)
-
 MSK.Subtitle = function(src, message, duration)
     if not src or src == 0 then return end
     TriggerClientEvent('msk_core:subtitle', src, message, duration)

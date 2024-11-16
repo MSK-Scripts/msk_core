@@ -25,14 +25,6 @@ FunctionOverride = function(Player)
         return item
     end
 
-    Player.AddMoney = function(accountName, money)
-        exports['qs-inventory']:AddItem(playerId, accountName, money)
-    end
-
-    Player.RemoveMoney = function(accountName, money)
-        exports['qs-inventory']:RemoveItem(playerId, accountName, money)
-    end
-
     Player.AddWeapon = function(weapon, count, metadata, slot)
         exports['qs-inventory']:GiveWeaponToPlayer(playerId, weapon, count)
     end
@@ -55,6 +47,10 @@ FunctionOverride = function(Player)
 
     Player.SetMaxWeight = function(maxWeight)
         -- No export found for that
+
+        if MSK.Bridge.Framework.Type == 'ESX' then
+            Player.setMaxWeight(maxWeight)
+        end
     end
 
     return Player

@@ -70,43 +70,6 @@ MSK.AdvancedNotify = MSK.AdvancedNotification
 exports('AdvancedNotification', MSK.AdvancedNotification)
 RegisterNetEvent("msk_core:advancedNotification", MSK.AdvancedNotification)
 
-MSK.ScaleformAnnounce = function(header, text, typ, duration)
-    local scaleform = nil
-
-    if typ == 1 then
-        scaleform = MSK.Request.ScaleformMovie("MP_BIG_MESSAGE_FREEMODE")
-        BeginScaleformMovieMethod(scaleform, "SHOW_SHARD_WASTED_MP_MESSAGE")
-        ScaleformMovieMethodAddParamTextureNameString(header)
-        ScaleformMovieMethodAddParamTextureNameString(text)
-        EndScaleformMovieMethod()
-    elseif typ == 2 then
-        scaleform = MSK.Request.ScaleformMovie("POPUP_WARNING")
-        BeginScaleformMovieMethod(scaleform, "SHOW_POPUP_WARNING")
-        ScaleformMovieMethodAddParamFloat(500.0)
-        ScaleformMovieMethodAddParamTextureNameString(header)
-        ScaleformMovieMethodAddParamTextureNameString(text)
-        EndScaleformMovieMethod()
-    end
-
-    if not scaleform then return end
-
-    local draw = true
-    while draw do
-        local sleep = 1
-
-        DrawScaleformMovieFullscreen(scaleform, 255, 255, 255, 255, 0)
-
-        MSK.Timeout.Set(duration or 8000, function()
-            draw = false
-        end)
-
-        Wait(sleep)
-    end
-end
-MSK.Scaleform = MSK.ScaleformAnnounce
-exports('ScaleformAnnounce', MSK.ScaleformAnnounce)
-RegisterNetEvent("msk_core:scaleformNotification", MSK.ScaleformAnnounce)
-
 MSK.Subtitle = function(text, duration)
     BeginTextCommandPrint('STRING')
     AddTextComponentSubstringPlayerName(text)

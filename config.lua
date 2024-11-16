@@ -7,7 +7,7 @@ Config.VersionChecker = true
 -- AUTO will search for your framework
 Config.Framework = 'AUTO'
 
--- Supported Inventories: default, custom, ox_inventory, qs-inventory
+-- Supported Inventories: default, custom, ox_inventory, qs-inventory, core_inventory
 -- For ESX Default Inventory or Chezza Inventory, set to 'default'
 -- Set to 'custom' if you use another inventory and add your own functions
 -- You can add your own inventory in: server/inventories/custom.lua

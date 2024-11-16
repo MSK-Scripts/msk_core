@@ -1,7 +1,7 @@
 if MSK.Bridge.Framework.Type ~= 'ESX' then return end
 
 local GetPlayerData = function(Player)
-    Player.GetInventory = Player.inventory
+    Player.GetInventory = Player.getInventory
     Player.AddItem = Player.addInventoryItem
     Player.RemoveItem = Player.removeInventoryItem
     Player.HasItem = Player.hasItem
@@ -13,8 +13,8 @@ local GetPlayerData = function(Player)
     Player.AddWeapon = Player.addWeapon
     Player.RemoveWeapon = Player.removeWeapon
     Player.HasWeapon = Player.hasWeapon
-    Player.SetMeta = Player.setMeta
-    Player.GetMeta = Player.getMeta
+    Player.Set = Player.setMeta
+    Player.Get = Player.getMeta
     Player.SetJob = Player.setJob
 
     Player.dob = Player.dateofbirth
@@ -37,7 +37,7 @@ local GetPlayerData = function(Player)
 
     Player.GetAccount = function(account)
         for i = 1, #Player.accounts do
-			if Player.accounts[i].name == account then
+			if Player.accounts[i].name == account:lower() then
 				return Player.accounts[i]
 			end
 		end
@@ -51,7 +51,7 @@ local GetPlayerData = function(Player)
     return Player
 end
 
-MSK.GetPlayer = function(player)
+MSK.GetPlayer = function(player, data)
     local Player
 
     if player.player then
@@ -66,7 +66,9 @@ MSK.GetPlayer = function(player)
         Player = nil
     end
 
-    return GetPlayerData(Player)
+    if data == nil then data = true end
+
+    return data and GetPlayerData(Player) or Player
 end
 exports('GetPlayer', MSK.GetPlayer)
 
@@ -83,7 +85,7 @@ MSK.GetIdentifier = MSK.GetIdentifierFromPlayer
 exports('GetIdentifierFromPlayer', MSK.GetIdentifierFromPlayer)
 
 MSK.GetPlayerJob = function(player)
-    local Player = MSK.GetPlayer(player)
+    local Player = MSK.GetPlayer(player, false)
     return Player.job.name
 end
 exports('GetPlayerJob', MSK.GetPlayerJob)

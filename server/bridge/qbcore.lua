@@ -13,8 +13,8 @@ GetPlayerData = function(Player)
     Player.AddWeapon = Player.AddItem
     Player.RemoveWeapon = Player.RemoveItem
     Player.HasWeapon = Player.HasItem
-    Player.SetMeta = Player.Functions.SetMetaData
-    Player.GetMeta = Player.Functions.GetMetaData
+    Player.Set = Player.Functions.SetMetaData
+    Player.Get = Player.Functions.GetMetaData
     Player.SetJob = Player.Functions.SetJob
 
     Player.identifier = Player.PlayerData.citizenid
@@ -60,7 +60,7 @@ GetPlayerData = function(Player)
     return Player
 end
 
-MSK.GetPlayer = function(player)
+MSK.GetPlayer = function(player, data)
     local Player
 
     if player.player then
@@ -75,7 +75,9 @@ MSK.GetPlayer = function(player)
         Player = QBCore.Functions.GetPlayerByPhone(tostring(player.phone))
     end
 
-    return GetPlayerData(Player)
+    if data == nil then data = true end
+
+    return data and GetPlayerData(Player) or Player
 end
 exports('GetPlayer', MSK.GetPlayer)
 
@@ -92,7 +94,7 @@ MSK.GetIdentifier = MSK.GetIdentifierFromPlayer
 exports('GetIdentifierFromPlayer', MSK.GetIdentifierFromPlayer)
 
 MSK.GetPlayerJob = function(player)
-    local Player = MSK.GetPlayer(player)
+    local Player = MSK.GetPlayer(player, false)
     return Player.PlayerData.job.name
 end
 exports('GetPlayerJob', MSK.GetPlayerJob)

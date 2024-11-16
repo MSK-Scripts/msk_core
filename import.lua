@@ -143,3 +143,28 @@ if context == 'server' then
         end
     end
 end
+
+----------------------------------------------------------------
+-- Other stuff
+----------------------------------------------------------------
+if context == 'client' then
+    RegisterNetEvent('msk_core:playerLoaded', function()
+        MSK.Bridge.isPlayerLoaded = true
+
+        -- esx_multicharacter support
+        if MSK.Bridge.Framework.Type == 'ESX' then
+            ESX.PlayerLoaded = true
+            ESX.PlayerData = ESX.GetPlayerData()
+        end
+    end)
+
+    RegisterNetEvent('msk_core:playerLogout', function()
+        MSK.Bridge.isPlayerLoaded = false
+
+        -- esx_multicharacter support
+        if MSK.Bridge.Framework.Type == 'ESX' then
+            ESX.PlayerLoaded = false
+            ESX.PlayerData = {}
+        end
+    end)
+end
