@@ -98,15 +98,32 @@ if context == 'client' then
             if tonumber(key) then
                 return MSK.Trigger('msk_core:player', key)
             end
+        end,
+        __call = function(self, key, val, update)
+            local value = rawget(self, key)
+    
+            if value == nil then
+                if type(val) == 'function' then
+                    value = func()
+                else
+                    value = val
+                end
+    
+                rawset(self, key, value)
+
+                if update then
+                    TriggerEvent('msk_core:invokingUpdate', key, value)
+                end
+            end
+    
+            return value
         end
     })
 
     AddEventHandler('msk_core:onPlayer', function(key, value, oldValue)
         MSK.Player[key] = value
     end)
-end
-
-if context == 'server' then
+elseif context == 'server' then
     local metatable = {
         __index = function(self, key)
             if type(key) == "string" then

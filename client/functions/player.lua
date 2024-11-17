@@ -59,6 +59,21 @@ setmetatable(Player, {
         if tonumber(key) then
             return MSK.Trigger('msk_core:player', key)
         end
+    end,
+    __call = function(self, key, val, update)
+        local value = rawget(self, key)
+
+        if value == nil then
+            if type(val) == 'function' then
+                value = func()
+            else
+                value = val
+            end
+
+            rawset(self, key, value)
+        end
+
+        return value
     end
 })
 
@@ -90,3 +105,25 @@ CreateThread(function()
 end)
 
 MSK.Player = Player
+
+local Contains = function(key)
+    local keys = {
+        'clientId', 'serverId', 'playerId', 'Notify', 
+        'coords', 'heading', 'state', 
+        'ped', 'playerPed', 'vehicle', 'seat', 'weapon', 'isDead', 
+    }
+
+    for k, v in pairs(keys) do
+        if k == key then
+            return true
+        end
+    end
+
+    return false
+end
+
+AddEventHandler('msk_core:invokingUpdate', function(key, value)
+    if Contains(key) then return end
+
+    Player:set(key, value)
+end)
