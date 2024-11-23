@@ -18,6 +18,8 @@ AddEventHandler('playerJoining', function()
 
         if properties and data.showSuggestion then
             TriggerClientEvent('chat:addSuggestion', playerId, properties.name, properties.help, properties.params)
+        elseif properties and not data.showSuggestion then
+            TriggerClientEvent('chat:removeSuggestion', playerId, ('/%s'):format(commandName))
         end
     end
 end)
@@ -172,6 +174,8 @@ MSK.RegisterCommand = function(commandName, callback, properties, ...)
         RegisteredCommands[commandName].properties = properties
 
         TriggerClientEvent('chat:addSuggestion', -1, properties.name, properties.help, properties.params)
+    elseif not showSuggestion then
+        TriggerClientEvent('chat:removeSuggestion', -1, ('/%s'):format(commandName))
     end
 
     return RegisteredCommands[commandName]

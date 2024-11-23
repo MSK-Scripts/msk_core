@@ -6,7 +6,6 @@ MSK.Bridge.Framework.Events = {
     playerLoaded = 'msk_core:playerLoaded',
     playerLogout = 'msk_core:playerLogout',
     setJob = 'msk_core:setJob',
-    onPlayerDeath = 'msk_core:onPlayerDeath',
 }
 
 if Config.Framework == 'AUTO' then
@@ -47,66 +46,59 @@ elseif GetResourceState('core_inventory') ~= 'missing' then
 end
 
 MSK.Bridge.isPlayerLoaded = false
+MSK.Bridge.PlayerData = {}
+
+MSK.Bridge.Player = function()
+    return MSK.Bridge.PlayerData
+end
 
 if MSK.Bridge.Framework.Type == 'ESX' then
-    RegisterNetEvent('esx:setPlayerData', function(key, val)
+    RegisterNetEvent('esx:setPlayerData', function(key, value)
         if GetInvokingResource() ~= "es_extended" then return end
-        TriggerEvent(MSK.Bridge.Framework.Events.setPlayerData, MSK.Bridge.Player)
-        TriggerServerEvent(MSK.Bridge.Framework.Events.setPlayerData)
+        TriggerEvent(MSK.Bridge.Framework.Events.setPlayerData, key, value)
     end)
 
     RegisterNetEvent('esx:playerLoaded', function(xPlayer, isNew, skin)
-        ESX.PlayerData = xPlayer
- 	    ESX.PlayerLoaded = true
-        MSK.Bridge.isPlayerLoaded = true
-        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, MSK.Bridge.Player)
+        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, xPlayer, isNew, skin)
     end)
 
     RegisterNetEvent('esx:onPlayerLogout', function()
-        MSK.Bridge.isPlayerLoaded = false
-        ESX.PlayerLoaded = false
-	    ESX.PlayerData = {}
         TriggerEvent(MSK.Bridge.Framework.Events.playerLogout)
     end)
 
     RegisterNetEvent('esx:setJob', function(newJob, lastJob)
-        TriggerEvent(MSK.Bridge.Framework.Events.setJob, MSK.Bridge.Player, newJob, lastJob)
+        TriggerEvent(MSK.Bridge.Framework.Events.setJob, newJob, lastJob)
     end)
 elseif MSK.Bridge.Framework.Type == 'QBCore' then
     RegisterNetEvent('QBCore:Player:SetPlayerData', function(PlayerData)
-        TriggerEvent(MSK.Bridge.Framework.Events.setPlayerData, MSK.Bridge.Player)
-        TriggerServerEvent(MSK.Bridge.Framework.Events.setPlayerData)
+        TriggerEvent(MSK.Bridge.Framework.Events.setPlayerData, PlayerData)
     end)
 
     RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-        MSK.Bridge.isPlayerLoaded = true
-        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, MSK.Bridge.Player)
-        TriggerServerEvent(MSK.Bridge.Framework.Events.playerLoaded)
+        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded)
+        TriggerServerEvent(MSK.Bridge.Framework.Events.playerLoaded, GetPlayerServerId(PlayerId()))
     end)
 
     RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
-        MSK.Bridge.isPlayerLoaded = false
         TriggerEvent(MSK.Bridge.Framework.Events.playerLogout)
-        TriggerServerEvent(MSK.Bridge.Framework.Events.playerLogout)
+        TriggerServerEvent(MSK.Bridge.Framework.Events.playerLogout, GetPlayerServerId(PlayerId()))
     end)
 
     RegisterNetEvent('QBCore:Client:OnJobUpdate', function(newJob)
-        TriggerEvent(MSK.Bridge.Framework.Events.setJob, MSK.Bridge.Player, newJob)
-        TriggerServerEvent(MSK.Bridge.Framework.Events.playerLogout, newJob)
+        TriggerEvent(MSK.Bridge.Framework.Events.setJob, newJob)
+        TriggerServerEvent(MSK.Bridge.Framework.Events.playerLogout, GetPlayerServerId(PlayerId()), newJob)
     end)
 elseif MSK.Bridge.Framework.Type == 'OXCore' then
     RegisterNetEvent('ox:playerLoaded', function(playerId, isNew)
-        MSK.Bridge.isPlayerLoaded = true
-        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, MSK.Bridge.Player)
+        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, playerId, isNew)
     end)
 
     RegisterNetEvent('ox:playerLogout', function(playerId)
-        MSK.Bridge.isPlayerLoaded = false
-        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, MSK.Bridge.Player)
+        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, playerId)
     end)
 
     RegisterNetEvent('ox:setGroup', function(groupName, grade)
-        TriggerEvent(MSK.Bridge.Framework.Events.setJob, MSK.Bridge.Player, groupName, grade)
+        TriggerEvent(MSK.Bridge.Framework.Events.setJob, groupName, grade)
     end)
 end
 

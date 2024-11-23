@@ -27,20 +27,22 @@ Player:set('Notify', Notify)
 local GetPlayerDeath = function()
     local isDead = IsPlayerDead(Player.clientId) or IsEntityDead(Player.ped) or IsPedFatallyInjured(Player.ped)
 
-    if GetResourceState("visn_are") == "started" then
-        local healthBuffer = MSK.Call(function() 
-            return exports.visn_are:GetHealthBuffer()
-        end)
+    if MSK.Bridge.isPlayerLoaded then
+        if GetResourceState("visn_are") == "started" then
+            local healthBuffer = MSK.Call(function() 
+                return exports.visn_are:GetHealthBuffer()
+            end)
 
-        isDead = healthBuffer.unconscious
-    end
+            isDead = healthBuffer.unconscious
+        end
 
-    if GetResourceState("osp_ambulance") == "started" then
-        local data = MSK.Call(function() 
-            return exports.osp_ambulance:GetAmbulanceData(Player.serverId)
-        end)
+        if GetResourceState("osp_ambulance") == "started" then
+            local data = MSK.Call(function() 
+                return exports.osp_ambulance:GetAmbulanceData(Player.serverId)
+            end)
 
-        isDead = data.isDead or data.inLastStand
+            isDead = data.isDead or data.inLastStand
+        end
     end
 
     return isDead

@@ -25,6 +25,8 @@ local context = IsDuplicityVersion() and 'server' or 'client'
 ----------------------------------------------------------------
 MSK = exports.msk_core:GetLib()
 
+MSK.name = resourceName
+
 ----------------------------------------------------------------
 -- Quick function access
 ----------------------------------------------------------------
@@ -169,7 +171,7 @@ if context == 'client' then
         MSK.Bridge.isPlayerLoaded = true
 
         -- esx_multicharacter support
-        if MSK.Bridge.Framework.Type == 'ESX' then
+        if MSK.Bridge.Framework.Type == 'ESX' and ESX then
             ESX.PlayerLoaded = true
             ESX.PlayerData = ESX.GetPlayerData()
         end
@@ -179,7 +181,7 @@ if context == 'client' then
         MSK.Bridge.isPlayerLoaded = false
 
         -- esx_multicharacter support
-        if MSK.Bridge.Framework.Type == 'ESX' then
+        if MSK.Bridge.Framework.Type == 'ESX' and ESX then
             ESX.PlayerLoaded = false
             ESX.PlayerData = {}
         end

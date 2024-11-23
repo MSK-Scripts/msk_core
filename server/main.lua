@@ -48,9 +48,11 @@ elseif GetResourceState('core_inventory') ~= 'missing' then
     print(('[^2%s^0] [^4Info^0] Inventory ^3core_inventory^0 found'):format(GetCurrentResourceName()))
 end
 
+MSK.LoadedPlayers = {}
+
 if MSK.Bridge.Framework.Type == 'ESX' then
     RegisterNetEvent('esx:playerLoaded', function(playerId, xPlayer, isNew)
-        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, playerId)
+        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, playerId, xPlayer, isNew)
     end)
 
     RegisterNetEvent('esx:playerLogout', function(playerId)
@@ -64,11 +66,11 @@ elseif MSK.Bridge.Framework.Type == 'QBCore' then
     -- Nothing to add here
 elseif MSK.Bridge.Framework.Type == 'OXCore' then
     RegisterNetEvent('ox:playerLoaded', function(playerId, userId, charId)
-        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, playerId)
+        TriggerEvent(MSK.Bridge.Framework.Events.playerLoaded, playerId, userId, charId)
     end)
 
     RegisterNetEvent('ox:playerLogout', function(playerId, userId, charId)
-        TriggerEvent(MSK.Bridge.Framework.Events.playerLogout, playerId)
+        TriggerEvent(MSK.Bridge.Framework.Events.playerLogout, playerId, userId, charId)
     end)
 
     RegisterNetEvent('ox:setGroup', function(playerId, groupName, grade)

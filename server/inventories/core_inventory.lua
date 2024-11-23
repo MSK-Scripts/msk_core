@@ -1,8 +1,8 @@
 if MSK.Bridge.Inventory ~= 'core_inventory' then return end
 
 local CoreInventoryData
-AddEventHandler("core_inventory:server:inventoryStarted", function(datas)       
-    CoreInventoryData = datas
+AddEventHandler("core_inventory:server:inventoryStarted", function(data)       
+    CoreInventoryData = data
 end)
 
 FunctionOverride = function(Player)
@@ -22,7 +22,7 @@ FunctionOverride = function(Player)
         local result = exports.core_inventory:addItem(inv, item, count or 1, metadata)
 
         if result then
-            TriggerClientEvent('core_inventory:client:notification', playerId, item, 'add',  tonumber(count))
+            TriggerClientEvent('core_inventory:client:notification', playerId, item, 'add', tonumber(count))
         end
 
         return result
@@ -32,21 +32,21 @@ FunctionOverride = function(Player)
         local result = exports.core_inventory:removeItem(inv, item, count or 1)
 
         if result then
-            TriggerClientEvent('core_inventory:client:notification', playerId, item, 'remove',  tonumber(count))
+            TriggerClientEvent('core_inventory:client:notification', playerId, item, 'remove', tonumber(count))
         end
         
         return result
     end
 
     Player.HasItem = function(item, metadata)
-        return exports.core_inventory:hasItem(inv, item, nil)
+        return exports.core_inventory:hasItem(inv, item) and {count = exports.core_inventory:getItemCount(inv, item)}
     end
 
     Player.AddWeapon = function(weapon, count, metadata, slot)
         local result = exports.core_inventory:addItem(inv, weapon, count or 1, metadata)
 
         if result then
-            TriggerClientEvent('core_inventory:client:notification', playerId, weapon, 'add',  tonumber(count))
+            TriggerClientEvent('core_inventory:client:notification', playerId, weapon, 'add', tonumber(count))
         end
 
         return result
@@ -56,7 +56,7 @@ FunctionOverride = function(Player)
         local result = exports.core_inventory:removeItem(inv, weapon, count or 1)
 
         if result then
-            TriggerClientEvent('core_inventory:client:notification', playerId, weapon, 'remove',  tonumber(count))
+            TriggerClientEvent('core_inventory:client:notification', playerId, weapon, 'remove', tonumber(count))
         end
         
         return result

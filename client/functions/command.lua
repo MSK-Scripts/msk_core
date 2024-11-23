@@ -138,6 +138,8 @@ MSK.RegisterCommand = function(commandName, callback, restricted, properties)
         RegisteredCommands[commandName].properties = properties
 
         TriggerEvent('chat:addSuggestion', properties.name, properties.help, properties.params)
+    elseif not showSuggestion then
+        TriggerEvent('chat:removeSuggestion', ('/%s'):format(commandName))
     end
 
     if hotkey then
