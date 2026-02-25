@@ -50,6 +50,7 @@ end)
 MSK.Bridge.SetPlayerData = function(key, value)
     MSK.Bridge.PlayerData[key] = value
     ESX.SetPlayerData(key, value)
+    Player(MSK.Player.serverId).state:set(key, value, true)
     SetPlayerData()
 end
 

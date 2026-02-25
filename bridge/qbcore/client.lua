@@ -52,6 +52,7 @@ end)
 MSK.Bridge.SetPlayerData = function(key, value)
     MSK.Bridge.PlayerData[key] = value
     QBCore.Functions.SetMetaData(key, val)
+    Player(MSK.Player.serverId).state:set(key, value)
     SetPlayerData()
 end
 

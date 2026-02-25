@@ -13,6 +13,7 @@ RegisterNetEvent(MSK.Bridge.Framework.Events.setJob, function(playerId, newJob)
 end)
 
 GetPlayerData = function(playerData)
+    if not playerData then return end
     local self = playerData
 
     self.GetInventory = Player.PlayerData.items
