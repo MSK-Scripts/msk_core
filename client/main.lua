@@ -43,6 +43,8 @@ elseif GetResourceState('qs-inventory') ~= 'missing' then
     MSK.Bridge.Inventory = 'qs-inventory'
 elseif GetResourceState('core_inventory') ~= 'missing' then
     MSK.Bridge.Inventory = 'core_inventory'
+elseif GetResourceState('jaksam_inventory') ~= 'missing' then
+    MSK.Bridge.Inventory = 'jaksam_inventory'
 end
 
 MSK.Bridge.isPlayerLoaded = false

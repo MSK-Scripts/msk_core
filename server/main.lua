@@ -46,6 +46,9 @@ elseif GetResourceState('qs-inventory') ~= 'missing' then
 elseif GetResourceState('core_inventory') ~= 'missing' then
     MSK.Bridge.Inventory = 'core_inventory'
     print(('[^2%s^0] [^4Info^0] Inventory ^3core_inventory^0 found'):format(GetCurrentResourceName()))
+elseif GetResourceState('jaksam_inventory') ~= 'missing' then
+    MSK.Bridge.Inventory = 'jaksam_inventory'
+    print(('[^2%s^0] [^4Info^0] Inventory ^3jaksam_inventory^0 found'):format(GetCurrentResourceName()))
 end
 
 MSK.LoadedPlayers = {}
