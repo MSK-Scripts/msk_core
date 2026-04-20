@@ -1,7 +1,8 @@
-# MSK Core/Lib
+<img width="2064" height="512" alt="msk_core_banner" src="https://github.com/user-attachments/assets/1ff00c33-c2c1-4f10-a1e3-40cd45ca7e26" />
+
 **[STANDALONE]** Functions for MSK Scripts
 
-[Documentation](https://docu.msk-scripts.de/msk-core/installation)
+[Documentation](https://docu.msk-scripts.de/docs/msk_core/)
 
 [MSK Scripts Discord](https://discord.gg/5hHSBRHvJE)
 
