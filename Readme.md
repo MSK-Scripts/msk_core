@@ -1,7 +1,5 @@
 <img width="1919" height="474" alt="msk_core_banner" src="https://github.com/user-attachments/assets/50fbba07-dac9-4c60-aa45-a5df7958f823" />
 
-Our core library for our resources, providing common utilities and more
-
 [Documentation](https://docu.msk-scripts.de/docs/msk_core/)
 
 [MSK Scripts Discord](https://discord.gg/5hHSBRHvJE)
