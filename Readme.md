@@ -1,4 +1,4 @@
-<img width="2064" height="512" alt="msk_core_banner" src="https://github.com/user-attachments/assets/1ff00c33-c2c1-4f10-a1e3-40cd45ca7e26" />
+<img width="1919" height="474" alt="msk_core_banner" src="https://github.com/user-attachments/assets/50fbba07-dac9-4c60-aa45-a5df7958f823" />
 
 **[STANDALONE]** Functions for MSK Scripts
 
