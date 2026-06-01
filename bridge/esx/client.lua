@@ -1,5 +1,7 @@
 if MSK.Bridge.Framework.Type ~= 'ESX' then return end
 
+local SetPlayerData
+
 AddEventHandler('onResourceStart', function(resource)
     if GetCurrentResourceName() ~= resource then return end
 
@@ -26,17 +28,17 @@ end)
 
 RegisterNetEvent(MSK.Bridge.Framework.Events.playerLoaded, function(xPlayer, isNew, skin)
     ESX.PlayerData = xPlayer
- 	ESX.PlayerLoaded = true
+    ESX.PlayerLoaded = true
 
     MSK.Bridge.isPlayerLoaded = true
     MSK.Bridge.PlayerData = xPlayer
-    
+
     SetPlayerData()
 end)
 
 RegisterNetEvent(MSK.Bridge.Framework.Events.playerLogout, function()
     ESX.PlayerLoaded = false
-	ESX.PlayerData = {}
+    ESX.PlayerData = {}
 
     MSK.Bridge.isPlayerLoaded = false
     MSK.Bridge.PlayerData = {}
@@ -76,9 +78,6 @@ SetPlayerData = function()
     if MSK.Bridge.Inventory == 'ox_inventory' then
         self.inventory = exports.ox_inventory:GetPlayerItems()
         self.loadout = self.inventory
-    elseif MSK.Bridge.Inventory == 'qs-inventory' then
-        self.inventory = exports['qs-inventory']:getUserInventory()
-        self.loadout = self.inventory
     end
 
     self.Notification = function(title, message, typ, duration)
@@ -88,11 +87,11 @@ SetPlayerData = function()
 
     self.GetAccount = function(account)
         for i = 1, #self.accounts do
-			if self.accounts[i].name == account then
-				return self.accounts[i]
-			end
-		end
-		return nil
+            if self.accounts[i].name == account then
+                return self.accounts[i]
+            end
+        end
+        return nil
     end
 
     self.Set = function(key, val)
@@ -114,12 +113,12 @@ SetPlayerData = function()
             local healthBuffer = exports.visn_are:GetHealthBuffer()
             isDead = healthBuffer.unconscious
         end
-    
+
         if GetResourceState("osp_ambulance") ~= "missing" then
             local data = exports.osp_ambulance:GetAmbulanceData(MSK.Player.serverId)
             isDead = data.isDead or data.inLastStand
         end
-    
+
         return isDead
     end
 

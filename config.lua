@@ -7,11 +7,12 @@ Config.VersionChecker = true
 -- AUTO will search for your framework
 Config.Framework = 'AUTO'
 
--- Supported Inventories: default, custom, ox_inventory, qs-inventory, core_inventory
+-- Supported Inventories: AUTO, default, custom, ox_inventory, jaksam_inventory, core_inventory
+-- AUTO will search for your inventory (ox_inventory > core_inventory > jaksam_inventory > default)
 -- For ESX Default Inventory or Chezza Inventory, set to 'default'
 -- Set to 'custom' if you use another inventory and add your own functions
--- You can add your own inventory in: server/inventories/custom.lua
-Config.Inventory = 'default'
+-- You can add your own inventory in: inventories/custom.lua
+Config.Inventory = 'AUTO'
 ----------------------------------------------------------------
 Config.showCoords = {
     enable = true,
@@ -83,20 +84,16 @@ Config.DisconnectLogger = {
 
     console = {
         enable = false,
-        -- German: "Der Spieler ^3%s^0 mit der ^3ID %s^0 hat den Server verlassen.\n^4Uhrzeit:^0 %s\n^4Grund:^0 %s\n^4Identifier:^0\n    %s\n    %s\n    %s\n^4Koordinaten:^0 %s"
-        -- English: "The player ^3%s^0 with the ^3ID %s^0 has left the server.\n^4Time:^0 %s\n^4Reason:^0 %s\n^4Identifier:^0\n    %s\n    %s\n    %s\n^4Coordinates:^0 %s"
-        text = "Der Spieler ^3%s^0 mit der ^3ID %s^0 hat den Server verlassen.\n^4Uhrzeit:^0 %s\n^4Grund:^0 %s\n^4Identifier:^0\n    %s\n    %s\n    %s\n^4Koordinaten:^0 %s"
+        text = "The player ^3%s^0 with the ^3ID %s^0 has left the server.\n^4Time:^0 %s\n^4Reason:^0 %s\n^4Identifier:^0\n    %s\n    %s\n    %s\n^4Coordinates:^0 %s"
     },
 
     discord = {
-        enable = false, -- Set true to enable DiscordLogs // Add Webhook Link in server/functions/disconnectlogger.lua
+        enable = false, -- Set true to enable DiscordLogs // Add Webhook Link in modules/DisconnectLogger/server.lua
         color = "6205745", -- https://www.mathsisfun.com/hexadecimal-decimal-colors.html
         botName = "MSK Scripts",
         botAvatar = "https://i.imgur.com/PizJGsh.png",
         title = "Player Disconnected",
-        -- German: "Der Spieler **%s** mit der **ID %s** hat den Server verlassen."
-        -- English: "The player **%s** with the **ID %s** has left the server."
-        text = "Der Spieler **%s** mit der **ID %s** hat den Server verlassen."
+        text = "The player **%s** with the **ID %s** has left the server."
     }
 }
 ----------------------------------------------------------------
@@ -104,7 +101,7 @@ Config.DisconnectLogger = {
 Config.BanSystem = {
     enable = true, -- Set to true if you want to use this Feature
 
-    discordLog = false, -- Set true to enable DiscordLogs // Add Webhook Link in server/functions/bansystem.lua
+    discordLog = false, -- Set true to enable DiscordLogs // Add Webhook Link in modules/Ban/server.lua
     botColor = "6205745", -- https://www.mathsisfun.com/hexadecimal-decimal-colors.html
     botName = "MSK Scripts",
     botAvatar = "https://i.imgur.com/PizJGsh.png",

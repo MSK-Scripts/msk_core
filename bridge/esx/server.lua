@@ -12,7 +12,7 @@ RegisterNetEvent(MSK.Bridge.Framework.Events.setJob, function(playerId, newJob, 
     MSK.LoadedPlayers[playerId].job = newJob
 end)
 
-GetPlayerData = function(playerData)
+local function GetPlayerData(playerData)
     if not playerData then return end
     local self = playerData
 
@@ -52,14 +52,17 @@ GetPlayerData = function(playerData)
 
     self.GetAccount = function(account)
         for i = 1, #self.accounts do
-			if self.accounts[i].name == account:lower() then
-				return self.accounts[i]
-			end
-		end
-		return nil
+            if self.accounts[i].name == account:lower() then
+                return self.accounts[i]
+            end
+        end
+        return nil
     end
 
-    if MSK.Bridge.Inventory ~= 'default' then
+    -- Inventory override only for non-default inventory. The extra
+    -- `and FunctionOverride` guard prevents a crash if the matching
+    -- inventory adapter is not (yet) loaded (see batch order).
+    if MSK.Bridge.Inventory ~= 'default' and FunctionOverride then
         self = FunctionOverride(self)
     end
 
@@ -92,10 +95,11 @@ MSK.GetPlayerServerId = function(Player)
 end
 MSK.GetServerId = MSK.GetPlayerServerId
 exports('GetPlayerServerId', MSK.GetPlayerServerId)
+exports('GetServerId', MSK.GetPlayerServerId)
 
 MSK.GetPlayerIdentifier = function(Player)
     if tonumber(Player) then
-        playerId = tostring(Player)
+        local playerId = tostring(Player)
         local identifier = GetPlayerIdentifierByType(playerId, "license")
         return identifier and identifier:gsub("license:", "")
     end
@@ -104,6 +108,7 @@ MSK.GetPlayerIdentifier = function(Player)
 end
 MSK.GetIdentifier = MSK.GetPlayerIdentifier
 exports('GetPlayerIdentifier', MSK.GetPlayerIdentifier)
+exports('GetIdentifier', MSK.GetPlayerIdentifier)
 
 MSK.GetPlayerJob = function(player)
     local Player = MSK.GetPlayer(player, false)
@@ -112,13 +117,13 @@ end
 exports('GetPlayerJob', MSK.GetPlayerJob)
 
 MSK.HasPlayerItem = function(playerId, itemName)
-    if not playerId then 
-        MSK.Logging('error', 'Player on Function MSK.HasItem does not exist!') 
+    if not playerId then
+        MSK.Logging('error', 'Player on Function MSK.HasItem does not exist!')
         return false
     end
 
     local xPlayer = ESX.GetPlayerFromId(playerId)
-    
+
     if type(itemName) ~= 'table' then
         local hasItem = xPlayer.getInventoryItem(itemName)
 
@@ -131,12 +136,13 @@ MSK.HasPlayerItem = function(playerId, itemName)
 
     for i = 1, #itemName do
         local item = itemName[i]
-        local hasItem = xPlayer.getInventoryItem(itemName)
+        local hasItem = xPlayer.getInventoryItem(item)
 
         if hasItem and hasItem.count > 0 then
             return hasItem
         end
     end
-    
+
     return false
 end
+exports('HasPlayerItem', MSK.HasPlayerItem)

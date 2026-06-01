@@ -16,7 +16,7 @@ RegisterNetEvent(MSK.Bridge.Framework.Events.setJob, function(playerId, groupNam
     MSK.LoadedPlayers[playerId].job[groupName] = grade
 end)
 
-GetPlayerData = function(playerData)
+local function GetPlayerData(playerData)
 end
 
 MSK.GetPlayerServerId = function(Player)
@@ -24,10 +24,11 @@ MSK.GetPlayerServerId = function(Player)
 end
 MSK.GetServerId = MSK.GetPlayerServerId
 exports('GetPlayerServerId', MSK.GetPlayerServerId)
+exports('GetServerId', MSK.GetPlayerServerId)
 
 MSK.GetPlayerIdentifier = function(Player)
     if tonumber(Player) then
-        playerId = tostring(Player)
+        local playerId = tostring(Player)
         local identifier = GetPlayerIdentifierByType(playerId, "license")
         return identifier and identifier:gsub("license:", "")
     end
@@ -36,13 +37,14 @@ MSK.GetPlayerIdentifier = function(Player)
 end
 MSK.GetIdentifier = MSK.GetPlayerIdentifier
 exports('GetPlayerIdentifier', MSK.GetPlayerIdentifier)
+exports('GetIdentifier', MSK.GetPlayerIdentifier)
 
 MSK.HasPlayerItem = function(playerId, itemName, metadata)
-    if not playerId then 
-        MSK.Logging('error', 'Player on Function MSK.HasItem does not exist!') 
+    if not playerId then
+        MSK.Logging('error', 'Player on Function MSK.HasItem does not exist!')
         return false
     end
-    
+
     if type(itemName) ~= 'table' then
         local hasItem = exports.ox_inventory:GetItem(playerId, itemName, metadata)
 
@@ -55,12 +57,13 @@ MSK.HasPlayerItem = function(playerId, itemName, metadata)
 
     for i = 1, #itemName do
         local item = itemName[i]
-        local hasItem = exports.ox_inventory:GetItem(playerId, itemName, metadata)
+        local hasItem = exports.ox_inventory:GetItem(playerId, item, metadata)
 
         if hasItem and hasItem.count > 0 then
             return hasItem
         end
     end
-    
+
     return false
 end
+exports('HasPlayerItem', MSK.HasPlayerItem)

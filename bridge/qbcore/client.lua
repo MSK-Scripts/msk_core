@@ -1,5 +1,7 @@
 if MSK.Bridge.Framework.Type ~= 'QBCore' then return end
 
+local SetPlayerData
+
 AddEventHandler('onResourceStart', function(resource)
     if GetCurrentResourceName() ~= resource then return end
     local playerData = QBCore.Functions.GetPlayerData()
@@ -51,7 +53,7 @@ end)
 
 MSK.Bridge.SetPlayerData = function(key, value)
     MSK.Bridge.PlayerData[key] = value
-    QBCore.Functions.SetMetaData(key, val)
+    QBCore.Functions.SetMetaData(key, value)
     Player(MSK.Player.serverId).state:set(key, value)
     SetPlayerData()
 end
@@ -83,9 +85,6 @@ SetPlayerData = function()
     if MSK.Bridge.Inventory == 'ox_inventory' then
         self.inventory = exports.ox_inventory:GetPlayerItems()
         self.loadout = self.inventory
-    elseif MSK.Bridge.Inventory == 'qs-inventory' then
-        self.inventory = exports['qs-inventory']:getUserInventory()
-        self.loadout = self.inventory
     end
 
     self.Notification = function(title, message, typ, duration)
@@ -100,7 +99,7 @@ SetPlayerData = function()
     }
 
     self.GetAccount = function(account)
-		return self.accounts[account:lower()]
+        return self.accounts[account:lower()]
     end
 
     self.Set = function(key, val)
@@ -122,12 +121,12 @@ SetPlayerData = function()
             local healthBuffer = exports.visn_are:GetHealthBuffer()
             isDead = healthBuffer.unconscious
         end
-    
+
         if GetResourceState("osp_ambulance") ~= "missing" then
             local data = exports.osp_ambulance:GetAmbulanceData(MSK.Player.serverId)
             isDead = data.isDead or data.inLastStand
         end
-    
+
         return isDead
     end
 
