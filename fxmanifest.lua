@@ -28,14 +28,14 @@ server_scripts {
     'inventories/server/*.lua',
 }
 
-ui_page 'web/index.html'
+ui_page 'web/dist/index.html'
 
 files {
     'import.lua',
     'aliases.lua',
     'modules/**/shared.lua',
     'modules/**/client.lua',
-    'web/**/*',
+    'web/dist/**/*',
 }
 
 dependencies {

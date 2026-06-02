@@ -37,11 +37,11 @@ Config.Notification = 'msk'
 -- Only for MSK Notification
 Config.NotifyTypes = {
     -- https://fontawesome.com/icons
-    ['general'] = {icon = 'fa-solid fa-circle-info', color = '#ffffff'},
+    ['general'] = {icon = 'fa-solid fa-circle-info', color = '#f0ede8'},
     ['info'] = {icon = 'fa-solid fa-circle-info', color = '#75d6ff'},
-    ['success'] = {icon = 'fa-solid fa-shield-check', color = '#76ee62'},
-    ['warning'] = {icon = 'fa-solid fa-triangle-exclamation', color = '#ffcb11'},
-    ['error'] = {icon = 'fa-solid fa-circle-exclamation', color = '#ff4a4a'},
+    ['success'] = {icon = 'fa-solid fa-shield-check', color = '#00e676'},
+    ['warning'] = {icon = 'fa-solid fa-triangle-exclamation', color = '#facc15'},
+    ['error'] = {icon = 'fa-solid fa-circle-exclamation', color = '#f43f5e'},
 }
 
 Config.customNotification = function(title, message, typ, duration)
@@ -68,8 +68,8 @@ Config.HelpNotification = 'msk'
 Config.customHelpNotification = function(text)
 end
 ----------------------------------------------------------------
-Config.ProgressColor = "#5eb131" -- Default Color for ProgressBar
-Config.TextUIColor = "#5eb131" -- Default Color for TextUI
+Config.ProgressColor = "#00e676" -- Default Color for ProgressBar (MSK Grün)
+Config.TextUIColor = "#00e676" -- Default Color for TextUI (MSK Grün)
 ----------------------------------------------------------------
 Config.LoggingTypes = {
     ['debug'] = '[^3DEBUG^0]',
