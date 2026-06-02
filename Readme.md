@@ -1,24 +1,36 @@
-<img width="1919" height="474" alt="msk_core_banner" src="https://github.com/user-attachments/assets/50fbba07-dac9-4c60-aa45-a5df7958f823" />
+![MSK Core Banner](.assets/msk_core_banner.png)
 
-[Documentation](https://docu.msk-scripts.de/docs/msk_core/)
+<div align="center">
 
 [MSK Scripts Discord](https://discord.gg/5hHSBRHvJE)
 
+[Documentation](https://docu.msk-scripts.de/docs/msk_core/)
+
+</div>
+
 ## Requirements
-* oxmysql
+* [oxmysql](https://github.com/overextended/oxmysql)
 
 ### Optional Requirements
-This is only for Framework based functions *(bridge folder)*.
-* [ESX 1.9.2 and above](https://github.com/esx-framework/esx_core) or [QBCore](https://github.com/qbcore-framework/qb-core)
+* [ESX 1.9.2 and above](https://github.com/esx-framework/esx_core) or [QBCore](https://github.com/qbcore-framework/qb-core) -> This is only for **Framework based** functions *(bridge folder)*
+* [ox_inventory](https://github.com/overextended/ox_inventory) or [jaksam_inventory](https://forum.cfx.re/t/jaksams-inventory-create-items-in-game/5388694) -> This is only for **Inventory based** functions *(inventory folder)*
 
 ## MSK.Notification
-New Preview Images will be published soon
+![Notify](.assets/notify.png)
+
+## MSK.TextUI
+![Progressbar](.assets/textui.png)
 
 ## MSK.Progressbar
-New Preview Images will be published soon
+![Progressbar](.assets/progressbar.png)
 
 ## MSK.Input
-New Preview Images will be published soon
+![Input Large](.assets/input_large.png)
+![Input Small](.assets/input_small.png)
 
 ## MSK.Numpad
-New Preview Images will be published soon
+![Numpad](.assets/numpad.png)
+![Numpad Incorrect](.assets/numpad_incorrect.png)
+
+![Numpad Numbers](.assets/numpad_numbers.png)
+![Numpad Masked](.assets/numpad_masked.png)

@@ -107,7 +107,7 @@ export default function Input() {
           className="group mt-[1.6vh] flex h-[4.4vh] w-full items-center justify-center gap-[0.8vh] rounded-sm border border-accent/30 bg-accent/10 font-mono text-[1.4vh] font-bold uppercase tracking-[0.2vh] text-accent transition-all hover:border-accent/60 hover:bg-accent/20 active:translate-y-[0.2vh]"
         >
           <i className="fas fa-check" />
-          Bestätigen
+          Submit
         </button>
       </div>
     </div>

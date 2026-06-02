@@ -31,7 +31,7 @@ export default function DevPanel() {
               send({
                 action: 'notify',
                 title: key.toUpperCase(),
-                message: `Test-Notification vom Typ ~g~${key}~s~ mit ~y~Farbcode~s~.`,
+                message: `Test-Notification as type ~g~${key}~s~ with ~y~Color-Codes~s~.`,
                 type,
                 time: 5000,
               })
@@ -46,7 +46,7 @@ export default function DevPanel() {
         <button
           className={btn}
           onClick={() =>
-            send({ action: 'openInput', header: 'Spielername', placeholder: 'Name eingeben…', field: false })
+            send({ action: 'openInput', header: 'Header', placeholder: 'Small text input...', field: false })
           }
         >
           small
@@ -54,7 +54,7 @@ export default function DevPanel() {
         <button
           className={btn}
           onClick={() =>
-            send({ action: 'openInput', header: 'Nachricht', placeholder: 'Mehrzeilig…', field: true })
+            send({ action: 'openInput', header: 'Header', placeholder: 'Large text input...', field: true })
           }
         >
           big
@@ -65,7 +65,7 @@ export default function DevPanel() {
         <button
           className={btn}
           onClick={() =>
-            send({ action: 'progressBarStart', time: 5000, text: 'Durchsuche…', color: '#00e676' })
+            send({ action: 'progressBarStart', time: 5000, text: 'Searching...', color: '#00e676' })
           }
         >
           start 5s
@@ -90,14 +90,14 @@ export default function DevPanel() {
             send({ action: 'openNumpad', code: '4321', length: 4, show: false, EnterCode: 'Enter Code', WrongCode: 'Incorrect' })
           }
         >
-          masked
+          masked 4321
         </button>
       </Section>
 
       <Section title="TextUI">
         <button
           className={btn}
-          onClick={() => send({ action: 'textUI', show: true, key: 'E', text: 'Drücke ~g~E~s~ zum Interagieren' })}
+          onClick={() => send({ action: 'textUI', show: true, key: 'E', text: 'Press ~g~E~s~ to interact' })}
         >
           show
         </button>
