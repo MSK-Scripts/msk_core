@@ -53,7 +53,6 @@ export default function NotifyStack() {
             animation: note.leaving
               ? 'msk-slide-out 0.3s cubic-bezier(0.55,0,1,0.45) forwards'
               : 'msk-slide-in 0.35s cubic-bezier(0.22,1,0.36,1)',
-            borderLeft: `0.3vh solid ${note.color}`,
           }}
         >
           {/* Titel-Banner */}
