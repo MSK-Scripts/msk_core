@@ -41,21 +41,21 @@ local readFile = LoadResourceFile
 -- and makes the cache hit (rawget ~= nil) unambiguous.
 local EMPTY = function() end
 
--- Load the backwards-compat aliases once (bundled in compat/aliases.lua,
+-- Load the backwards-compat aliases once (bundled in aliases.lua,
 -- deliberately NOT scattered inline across the modules).
 local alias = {}
 do
-    local src = readFile(CORE, 'compat/aliases.lua')
+    local src = readFile(CORE, 'aliases.lua')
     if src then
-        local build, lerr = load(src, '@@msk_core/compat/aliases.lua')
+        local build, lerr = load(src, '@@msk_core/aliases.lua')
         if not build then
-            print(("[^3msk_core^0] ^3Warning:^0 compat/aliases.lua failed to compile — aliases are ignored.\n%s"):format(lerr))
+            print(("[^3msk_core^0] ^3Warning:^0 aliases.lua failed to compile — aliases are ignored.\n%s"):format(lerr))
         else
             local ok, result = pcall(build)
             if ok and type(result) == 'table' then
                 alias = result
             else
-                print(("[^3msk_core^0] ^3Warning:^0 compat/aliases.lua did not return a valid table — aliases are ignored.%s")
+                print(("[^3msk_core^0] ^3Warning:^0 aliases.lua did not return a valid table — aliases are ignored.%s")
                     :format(ok and '' or ('\n' .. tostring(result))))
             end
         end
