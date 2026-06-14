@@ -5,7 +5,7 @@ lua54 'yes'
 name 'msk_core'
 description 'Shared library for MSK Scripts'
 author 'Musiker15 - MSK Scripts'
-license 'SEE LICENSE IN LICENSE.md'
+license 'LGPL-3.0-or-later'
 repository 'https://github.com/MSK-Scripts/msk_core'
 version '3.0.0'
 

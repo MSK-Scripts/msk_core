@@ -4,57 +4,190 @@ Copyright (C) since 2024 Musiker15 – MSK Scripts <https://www.msk-scripts.de>
 
 Contact for business enquiries: info@msk-scripts.de
 
-Version: 2.0 — Last updated: 2026-06-01
+msk_core is free software: you can redistribute it and/or modify it under the
+terms of the GNU Lesser General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
 
-This software is a resource for the "FiveM" modification of the game "Grand Theft Auto V" and consists of the files this license is attached to. It is intended to function only within this environment.
+msk_core is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 
-## Definitions
+You should have received a copy of the GNU Lesser General Public License along
+with msk_core. If not, see <https://www.gnu.org/licenses/>.
 
-- **"Software"** refers to this resource and all files this license is attached to, including code, assets, and user interface (UI) components.
-- **"Licensor"** refers to Musiker15 / MSK Scripts.
-- **"User"** refers to any person or entity that uses, copies, modifies, or distributes the Software.
-- **"Free of charge"** means that no payment, donation, subscription, paywall, or any other form of consideration is required, directly or indirectly, to obtain, access, or use the resource.
+The GNU LGPL v3 incorporates the terms of the GNU GPL v3, included in this
+repository as `LICENSE.GPL`.
 
-## Usage Rights
+The names, logos, and brands "MSK Scripts" and "Musiker15" are trademarks of the
+Licensor and are not licensed under the LGPL.
 
-The User is granted permission to use and modify this Software for personal or non-commercial purposes. The User may integrate this Software as a dependency in their own resources and publish those resources, provided that each such resource is made available free of charge.
+Further information and documentation: <https://docu.msk-scripts.de>
 
-Without the prior consent of the Licensor, the User may not publish, sell, or distribute the Software or any part of it, except for forking the official repository on GitHub. In particular, the User is prohibited from publishing, selling, or otherwise commercially exploiting any functions that include a user interface (UI) together with the code associated with those functions.
+----------------------------------------------------------------------
 
-The User may not create derivative works or copies of the Software that violate these license terms.
+                   GNU LESSER GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
 
-## Retention of Notices
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
 
-Any permitted copy, fork, or modification of the Software must retain this license, the copyright notice, and all author and attribution notices unchanged. These notices may not be removed, obscured, or altered.
 
-## Trademarks
+  This version of the GNU Lesser General Public License incorporates
+the terms and conditions of version 3 of the GNU General Public
+License, supplemented by the additional permissions listed below.
 
-This license grants no rights to use the names, logos, or brands "MSK Scripts" and "Musiker15", or any confusingly similar marks. Forks and modifications may not be presented in a way that suggests endorsement by, or affiliation with, the Licensor.
+  0. Additional Definitions.
 
-## Third-Party Components
+  As used herein, "this License" refers to version 3 of the GNU Lesser
+General Public License, and the "GNU GPL" refers to version 3 of the GNU
+General Public License.
 
-The Software may include or depend on third-party components that are subject to their own licenses. Nothing in this license overrides those terms; the respective licenses and attributions continue to apply.
+  "The Library" refers to a covered work governed by this License,
+other than an Application or a Combined Work as defined below.
 
-## Termination
+  An "Application" is any work that makes use of an interface provided
+by the Library, but which is not otherwise based on the Library.
+Defining a subclass of a class defined by the Library is deemed a mode
+of using an interface provided by the Library.
 
-The Licensor may revoke this license at any time if the User breaches its terms. Upon termination, the User must cease all use and destroy all copies of the Software and any modifications derived from it.
+  A "Combined Work" is a work produced by combining or linking an
+Application with the Library.  The particular version of the Library
+with which the Combined Work was made is also called the "Linked
+Version".
 
-## Changes to the License
+  The "Minimal Corresponding Source" for a Combined Work means the
+Corresponding Source for the Combined Work, excluding any source code
+for portions of the Combined Work that, considered in isolation, are
+based on the Application, and not on the Linked Version.
 
-The Licensor may amend these license terms with future updates of the Software. Updated terms apply only to versions published after the change. Continued use of an updated version constitutes acceptance of the terms accompanying that version. The User's rights under the version they already obtained remain unaffected.
+  The "Corresponding Application Code" for a Combined Work means the
+object code and/or source code for the Application, including any data
+and utility programs needed for reproducing the Combined Work from the
+Application, but excluding the System Libraries of the Combined Work.
 
-## Disclaimer of Liability
+  1. Exception to Section 3 of the GNU GPL.
 
-The Software is provided "as is", without warranties of any kind, whether express or implied, including but not limited to warranties of merchantability or fitness for a particular purpose.
+  You may convey a covered work under sections 3 and 4 of this License
+without being bound by section 3 of the GNU GPL.
 
-To the maximum extent permitted by applicable law, the Licensor shall not be liable for any damages arising from the use or modification of the Software. This limitation does not apply to liability for intent or gross negligence, for injury to life, body, or health, or to any other liability that cannot be excluded or limited under applicable mandatory law.
+  2. Conveying Modified Versions.
 
-## Governing Law and Severability
+  If you modify a copy of the Library, and, in your modifications, a
+facility refers to a function or data to be supplied by an Application
+that uses the facility (other than as an argument passed when the
+facility is invoked), then you may convey a copy of the modified
+version:
 
-This license is governed by the laws of the Federal Republic of Germany. To the extent legally permissible, the place of jurisdiction is the Licensor's registered location.
+   a) under this License, provided that you make a good faith effort to
+   ensure that, in the event an Application does not supply the
+   function or data, the facility still operates, and performs
+   whatever part of its purpose remains meaningful, or
 
-If any provision of this license is held to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.
+   b) under the GNU GPL, with none of the additional permissions of
+   this License applicable to that copy.
 
-## Further Information
+  3. Object Code Incorporating Material from Library Header Files.
 
-Further information and documentation regarding the Software can be found at <https://docu.msk-scripts.de>.
+  The object code form of an Application may incorporate material from
+a header file that is part of the Library.  You may convey such object
+code under terms of your choice, provided that, if the incorporated
+material is not limited to numerical parameters, data structure
+layouts and accessors, or small macros, inline functions and templates
+(ten or fewer lines in length), you do both of the following:
+
+   a) Give prominent notice with each copy of the object code that the
+   Library is used in it and that the Library and its use are
+   covered by this License.
+
+   b) Accompany the object code with a copy of the GNU GPL and this license
+   document.
+
+  4. Combined Works.
+
+  You may convey a Combined Work under terms of your choice that,
+taken together, effectively do not restrict modification of the
+portions of the Library contained in the Combined Work and reverse
+engineering for debugging such modifications, if you also do each of
+the following:
+
+   a) Give prominent notice with each copy of the Combined Work that
+   the Library is used in it and that the Library and its use are
+   covered by this License.
+
+   b) Accompany the Combined Work with a copy of the GNU GPL and this license
+   document.
+
+   c) For a Combined Work that displays copyright notices during
+   execution, include the copyright notice for the Library among
+   these notices, as well as a reference directing the user to the
+   copies of the GNU GPL and this license document.
+
+   d) Do one of the following:
+
+       0) Convey the Minimal Corresponding Source under the terms of this
+       License, and the Corresponding Application Code in a form
+       suitable for, and under terms that permit, the user to
+       recombine or relink the Application with a modified version of
+       the Linked Version to produce a modified Combined Work, in the
+       manner specified by section 6 of the GNU GPL for conveying
+       Corresponding Source.
+
+       1) Use a suitable shared library mechanism for linking with the
+       Library.  A suitable mechanism is one that (a) uses at run time
+       a copy of the Library already present on the user's computer
+       system, and (b) will operate properly with a modified version
+       of the Library that is interface-compatible with the Linked
+       Version.
+
+   e) Provide Installation Information, but only if you would otherwise
+   be required to provide such information under section 6 of the
+   GNU GPL, and only to the extent that such information is
+   necessary to install and execute a modified version of the
+   Combined Work produced by recombining or relinking the
+   Application with a modified version of the Linked Version. (If
+   you use option 4d0, the Installation Information must accompany
+   the Minimal Corresponding Source and Corresponding Application
+   Code. If you use option 4d1, you must provide the Installation
+   Information in the manner specified by section 6 of the GNU GPL
+   for conveying Corresponding Source.)
+
+  5. Combined Libraries.
+
+  You may place library facilities that are a work based on the
+Library side by side in a single library together with other library
+facilities that are not Applications and are not covered by this
+License, and convey such a combined library under terms of your
+choice, if you do both of the following:
+
+   a) Accompany the combined library with a copy of the same work based
+   on the Library, uncombined with any other library facilities,
+   conveyed under the terms of this License.
+
+   b) Give prominent notice with the combined library that part of it
+   is a work based on the Library, and explaining where to find the
+   accompanying uncombined form of the same work.
+
+  6. Revised Versions of the GNU Lesser General Public License.
+
+  The Free Software Foundation may publish revised and/or new versions
+of the GNU Lesser General Public License from time to time. Such new
+versions will be similar in spirit to the present version, but may
+differ in detail to address new problems or concerns.
+
+  Each version is given a distinguishing version number. If the
+Library as you received it specifies that a certain numbered version
+of the GNU Lesser General Public License "or any later version"
+applies to it, you have the option of following the terms and
+conditions either of that published version or of any later version
+published by the Free Software Foundation. If the Library as you
+received it does not specify a version number of the GNU Lesser
+General Public License, you may choose any version of the GNU Lesser
+General Public License ever published by the Free Software Foundation.
+
+  If the Library as you received it specifies that a proxy can decide
+whether future versions of the GNU Lesser General Public License shall
+apply, that proxy's public statement of acceptance of any version is
+permanent authorization for you to choose that version for the
+Library.

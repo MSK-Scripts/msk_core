@@ -7,6 +7,7 @@
 [![Discord](https://img.shields.io/badge/Discord-MSK%20Scripts-5865F2?logo=discord&logoColor=white)](https://discord.gg/5hHSBRHvJE)
 [![Documentation](https://img.shields.io/badge/Docs-docu.msk--scripts.de-00E676)](https://docu.msk-scripts.de/docs/msk_core/)
 [![Version](https://img.shields.io/badge/version-3.0.0-blue)](https://github.com/MSK-Scripts/msk_core/releases)
+[![License](https://img.shields.io/badge/license-LGPL--3.0-green)](LICENSE.md)
 
 [Discord](https://discord.gg/5hHSBRHvJE) · [Documentation](https://docu.msk-scripts.de/docs/msk_core/) · [Releases](https://github.com/MSK-Scripts/msk_core/releases)
 
@@ -115,7 +116,11 @@ Full API reference: **[docu.msk-scripts.de/docs/msk_core](https://docu.msk-scrip
 
 ## 📄 License
 
-See [LICENSE.md](LICENSE.md).
+msk_core is licensed under the **GNU Lesser General Public License v3.0 or later** (LGPL-3.0-or-later).
+
+This means the core itself is open and must stay open, but **any** resource — free or paid — may use msk_core as a dependency without being forced to adopt the same license. See [LICENSE.md](LICENSE.md) (and [LICENSE.GPL](LICENSE.GPL), which the LGPL incorporates).
+
+The names, logos, and brands **"MSK Scripts"** and **"Musiker15"** are trademarks of the Licensor and are not covered by the LGPL.
 
 <div align="center">
 
