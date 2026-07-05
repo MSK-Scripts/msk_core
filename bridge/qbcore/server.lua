@@ -17,10 +17,10 @@ local function GetPlayerData(playerData)
     local self = playerData
 
     self.GetInventory = self.PlayerData.items
-    self.AddItem = self.PlayerData.Functions.AddItem
-    self.RemoveItem = self.PlayerData.Functions.RemoveItem
-    self.HasItem = self.PlayerData.Functions.GetItemByName
-    self.GetItem = self.PlayerData.Functions.GetItemByName
+    self.AddItem = self.Functions.AddItem
+    self.RemoveItem = self.Functions.RemoveItem
+    self.HasItem = self.Functions.GetItemByName
+    self.GetItem = self.Functions.GetItemByName
     -- self.CanSwapItem = self.PlayerData.Functions.CanSwapItem --> Not found in documentation
     --- self.CanCarryItem = self.Functions.CanCarryItem --> Not found in documentation
     self.AddMoney = self.Functions.AddMoney
