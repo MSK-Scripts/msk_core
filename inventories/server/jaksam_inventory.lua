@@ -20,7 +20,12 @@ FunctionOverride = function(Player)
     end
 
     Player.HasItem = function(item, metadata)
-        return exports['jaksam_inventory']:getItemByName(playerId, item, metadata)
+        local itemData = exports['jaksam_inventory']:getItemByName(playerId, item, metadata)
+        if itemData and (itemData.amount or 0) > 0 then
+            itemData.count = itemData.amount
+            return itemData
+        end
+        return false
     end
 
     Player.AddWeapon = function(weapon, count, metadata, slot)
@@ -32,7 +37,12 @@ FunctionOverride = function(Player)
     end
 
     Player.HasWeapon = function(weapon, metadata)
-        return exports['jaksam_inventory']:getItemByName(playerId, weapon, metadata)
+        local itemData = exports['jaksam_inventory']:getItemByName(playerId, weapon, metadata)
+        if itemData and (itemData.amount or 0) > 0 then
+            itemData.count = itemData.amount
+            return itemData
+        end
+        return false
     end
 
     Player.CanSwapItem = function(firstItem, firstItemCount, secondItem, secondItemCount)
