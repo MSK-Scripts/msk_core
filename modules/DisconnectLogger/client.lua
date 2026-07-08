@@ -1,3 +1,5 @@
+local IS_CORE = GetCurrentResourceName() == 'msk_core'
+
 local function drawDisplay(coords, text, size, color)
     if not color then color = {r = 255, g = 255, b = 255, a = 255} end
     coords = type(coords) == "vector3" and coords or vec(coords.x, coords.y, coords.z)
@@ -46,6 +48,10 @@ local function display(data)
         end
     end)
 end
-RegisterNetEvent('msk_core:discLogger', display)
+-- Core-owned singleton: only msk_core listens, so the disconnect marker is not
+-- drawn multiple times when a consumer eager-loads this module.
+if IS_CORE then
+    RegisterNetEvent('msk_core:discLogger', display)
+end
 
 return true

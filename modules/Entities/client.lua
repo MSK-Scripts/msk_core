@@ -1,3 +1,5 @@
+local IS_CORE = GetCurrentResourceName() == 'msk_core'
+
 local function getEntities(isPlayerEntity)
     local entities = {}
 
@@ -49,7 +51,12 @@ function MSK.GetClosestEntities(isPlayerEntity, coords, distance)
     return closestEntities
 end
 
--- Death detection (singleton in the core)
+-- Death detection: a singleton that must live ONLY in msk_core. The
+-- gameEventTriggered handler fires msk_core:onPlayerDeath (local + to the server)
+-- on death. A consumer that eager-loads this module would otherwise add a second
+-- handler and every death would be reported twice. The helper functions above
+-- (GetClosestEntity/Entities) stay available to consumers on eager-load.
+if IS_CORE then
 local function playerDied(deathCause, killer, killerServerId)
     local playerPed = MSK.Player.ped
     local playerCoords = MSK.Player.coords
@@ -97,5 +104,6 @@ AddEventHandler('gameEventTriggered', function(event, data)
         end
     end
 end)
+end
 
 return true

@@ -1,3 +1,9 @@
+local IS_CORE = GetCurrentResourceName() == 'msk_core'
+
+-- Core-owned singleton: only msk_core handles playerDropped, otherwise a consumer
+-- that eager-loads this module would log every disconnect twice (console + webhook)
+-- and broadcast the marker event more than once.
+if IS_CORE then
 AddEventHandler('playerDropped', function(reason)
     -- Insert the Webhook Link here
     local discordWebhookLink = ""
@@ -49,5 +55,6 @@ AddEventHandler('playerDropped', function(reason)
         )
     end
 end)
+end
 
 return true

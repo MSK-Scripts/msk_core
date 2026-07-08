@@ -1,3 +1,5 @@
+local IS_CORE = GetCurrentResourceName() == 'msk_core'
+
 local Callbacks = {}        -- eventName -> handler function
 local CallbackHandler = {}  -- requestId -> 'request' | { result... } | nil
 

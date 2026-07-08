@@ -6,7 +6,7 @@
 
 [![Discord](https://img.shields.io/badge/Discord-MSK%20Scripts-5865F2?logo=discord&logoColor=white)](https://discord.gg/5hHSBRHvJE)
 [![Documentation](https://img.shields.io/badge/Docs-docu.msk--scripts.de-00E676)](https://docu.msk-scripts.de/docs/msk_core/)
-[![Version](https://img.shields.io/badge/version-3.0.0-blue)](https://github.com/MSK-Scripts/msk_core/releases)
+[![Version](https://img.shields.io/badge/version-3.0.1-blue)](https://github.com/MSK-Scripts/msk_core/releases)
 [![License](https://img.shields.io/badge/license-LGPL--3.0-green)](LICENSE)
 
 [Discord](https://discord.gg/5hHSBRHvJE) · [Documentation](https://docu.msk-scripts.de/docs/msk_core/) · [Releases](https://github.com/MSK-Scripts/msk_core/releases)

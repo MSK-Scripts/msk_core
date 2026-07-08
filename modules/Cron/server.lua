@@ -1,4 +1,12 @@
+local IS_CORE = GetCurrentResourceName() == 'msk_core'
 MSK.Cron = {}
+
+-- The two tick loops and the msk_core:createCron listener are core-owned
+-- singletons: they must run EXACTLY ONCE, inside msk_core. A consumer that
+-- eager-loads this module would otherwise start its own tick loops and a second
+-- createCron listener, so a cron job could execute twice. Consumers reach
+-- Create/Delete through the export proxy (exports.msk_core:CreateCron/DeleteCron).
+if IS_CORE then
 
 local CronJobs, CronJobsAt = {}, {}
 local CronJobUniqueIds = {}
@@ -131,4 +139,15 @@ end
 MSK.DeleteCron = MSK.Cron.Delete
 exports('DeleteCron', MSK.Cron.Delete)
 
-return true
+else
+    -- Consumer view: route to the single scheduler inside msk_core.
+    function MSK.Cron.Create(...) return exports.msk_core:CreateCron(...) end
+    function MSK.Cron.Delete(...) return exports.msk_core:DeleteCron(...) end
+    MSK.CreateCron = MSK.Cron.Create
+    MSK.DeleteCron = MSK.Cron.Delete
+end
+
+-- Return the Cron table (not `true`): the consumer loader (import.lua) caches the
+-- module's return value under MSK.Cron, so returning `true` here would clobber the
+-- MSK.Cron table built above and leave only MSK.CreateCron/MSK.DeleteCron usable.
+return MSK.Cron

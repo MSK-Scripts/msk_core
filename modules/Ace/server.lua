@@ -1,3 +1,5 @@
+local IS_CORE = GetCurrentResourceName() == 'msk_core'
+
 local function checkParams(str)
     return MSK.String.StartsWith(str, 'player.') or MSK.String.StartsWith(str, 'group.') or MSK.String.StartsWith(str, 'identifier.')
 end
@@ -71,12 +73,20 @@ function MSK.RemovePrincipal(child, parent)
 end
 exports('RemovePrincipal', MSK.RemovePrincipal)
 
-MSK.Register('msk_core:isAceAllowed', function(source, command)
-    return MSK.IsAceAllowed(source, command)
-end)
+-- These callbacks back the client-side MSK.IsAceAllowed / MSK.IsPrincipalAceAllowed
+-- (they resolve via MSK.Trigger). They are server-side singletons owned by
+-- msk_core alone. A consumer that eager-loads this module would otherwise
+-- re-register them through the export proxy onto the core, overwriting the core
+-- handler with a closure that points back into the consumer resource. Only the
+-- core registers them.
+if IS_CORE then
+    MSK.Register('msk_core:isAceAllowed', function(source, command)
+        return MSK.IsAceAllowed(source, command)
+    end)
 
-MSK.Register('msk_core:isPrincipalAceAllowed', function(source, principal, ace)
-    return MSK.IsPrincipalAceAllowed(principal, ace)
-end)
+    MSK.Register('msk_core:isPrincipalAceAllowed', function(source, principal, ace)
+        return MSK.IsPrincipalAceAllowed(principal, ace)
+    end)
+end
 
 return true

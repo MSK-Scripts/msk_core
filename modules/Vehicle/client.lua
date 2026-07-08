@@ -1,3 +1,5 @@
+local IS_CORE = GetCurrentResourceName() == 'msk_core'
+
 function MSK.GetClosestVehicle(coords)
     return MSK.GetClosestEntity(false, coords)
 end
@@ -119,7 +121,12 @@ function MSK.CloseVehicleDoors(vehicle)
 end
 exports('CloseVehicleDoors', MSK.CloseVehicleDoors)
 
--- Credits to ESX Legacy (enter/exit detection) — singleton thread in the core
+-- Credits to ESX Legacy (enter/exit detection). This polling thread fires the
+-- msk_core:entering/entered/exitedVehicle events (local + to the server) and must
+-- run EXACTLY ONCE, inside msk_core. A consumer that eager-loads this module would
+-- otherwise spin up a second thread and every enter/exit would be reported twice.
+-- The helper functions above stay available to consumers on eager-load.
+if IS_CORE then
 local currentVehicle = {}
 local isInVehicle, isEnteringVehicle = false, false
 CreateThread(function()
@@ -166,5 +173,6 @@ CreateThread(function()
         Wait(sleep)
     end
 end)
+end
 
 return true

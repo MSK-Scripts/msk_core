@@ -1,13 +1,22 @@
 local RegisteredCommands = {}
+local IS_CORE = GetCurrentResourceName() == 'msk_core'
 
--- For the client-side MSK.RegisterCommand
-MSK.Register('msk_core:doesPlayerExist', function(source, targetId)
-    return DoesPlayerExist(targetId)
-end)
+-- These two callbacks back the client-side MSK.RegisterCommand (param types
+-- 'player' / 'playerId' resolve them via MSK.Trigger). They are server-side
+-- singletons that must be owned by msk_core ALONE. A consumer that eager-loads
+-- this module would otherwise re-register them through the export proxy back onto
+-- the core, overwriting the core handler with a closure that points into the
+-- consumer resource — so once that consumer stops, argument resolution breaks
+-- server-wide. Only the core registers them.
+if IS_CORE then
+    MSK.Register('msk_core:doesPlayerExist', function(source, targetId)
+        return DoesPlayerExist(targetId)
+    end)
 
-MSK.Register('msk_core:getPlayerData', function(source, targetId)
-    return MSK.GetPlayer({source = targetId})
-end)
+    MSK.Register('msk_core:getPlayerData', function(source, targetId)
+        return MSK.GetPlayer({source = targetId})
+    end)
+end
 
 AddEventHandler('playerJoining', function()
     local playerId = source

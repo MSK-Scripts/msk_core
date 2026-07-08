@@ -1,3 +1,13 @@
+local IS_CORE = GetCurrentResourceName() == 'msk_core'
+
+-- The ban system is core-owned: the DB table, the ban cache and the
+-- onResourceStart / playerConnecting handlers (the latter CancelEvent()s to kick
+-- banned players) plus the /ban and /unban commands must exist EXACTLY ONCE,
+-- inside msk_core. A consumer that eager-loads this module would otherwise enforce
+-- bans twice and register the commands a second time. Consumers reach the
+-- functions through the export proxy (exports.msk_core:BanPlayer, …).
+if IS_CORE then
+
 -- Insert you Discord Webhook here
 local webhookLink = "https://discord.com/api/webhooks/"
 
@@ -247,6 +257,13 @@ if Config.BanSystem.enable and Config.BanSystem.commands.enable then
             {name = 'banId', type = 'number', help = 'Banned players BanId'}
         }
     })
+end
+
+else
+    -- Consumer view: route to the single ban system inside msk_core.
+    function MSK.IsPlayerBanned(...) return exports.msk_core:IsPlayerBanned(...) end
+    function MSK.BanPlayer(...) return exports.msk_core:BanPlayer(...) end
+    function MSK.UnbanPlayer(...) return exports.msk_core:UnbanPlayer(...) end
 end
 
 return true
