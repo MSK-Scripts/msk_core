@@ -85,8 +85,8 @@ Modules load on first use. To compile one up front, list it in your `fxmanifest.
 ```lua
 shared_script '@msk_core/import.lua'
 
-msk_core 'callback'
-msk_core 'player'
+msk_core 'Callback'
+msk_core 'Player'
 ```
 
 ## 🖼️ UI
