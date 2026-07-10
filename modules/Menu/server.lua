@@ -15,6 +15,7 @@ if IS_CORE then
         if not playerId or playerId <= 0 then return end
         TriggerClientEvent('msk_core:hideMenu', playerId)
     end
+    Menu.Close = Menu.Hide -- Alias
     MSK.HideMenu = Menu.Hide
     exports('HideMenu', Menu.Hide)
 
@@ -25,6 +26,7 @@ if IS_CORE then
 else
     function Menu.Show(...) return exports.msk_core:ShowMenu(...) end
     function Menu.Hide(...) return exports.msk_core:HideMenu(...) end
+    Menu.Close = Menu.Hide -- Alias
 
     return setmetatable(Menu, {
         __call = function(self, ...) return self.Show(...) end

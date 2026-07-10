@@ -90,7 +90,9 @@ if IS_CORE then
     MSK.RegisterMenu = Menu.Register
     exports('RegisterMenu', Menu.Register)
 
-    function Menu.Move(dir)
+    -- Navigation ist Modul-intern und gehoert NICHT auf die oeffentliche
+    -- MSK.Menu-Tabelle (der Consumer-Zweig kennt sie ohnehin nicht).
+    local function move(dir)
         local data = menus[currentId]
         local count = #data.items
         if count == 0 then return end
@@ -107,7 +109,7 @@ if IS_CORE then
         if data.onSelected then data.onSelected(i, item, item.args) end
     end
 
-    function Menu.SideScroll(dir)
+    local function sideScroll(dir)
         local data = menus[currentId]
         local item = data.items[runtime.selected]
         if not item or type(item.values) ~= 'table' or #item.values == 0 then return end
@@ -119,7 +121,7 @@ if IS_CORE then
         if data.onSideScroll then data.onSideScroll(runtime.selected, vi, item.args) end
     end
 
-    function Menu.Select()
+    local function selectRow()
         local data = menus[currentId]
         local item = data.items[runtime.selected]
         if not item or item.disabled then return end
@@ -138,7 +140,7 @@ if IS_CORE then
         if item.serverEvent then TriggerServerEvent(item.serverEvent, item.args) end
 
         if shouldClose then
-            Menu.Close('select')
+            Menu.Hide('select')
         end
     end
 
@@ -160,17 +162,17 @@ if IS_CORE then
                     DisableControlAction(0, CTRL_BACK, true)
 
                     if IsDisabledControlJustPressed(0, CTRL_UP) then
-                        Menu.Move(-1)
+                        move(-1)
                     elseif IsDisabledControlJustPressed(0, CTRL_DOWN) then
-                        Menu.Move(1)
+                        move(1)
                     elseif IsDisabledControlJustPressed(0, CTRL_LEFT) then
-                        Menu.SideScroll(-1)
+                        sideScroll(-1)
                     elseif IsDisabledControlJustPressed(0, CTRL_RIGHT) then
-                        Menu.SideScroll(1)
+                        sideScroll(1)
                     elseif IsDisabledControlJustPressed(0, CTRL_SELECT) then
-                        Menu.Select()
+                        selectRow()
                     elseif IsDisabledControlJustPressed(0, CTRL_BACK) then
-                        if data.canClose ~= false then Menu.Close('cancel') end
+                        if data.canClose ~= false then Menu.Hide('cancel') end
                     end
                 end
             end
@@ -179,7 +181,7 @@ if IS_CORE then
     end
 
     function Menu.Show(idOrData)
-        if isOpen then Menu.Close('replace') end
+        if isOpen then Menu.Hide('replace') end
 
         local id, data
         if type(idOrData) == 'table' then
@@ -254,7 +256,7 @@ if IS_CORE then
     MSK.UpdateMenu = Menu.Update
     exports('UpdateMenu', Menu.Update)
 
-    function Menu.Close(key)
+    function Menu.Hide(key)
         if not isOpen then return end
         local data = menus[currentId]
         isOpen = false
@@ -262,9 +264,10 @@ if IS_CORE then
         SendNUIMessage({ action = 'closeMenu' })
         if data and data.onClose then data.onClose(key or 'forced') end
     end
-    MSK.HideMenu = function(key) Menu.Close(key or 'forced') end
-    exports('HideMenu', MSK.HideMenu)
-    RegisterNetEvent('msk_core:hideMenu', function() Menu.Close('forced') end)
+    Menu.Close = Menu.Hide -- Alias
+    MSK.HideMenu = Menu.Hide
+    exports('HideMenu', Menu.Hide)
+    RegisterNetEvent('msk_core:hideMenu', function() Menu.Hide('forced') end)
 
     function Menu.GetOpen()
         return currentId
@@ -280,7 +283,7 @@ if IS_CORE then
 
     AddEventHandler('onResourceStop', function(resource)
         if GetCurrentResourceName() ~= resource then return end
-        Menu.Close('forced')
+        Menu.Hide('forced')
     end)
 
     MSK.Menu = setmetatable(Menu, {
@@ -291,8 +294,9 @@ else
     function Menu.Register(...) return exports.msk_core:RegisterMenu(...) end
     function Menu.Show(...) return exports.msk_core:ShowMenu(...) end
     function Menu.Update(...) return exports.msk_core:UpdateMenu(...) end
-    function Menu.Close(...) return exports.msk_core:HideMenu(...) end
+    function Menu.Hide(...) return exports.msk_core:HideMenu(...) end
     function Menu.GetOpen() return exports.msk_core:GetOpenMenu() end
+    Menu.Close = Menu.Hide -- Alias
 
     return setmetatable(Menu, {
         __call = function(self, ...) return self.Show(...) end
