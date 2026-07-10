@@ -7,7 +7,7 @@ description 'Shared library for MSK Scripts'
 author 'Musiker15 - MSK Scripts'
 license 'LGPL-3.0-or-later'
 repository 'https://github.com/MSK-Scripts/msk_core'
-version '3.1.0'
+version '3.1.1'
 
 shared_scripts {
     'config.lua',
