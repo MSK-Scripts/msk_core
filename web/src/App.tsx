@@ -5,6 +5,8 @@ import Input from './components/Input'
 import Progressbar from './components/Progressbar'
 import Numpad from './components/Numpad'
 import TextUI from './components/TextUI'
+import ContextMenu from './components/ContextMenu'
+import ListMenu from './components/ListMenu'
 import DevPanel from './dev/DevPanel'
 
 function CoordsHandler() {
@@ -42,6 +44,8 @@ export default function App() {
       <Progressbar />
       <Numpad />
       <TextUI />
+      <ContextMenu />
+      <ListMenu />
       <CoordsHandler />
       {import.meta.env.DEV && <DevPanel />}
     </>

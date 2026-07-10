@@ -54,6 +54,8 @@ MSK.LoadModule('Progress')
 MSK.LoadModule('TextUI')
 MSK.LoadModule('Input')
 MSK.LoadModule('Numpad')
+MSK.LoadModule('Context')
+MSK.LoadModule('Menu')
 
 --------------------------------------------------------------------------------
 -- World — eager (sets MSK.* + exports itself; MSK.AddWebhook from Ban/Disc).

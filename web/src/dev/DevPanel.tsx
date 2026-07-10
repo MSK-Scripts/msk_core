@@ -1,8 +1,24 @@
+import { useState } from 'react'
 import './mock'
-import type { NuiMessage } from '../types'
+import type { ContextOption, MenuItem, NuiMessage } from '../types'
 
 // Feuert eine NUI-Nachricht, als käme sie von Lua (SendNUIMessage).
 const send = (msg: NuiMessage) => window.postMessage(msg, '*')
+
+// ── Demo-Daten für Context/Menu ───────────────────────────────────
+const contextOptions = (progress: number): ContextOption[] => [
+  { index: 1, id: 'info', title: 'Fahrzeug ~g~Info~s~', description: 'Untermenü öffnen', icon: 'circle-info', arrow: true },
+  { index: 2, id: 'repair', title: 'Reparieren', description: 'Zustand wiederherstellen', icon: 'wrench', progress, colorScheme: '#00e676' },
+  { index: 3, id: 'locked', title: 'Gesperrt', description: 'Kein Zugriff', icon: 'lock', disabled: true },
+  { index: 4, id: 'plate', title: 'Kennzeichen', icon: 'id-card', readOnly: true, metadata: [{ label: 'Plate', value: 'MSK 123' }, { label: 'Model', value: 'Sultan' }] },
+]
+
+const menuItems = (valueIndex: number, checked: boolean): MenuItem[] => [
+  { index: 1, id: 'engine', label: 'Motor', description: 'Zustand', icon: 'gauge-high', progress: 82, colorScheme: '#00e676' },
+  { index: 2, id: 'color', label: 'Farbe', icon: 'palette', values: [{ label: 'Schwarz' }, { label: 'Weiß' }, { label: 'MSK Grün' }], valueIndex },
+  { index: 3, id: 'neon', label: 'Neon', icon: 'lightbulb', checked },
+  { index: 4, id: 'locked', label: 'Deaktiviert', icon: 'ban', disabled: true },
+]
 
 const NOTIFY_TYPES = {
   general: { icon: 'fas fa-circle-info', color: '#f0ede8' },
@@ -15,6 +31,14 @@ const NOTIFY_TYPES = {
 export default function DevPanel() {
   const btn =
     'rounded-md border border-border bg-input px-2 py-1 text-[11px] font-medium text-text-primary transition-colors hover:border-accent/50 hover:bg-accent/10'
+
+  // Lokaler Demo-State für das (Lua-getriebene) Menu, damit man im Browser
+  // Navigation/Side-Scroll/Checkbox simulieren kann.
+  const [mSel, setMSel] = useState(1)
+  const [mVal, setMVal] = useState(1)
+  const [mChk, setMChk] = useState(false)
+  const pushMenu = (sel: number, val: number, chk: boolean) =>
+    send({ action: 'updateMenu', selected: sel, items: menuItems(val, chk) })
 
   return (
     <div className="pointer-events-auto fixed right-3 top-3 z-[9999] flex w-[200px] flex-col gap-2 rounded-lg border border-border bg-panel/95 p-3 font-body text-text-secondary shadow-msk">
@@ -103,6 +127,77 @@ export default function DevPanel() {
         </button>
         <button className={btn} onClick={() => send({ action: 'textUI', show: false })}>
           hide
+        </button>
+      </Section>
+
+      <Section title="Context">
+        <button
+          className={btn}
+          onClick={() =>
+            send({
+              action: 'openContext',
+              id: 'demo',
+              title: 'Fahrzeug',
+              options: contextOptions(45),
+              canClose: true,
+              position: 'center',
+              hasBack: false,
+            })
+          }
+        >
+          open
+        </button>
+        <button className={btn} onClick={() => send({ action: 'updateContext', options: contextOptions(90) })}>
+          update
+        </button>
+        <button className={btn} onClick={() => send({ action: 'closeContext' })}>
+          close
+        </button>
+      </Section>
+
+      <Section title="Menu">
+        <button
+          className={btn}
+          onClick={() => {
+            setMSel(1)
+            setMVal(1)
+            setMChk(false)
+            send({ action: 'openMenu', id: 'demo', title: 'Optionen', position: 'top-left', selected: 1, items: menuItems(1, false) })
+          }}
+        >
+          open
+        </button>
+        <button
+          className={btn}
+          onClick={() => {
+            const next = (mSel % 4) + 1
+            setMSel(next)
+            pushMenu(next, mVal, mChk)
+          }}
+        >
+          next
+        </button>
+        <button
+          className={btn}
+          onClick={() => {
+            const next = (mVal % 3) + 1
+            setMVal(next)
+            pushMenu(mSel, next, mChk)
+          }}
+        >
+          scroll
+        </button>
+        <button
+          className={btn}
+          onClick={() => {
+            setMChk(!mChk)
+            pushMenu(mSel, mVal, !mChk)
+          }}
+        >
+          check
+        </button>
+        <button className={btn} onClick={() => send({ action: 'closeMenu' })}>
+          close
         </button>
       </Section>
     </div>
