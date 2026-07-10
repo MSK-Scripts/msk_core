@@ -19,8 +19,15 @@ const TOKEN = /~([a-z]+)~/g
 /**
  * Wandelt einen Text mit ~x~-Farbcodes in sichere React-Nodes um.
  * `~s~` setzt die Farbe zurück. Kein dangerouslySetInnerHTML -> XSS-sicher.
+ *
+ * Robust gegen nil/Zahlen aus Lua: ein fehlender Text darf niemals die komplette
+ * NUI killen (es gibt keine Error-Boundary, ein Throw hier nimmt alle Komponenten mit).
  */
-export function parseColorCodes(input: string): ReactNode[] {
+export function parseColorCodes(input?: string | number | null): ReactNode[] {
+  if (input === null || input === undefined) return []
+  const text = typeof input === 'string' ? input : String(input)
+  if (text === '') return []
+
   const nodes: ReactNode[] = []
   let lastIndex = 0
   let currentColor: string | undefined
@@ -41,8 +48,8 @@ export function parseColorCodes(input: string): ReactNode[] {
 
   let match: RegExpExecArray | null
   TOKEN.lastIndex = 0
-  while ((match = TOKEN.exec(input)) !== null) {
-    pushText(input.slice(lastIndex, match.index))
+  while ((match = TOKEN.exec(text)) !== null) {
+    pushText(text.slice(lastIndex, match.index))
     const code = match[1]
     if (code === 's') {
       currentColor = undefined
@@ -54,7 +61,7 @@ export function parseColorCodes(input: string): ReactNode[] {
     }
     lastIndex = match.index + match[0].length
   }
-  pushText(input.slice(lastIndex))
+  pushText(text.slice(lastIndex))
 
   return nodes
 }

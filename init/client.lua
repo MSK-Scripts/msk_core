@@ -78,6 +78,8 @@ MSK.LoadModule('Progress')
 MSK.LoadModule('TextUI')
 MSK.LoadModule('Input')
 MSK.LoadModule('Numpad')
+MSK.LoadModule('Context')
+MSK.LoadModule('Menu')
 
 --------------------------------------------------------------------------------
 -- World + Disconnect-Logger — eager. World sets its own MSK.*

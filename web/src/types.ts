@@ -61,6 +61,87 @@ export interface CopyCoordsMessage {
   value: string
 }
 
+// ── Context-Menue (Maus-Drilldown) ────────────────────────────────
+export interface ContextMetaItem {
+  label: string
+  value?: string
+}
+
+export interface ContextOption {
+  index: number
+  id?: string
+  title: string
+  description?: string
+  icon?: string
+  iconColor?: string
+  image?: string
+  arrow?: boolean
+  disabled?: boolean
+  readOnly?: boolean
+  progress?: number
+  colorScheme?: string
+  metadata?: ContextMetaItem[] | Record<string, string>
+}
+
+export interface OpenContextMessage {
+  action: 'openContext'
+  id: string
+  title: string
+  options: ContextOption[]
+  canClose: boolean
+  position: string
+  hasBack: boolean
+}
+
+export interface UpdateContextMessage {
+  action: 'updateContext'
+  options: ContextOption[]
+}
+
+export interface CloseContextMessage {
+  action: 'closeContext'
+}
+
+// ── Menu (Tastatur-navigiert, NativeUI-Stil) ──────────────────────
+export interface MenuValue {
+  label: string
+  description?: string
+}
+
+export interface MenuItem {
+  index: number
+  id?: string
+  label: string
+  description?: string
+  icon?: string
+  iconColor?: string
+  disabled?: boolean
+  checked?: boolean
+  progress?: number
+  colorScheme?: string
+  values?: MenuValue[]
+  valueIndex?: number
+}
+
+export interface OpenMenuMessage {
+  action: 'openMenu'
+  id: string
+  title: string
+  position: string
+  selected: number
+  items: MenuItem[]
+}
+
+export interface UpdateMenuMessage {
+  action: 'updateMenu'
+  selected: number
+  items: MenuItem[]
+}
+
+export interface CloseMenuMessage {
+  action: 'closeMenu'
+}
+
 export type NuiMessage =
   | NotifyMessage
   | OpenInputMessage
@@ -71,3 +152,9 @@ export type NuiMessage =
   | CloseNumpadMessage
   | TextUiMessage
   | CopyCoordsMessage
+  | OpenContextMessage
+  | UpdateContextMessage
+  | CloseContextMessage
+  | OpenMenuMessage
+  | UpdateMenuMessage
+  | CloseMenuMessage
