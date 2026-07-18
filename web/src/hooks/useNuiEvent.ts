@@ -12,6 +12,10 @@ export function useNuiEvent<T = unknown>(
   saved.current = handler
 
   useEffect(() => {
+    // Kein event.origin-Check: NUI-Messages kommen ueber SendNUIMessage aus dem
+    // CEF des Spielclients (nui://), nicht aus einem cross-origin Web-Kontext.
+    // Es gibt keine stabile, pruefbare Origin, und ein Check wuerde den
+    // Browser-Dev-Modus (DevPanel) brechen. Gefiltert wird streng ueber data.action.
     const listener = (event: MessageEvent) => {
       const data = event.data
       if (data && data.action === action) {
