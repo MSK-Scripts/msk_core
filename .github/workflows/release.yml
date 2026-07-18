@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "fxmanifest.lua"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Tag and release on version bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version from fxmanifest.lua
+        id: version
+        run: |
+          VERSION=$(sed -nE "s/^version '([^']+)'.*/\1/p" fxmanifest.lua)
+          if [ -z "$VERSION" ]; then
+            echo "Could not read version from fxmanifest.lua" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected version $VERSION"
+
+      - name: Check if release already exists
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release ${{ steps.version.outputs.tag }} already exists, nothing to do."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract changelog section
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          awk -v hdr="## [$VERSION]" '
+            index($0, hdr) == 1 { flag = 1; next }
+            /^## \[/ && flag { flag = 0 }
+            flag { print }
+          ' CHANGELOGS.md > release_notes.md
+          # strip leading/trailing blank lines
+          sed -i -e '/./,$!d' release_notes.md
+          if [ ! -s release_notes.md ]; then
+            echo "No changelog entry found for $VERSION, using a fallback note." >&2
+            printf 'Release %s\n\nSee [CHANGELOGS.md](CHANGELOGS.md) for details.\n' "$VERSION" > release_notes.md
+          fi
+          echo "----- release notes -----"
+          cat release_notes.md
+
+      - name: Build resource archive
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          STAGE="$RUNNER_TEMP/pkg"
+          mkdir -p "$STAGE"
+          # export tracked files only, into a top-level msk_core/ folder
+          git archive --format=tar --prefix=msk_core/ HEAD | tar -x -C "$STAGE"
+          # drop files not needed to run the resource
+          rm -rf "$STAGE/msk_core/.github" "$STAGE/msk_core/.assets"
+          ( cd "$STAGE" && zip -rq "$GITHUB_WORKSPACE/msk_core-$VERSION.zip" msk_core )
+          echo "Archive contents:"
+          unzip -l "msk_core-$VERSION.zip" | tail -n +2 | head -n 40
+
+      - name: Create GitHub release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes-file release_notes.md \
+            --target "$GITHUB_SHA" \
+            "msk_core-$VERSION.zip#msk_core $VERSION (resource)"
+          echo "Created release $TAG"
