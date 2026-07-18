@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * Registriert einen Listener für eine NUI-Action (window 'message').
- * Der Handler ist ref-stabil, sodass aktuelle Closures ohne Re-Subscribe greifen.
+ * Registers a listener for a NUI action (window 'message').
+ * The handler is ref-stable, so current closures apply without re-subscribing.
  */
 export function useNuiEvent<T = unknown>(
   action: string,
@@ -12,10 +12,10 @@ export function useNuiEvent<T = unknown>(
   saved.current = handler
 
   useEffect(() => {
-    // Kein event.origin-Check: NUI-Messages kommen ueber SendNUIMessage aus dem
-    // CEF des Spielclients (nui://), nicht aus einem cross-origin Web-Kontext.
-    // Es gibt keine stabile, pruefbare Origin, und ein Check wuerde den
-    // Browser-Dev-Modus (DevPanel) brechen. Gefiltert wird streng ueber data.action.
+    // No event.origin check: NUI messages arrive via SendNUIMessage from the
+    // game client CEF (nui://), not from a cross-origin web context. There is no
+    // stable, checkable origin, and a check would break browser dev mode (DevPanel).
+    // Filtering is done strictly through data.action.
     const listener = (event: MessageEvent) => {
       const data = event.data
       if (data && data.action === action) {
