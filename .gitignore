@@ -40,6 +40,5 @@ luac.out
 *.hex
 
 # Other
-CHANGELOGS.md
 DISCORD_CHANGELOGS.md
 .claude/
