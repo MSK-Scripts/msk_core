@@ -2,6 +2,36 @@
 
 All notable changes to msk_core are documented in this file.
 
+## [3.1.2] - 2026-07-18
+
+### Changed
+
+- **NUI rebuilt on updated dependencies.** The web interface was rebuilt with
+  React 19, Vite 8, TypeScript 7 and FontAwesome 7. There is no API or behavior
+  change, the Lua side is untouched. FontAwesome 7 ships only woff2, so the
+  unused `.ttf` font files were removed from `web/dist`.
+
+### Repository
+
+- Added continuous integration (CodeQL analysis for the NUI and a NUI build
+  check), Dependabot for npm and GitHub Actions, an auto release workflow that
+  tags and publishes a release from the matching CHANGELOGS.md section, and the
+  standard community health files (Code of Conduct, Contributing, Security
+  Policy, issue and pull request templates). These live in the repository only
+  and are not part of the resource you upload to your server.
+
+To update, replace `fxmanifest.lua` and `web/dist`. Pure NUI rebuild, no Lua or
+API change.
+
+### Changed files
+
+- `fxmanifest.lua`
+- `web/dist/**` (rebuilt, `.ttf` fonts removed)
+- `web/src/hooks/useNuiEvent.ts`
+- `web/package.json`
+- `web/package-lock.json`
+- `Readme.md`
+
 ## [3.1.1] - 2026-07-10
 
 ### Changed
