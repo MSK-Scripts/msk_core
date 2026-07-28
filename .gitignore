@@ -48,3 +48,6 @@ graphify-out/*
 DISCORD_CHANGELOGS.md
 .claude/
 CLAUDE.md
+
+# Node
+node_modules/
