@@ -89,6 +89,31 @@ MSK.LoadModule('World')
 MSK.LoadModule('DisconnectLogger')
 
 --------------------------------------------------------------------------------
+-- NUI error reporting — each component in the NUI is wrapped in its own error
+-- boundary (web/src/components/ErrorBoundary.tsx). When one of them crashes it
+-- reports here, so the failure shows up in the client console instead of the
+-- component just silently disappearing.
+-- This file only ever runs inside msk_core, so no IS_CORE guard is needed.
+-- Deliberately not gated behind Config.Debug: a dead UI component is an error.
+--------------------------------------------------------------------------------
+RegisterNUICallback('nuiError', function(data, cb)
+    local component = data and data.component or 'unknown'
+    local message = data and data.message or 'no message'
+
+    MSK.Logging('error', ('NUI component "%s" crashed: %s'):format(component, message))
+
+    if data and type(data.stack) == 'string' and data.stack ~= '' then
+        print(('[^2msk_core^0] %s'):format(data.stack))
+    end
+
+    if data and data.final then
+        MSK.Logging('warn', ('NUI component "%s" is in a crash loop and stays hidden until the resource restarts.'):format(component))
+    end
+
+    cb('ok')
+end)
+
+--------------------------------------------------------------------------------
 -- MarkLoaded — the core is the last to load, so mark the resource as loaded.
 --------------------------------------------------------------------------------
 MSK.MarkLoaded()

@@ -2,6 +2,70 @@
 
 All notable changes to msk_core are documented in this file.
 
+## [3.2.0] - 2026-07-30
+
+### Added
+
+- **Find a spawned vehicle by its plate, without knowing where it is.**
+  `MSK.GetVehicleFromPlate(plate)` returns the vehicle and its network id, on the
+  client and on the server. The two functions that already existed,
+  `MSK.GetVehicleWithPlate` and `MSK.GetClosestVehicleWithPlate`, both need a
+  point and a radius, so a plate on its own was not enough to find anything.
+
+  The search always runs on the server. A client asks over the callback API and
+  gets the network id back, which it resolves locally. That way no client walks
+  its own vehicle pool, and the answer covers every vehicle on the server
+  instead of only the ones streamed in nearby. Because it is a callback round
+  trip, the client side is blocking and has to be called from inside a thread.
+
+  A network id without a local vehicle handle is a normal result and means the
+  vehicle exists but is not streamed in for that client. There is nothing local
+  to hand out in that case, the network id can still be passed around.
+
+- **Read the model of a plate out of the database.**
+  `MSK.GetModelFromPlate(plate)` returns the model hash, and the spawn name when
+  the framework stores one. It reads the framework's vehicle table (`vehicle` in
+  `owned_vehicles` on ESX, `vehicle` and `hash` in `player_vehicles` on QBCore),
+  so it also answers while the vehicle is parked in a garage and does not exist
+  in the world at all. Available on the client and on the server, and blocking
+  on both, so call it from inside a thread. Other frameworks return `nil`.
+
+- Plates are now compared after trimming **and** upper casing them, on both
+  sides of every comparison. GTA hands plates back space padded, while a plate
+  from a database, a command or a config is usually trimmed and not necessarily
+  upper case, so the two never matched. Inner spaces are kept on purpose,
+  `AB C123` and `ABC123` are two different plates. This applies to the two new
+  functions, the existing `...WithPlate` functions are unchanged.
+
+### Changed
+
+- **Every NUI component now sits behind its own error boundary.** A single throw
+  in one component used to unmount the entire interface, so notifications,
+  input, numpad, progressbar, textui and both menus disappeared together until
+  the resource was restarted. That is what a `nil` text in the color code parser
+  caused in v3.1.0. Now only the component that actually failed goes away.
+
+  A failed component reports to the client console with its name and stack
+  instead of vanishing silently, and it comes back on the next NUI message. Only
+  three failures within thirty seconds count as a crash loop and keep it hidden
+  until the resource restarts, so a rare bad call does not disable a component
+  for the rest of the session.
+
+To update, replace `fxmanifest.lua`, `init/client.lua`, the `modules/Vehicle`
+folder and `web/dist`.
+
+### Changed files
+
+- `fxmanifest.lua`
+- `init/client.lua`
+- `modules/Vehicle/shared.lua` (new)
+- `modules/Vehicle/client.lua`
+- `modules/Vehicle/server.lua`
+- `web/src/App.tsx`
+- `web/src/components/ErrorBoundary.tsx` (new)
+- `web/dist/**` (rebuilt)
+- `Readme.md`
+
 ## [3.1.2] - 2026-07-18
 
 ### Changed

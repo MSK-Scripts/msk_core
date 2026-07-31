@@ -7,6 +7,7 @@ import Numpad from './components/Numpad'
 import TextUI from './components/TextUI'
 import ContextMenu from './components/ContextMenu'
 import ListMenu from './components/ListMenu'
+import ErrorBoundary from './components/ErrorBoundary'
 import DevPanel from './dev/DevPanel'
 
 function CoordsHandler() {
@@ -36,17 +37,35 @@ function copyFallback(value: string) {
   document.body.removeChild(el)
 }
 
+// Each component gets its OWN boundary, never one around all of them: a crash
+// must only take out the component it happened in. See ErrorBoundary.tsx.
 export default function App() {
   return (
     <>
-      <NotifyStack />
-      <Input />
-      <Progressbar />
-      <Numpad />
-      <TextUI />
-      <ContextMenu />
-      <ListMenu />
-      <CoordsHandler />
+      <ErrorBoundary name="NotifyStack">
+        <NotifyStack />
+      </ErrorBoundary>
+      <ErrorBoundary name="Input">
+        <Input />
+      </ErrorBoundary>
+      <ErrorBoundary name="Progressbar">
+        <Progressbar />
+      </ErrorBoundary>
+      <ErrorBoundary name="Numpad">
+        <Numpad />
+      </ErrorBoundary>
+      <ErrorBoundary name="TextUI">
+        <TextUI />
+      </ErrorBoundary>
+      <ErrorBoundary name="ContextMenu">
+        <ContextMenu />
+      </ErrorBoundary>
+      <ErrorBoundary name="ListMenu">
+        <ListMenu />
+      </ErrorBoundary>
+      <ErrorBoundary name="CoordsHandler">
+        <CoordsHandler />
+      </ErrorBoundary>
       {import.meta.env.DEV && <DevPanel />}
     </>
   )

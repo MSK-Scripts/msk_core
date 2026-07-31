@@ -26,6 +26,57 @@ function MSK.GetVehicleWithPlate(plate, coords, distance)
 end
 exports('GetVehicleWithPlate', MSK.GetVehicleWithPlate)
 
+---Finds the vehicle with this plate, without needing coordinates or a radius.
+---Use MSK.GetVehicleWithPlate when the hit has to be within a certain distance
+---of a point.
+---
+---The search itself runs ON THE SERVER: the client asks over the callback API
+---and gets a netId back. That way the answer covers every vehicle on the
+---server, not just the ones streamed in for this client, and no client walks
+---its own vehicle pool.
+---
+---BLOCKING: this is a callback round trip, so it has to be called from inside a
+---thread (CreateThread, a command handler, ...), like every MSK.Trigger call.
+---
+---A netId without a local entity handle is a normal result: the vehicle exists,
+---but it is not streamed in for this client, so there is nothing local to hand
+---out. Request it or move closer before using the handle.
+---@param plate string
+---@return number|false vehicle local entity handle, false when not streamed in here
+---@return number|nil netId network id, present whenever the vehicle exists at all
+function MSK.GetVehicleFromPlate(plate)
+    plate = normalizePlate(plate)
+    if not plate then return false end
+
+    local netId = MSK.Trigger('msk_core:getVehicleFromPlate', plate)
+    if not netId then return false end
+
+    local vehicle = NetToVeh(netId)
+    if not vehicle or vehicle == 0 or not DoesEntityExist(vehicle) then
+        return false, netId
+    end
+
+    return vehicle, netId
+end
+exports('GetVehicleFromPlate', MSK.GetVehicleFromPlate)
+
+---Reads the model stored in the framework's vehicle table for this plate.
+---Answers even while the vehicle is parked in a garage and does not exist in
+---the world at all, because it looks at the database and not at spawned
+---vehicles. Runs on the server, the client asks over the callback API.
+---
+---BLOCKING: callback round trip, call it from inside a thread.
+---@param plate string
+---@return number|nil model model hash as stored, nil when nothing was found
+---@return string|nil name spawn name, only when the framework stores one (QBCore)
+function MSK.GetModelFromPlate(plate)
+    plate = normalizePlate(plate)
+    if not plate then return nil end
+
+    return MSK.Trigger('msk_core:getModelFromPlate', plate)
+end
+exports('GetModelFromPlate', MSK.GetModelFromPlate)
+
 function MSK.GetVehicleInDirection(distance)
     local entity = MSK.Request.Raycast(distance, 2)
 
