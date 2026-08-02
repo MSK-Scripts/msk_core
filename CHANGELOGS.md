@@ -2,6 +2,36 @@
 
 All notable changes to msk_core are documented in this file.
 
+## [3.3.0] - 2026-08-01
+
+### Added
+
+- **`MSK.AddRawAce` and `MSK.RemoveRawAce`, for ace objects that must not live
+  under `command.`.** `MSK.AddAce` prefixes every ace with `command.`, which is
+  right for commands but wrong for anything used as a permission object. Almost
+  every server.cfg contains `add_ace group.admin command allow`, and ace objects
+  are inherited by their children, so an object called `command.whatever` is
+  handed to everyone holding `command`. The raw variants pass principal and ace
+  through exactly as given, no prefixing and no principal normalisation, so
+  `qbcore.admin` stays `qbcore.admin` instead of becoming `group.qbcore.admin`.
+
+  They also solve something a consumer cannot solve on its own. FiveM checks
+  `add_ace` against the resource that runs it, and `import.lua` compiles these
+  modules **into** the consumer, so an `ExecuteCommand('add_ace ...')` written in
+  a script runs as `resource.<that script>` and gets denied. Called from a
+  consumer, `MSK.AddRawAce` bounces through msk_core's export, so the command runs
+  as `resource.msk_core` and the single line you already have in your server.cfg
+  covers every MSK script at once.
+
+- **`MSK.CanAddAce()`** returns whether msk_core is currently allowed to run
+  `add_ace`. Lets a script check up front instead of firing commands that get
+  refused and fill the console with `Access denied for command add_ace`.
+
+### Changed files
+
+- `fxmanifest.lua` (version bump)
+- `modules/Ace/server.lua`
+
 ## [3.2.0] - 2026-07-30
 
 ### Added

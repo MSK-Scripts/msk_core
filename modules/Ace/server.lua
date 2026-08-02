@@ -1,4 +1,5 @@
-local IS_CORE = GetCurrentResourceName() == 'msk_core'
+local CORE = 'msk_core'
+local IS_CORE = GetCurrentResourceName() == CORE
 
 local function checkParams(str)
     return MSK.String.StartsWith(str, 'player.') or MSK.String.StartsWith(str, 'group.') or MSK.String.StartsWith(str, 'identifier.')
@@ -52,6 +53,56 @@ function MSK.RemoveAce(principal, ace, allow)
     ExecuteCommand(('remove_ace %s %s %s'):format(principal, ace, allowAce(allow)))
 end
 exports('RemoveAce', MSK.RemoveAce)
+
+----------------------------------------------------------------
+-- Raw aces
+--
+-- FiveM checks `add_ace` against the resource that RUNS the command, and no
+-- resource holds `command.add_ace` by default. Consumers cannot fix this for
+-- themselves: import.lua compiles these modules INTO the consumer, so a plain
+-- ExecuteCommand here would run as `resource.<consumer>` and be denied.
+--
+-- The two functions below therefore bounce through msk_core's own export when
+-- they are called from a consumer. Then the command runs as `resource.msk_core`
+-- and a single line in the server.cfg covers every MSK script:
+--
+--     add_ace resource.msk_core command.add_ace allow
+--
+-- "Raw" means: no `command.` prefix is added, unlike MSK.AddAce. That matters
+-- for permission objects that must NOT inherit from `command`, because almost
+-- every server.cfg contains `add_ace group.admin command allow` and ace objects
+-- are inherited by their children. An object named `command.something` would be
+-- handed to everyone holding `command`.
+----------------------------------------------------------------
+
+function MSK.CanAddAce()
+    return IsPrincipalAceAllowed(('resource.%s'):format(CORE), 'command.add_ace')
+end
+exports('CanAddAce', MSK.CanAddAce)
+
+-- Both take principal AND ace exactly as given, no normalising. A caller that
+-- needs `qbcore.admin` or `resource.foo` must be able to say so: passing it
+-- through normalizePrincipal() would turn `qbcore.admin` into
+-- `group.qbcore.admin`.
+function MSK.AddRawAce(principal, ace, allow)
+    if not IS_CORE then return exports[CORE]:AddRawAce(principal, ace, allow) end
+    if not MSK.CanAddAce() then return false end
+
+    logging('debug', 'MSK.AddRawAce', principal, ace, allowAce(allow))
+    ExecuteCommand(('add_ace %s %s %s'):format(principal, ace, allowAce(allow)))
+    return true
+end
+exports('AddRawAce', MSK.AddRawAce)
+
+function MSK.RemoveRawAce(principal, ace, allow)
+    if not IS_CORE then return exports[CORE]:RemoveRawAce(principal, ace, allow) end
+    if not MSK.CanAddAce() then return false end
+
+    logging('debug', 'MSK.RemoveRawAce', principal, ace, allowAce(allow))
+    ExecuteCommand(('remove_ace %s %s %s'):format(principal, ace, allowAce(allow)))
+    return true
+end
+exports('RemoveRawAce', MSK.RemoveRawAce)
 
 function MSK.AddPrincipal(child, parent)
     if type(child) == 'number' then child = 'player.' .. child end
