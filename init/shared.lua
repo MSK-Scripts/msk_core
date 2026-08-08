@@ -80,11 +80,12 @@ setmetatable(MSK, {
 -- Registers a public export whose function is resolved from the module only
 -- on the first call (lazy-in-core).
 --   name       : public export name      (e.g. 'Round')
---   moduleName : module folder           (e.g. 'math')
+--   moduleName : module folder           (e.g. 'Math'; must match the folder
+--                                         name exactly, Linux is case-sensitive)
 --   key        : key in the module's return value (e.g. 'Round'); nil = module itself
 --
 -- Called per module in the following batches, e.g.:
---   MSK.RegisterExport('Round', 'math', 'Round')
+--   MSK.RegisterExport('Round', 'Math', 'Round')
 --------------------------------------------------------------------------------
 local function registerExport(name, moduleName, key)
     exports(name, function(...)
@@ -130,9 +131,9 @@ end
 -- MSK.Call  =  pcall + Timeout.Await  (the Timeout module is loaded lazy-in-core)
 --------------------------------------------------------------------------------
 MSK.Call = function(fn, timeout)
-    local Timeout = mountCore('timeout')
+    local Timeout = mountCore('Timeout')
     if not Timeout then
-        error("msk_core: MSK.Call requires the 'timeout' module (not yet ported).", 2)
+        error("msk_core: MSK.Call could not load the 'Timeout' module.", 2)
     end
     return Timeout.Await(timeout or 1000, function()
         local ok, result = pcall(fn)

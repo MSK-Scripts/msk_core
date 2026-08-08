@@ -145,8 +145,10 @@ _ENV.MSK = MSK
 --------------------------------------------------------------------------------
 -- Optional eager loading: the consumer may request modules up front in its
 -- own fxmanifest, e.g.:
---     msk_core 'callback'
---     msk_core 'player'
+--     msk_core 'Callback'
+--     msk_core 'Player'
+-- The name must match the folder under modules/ exactly. Linux servers have a
+-- case-sensitive filesystem, so 'callback' does not resolve there.
 --------------------------------------------------------------------------------
 local eager = GetNumResourceMetadata(consumer, 'msk_core')
 for i = 0, eager - 1 do

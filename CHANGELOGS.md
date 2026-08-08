@@ -2,6 +2,37 @@
 
 All notable changes to msk_core are documented in this file.
 
+## [3.3.1] - 2026-08-08
+
+### Fixed
+
+- **`MSK.Call` failed on Linux servers.** Internally the core asked its module
+  loader for `timeout`, but the folder is `modules/Timeout`. Windows filesystems
+  ignore case, so this only ever surfaced on Linux, where the load returned
+  nothing and every `MSK.Call` aborted with "requires the 'timeout' module (not
+  yet ported)". The lookup now uses the real folder name. Scripts that reach
+  `MSK.Call` through the module were never affected, only the core-internal
+  path.
+
+- The error message behind that lookup no longer claims the module is "not yet
+  ported". `Timeout` has shipped since v3.0.0, so the old wording sent anyone
+  hitting it looking for a missing feature instead of a failed load.
+
+### Changed
+
+- The eager-loading example in `import.lua` and the module examples in
+  `init/shared.lua` used lowercase names that do not match any folder. They now
+  show the real spelling and state that the name is case-sensitive on Linux.
+
+- The version badge in `Readme.md` was still on 3.2.0.
+
+### Changed files
+
+- `fxmanifest.lua` (version bump)
+- `init/shared.lua`
+- `import.lua`
+- `Readme.md`
+
 ## [3.3.0] - 2026-08-01
 
 ### Added
