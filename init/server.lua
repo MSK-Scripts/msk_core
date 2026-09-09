@@ -80,6 +80,13 @@ MSK.LoadModule('Society')
 MSK.LoadModule('Offline')
 
 --------------------------------------------------------------------------------
+-- VehicleStore — eager, because on QBCore and Qbox it adds the job and type
+-- columns that player_vehicles does not ship with, and it has to be reachable
+-- before any script asks about an owned vehicle.
+--------------------------------------------------------------------------------
+MSK.LoadModule('VehicleStore')
+
+--------------------------------------------------------------------------------
 -- MarkLoaded — the core is the last to load, so mark the resource as loaded.
 --------------------------------------------------------------------------------
 MSK.MarkLoaded()

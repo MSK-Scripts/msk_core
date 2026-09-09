@@ -2,8 +2,8 @@ local IS_CORE = GetCurrentResourceName() == 'msk_core'
 local Context = {}
 
 if IS_CORE then
-    -- Oeffnet bei einem Spieler ein (client-seitig registriertes) Context-Menue
-    -- per id, oder ein inline-Menue (nur serialisierbare Felder: event/serverEvent/args).
+    -- Opens a context menu for a player: either one registered on the client,
+    -- by id, or an inline menu (serialisable fields only, so event/serverEvent/args).
     function Context.Show(playerId, idOrData)
         if not playerId or playerId <= 0 then return end
         return MSK.Trigger('msk_core:context', playerId, idOrData)

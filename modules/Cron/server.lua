@@ -36,15 +36,37 @@ local function tickCronJob()
     local currH = tonumber(os.date('%H', currTime))
     local currM = tonumber(os.date('%M', currTime))
 
-    for i = 1, #CronJobs do
-        local timestamp = CronJobs[i].timestamp
+    -- Backwards: a job that runs once is removed inside the loop, and removing
+    -- from the front would shift everything behind it.
+    for i = #CronJobs, 1, -1 do
+        local job = CronJobs[i]
+        local timestamp = job.timestamp
         local d = tonumber(os.date('%d', timestamp))
         local h = tonumber(os.date('%H', timestamp))
         local m = tonumber(os.date('%M', timestamp))
 
         if currD == d and currH == h and currM == m then
-            CronJobs[i].timestamp = getTime(timestamp, CronJobs[i].date)
-            CronJobs[i].cb(CronJobs[i].uniqueId, CronJobs[i].data, {timestamp = currTime, d = currD, h = currH, m = currM})
+            -- A job created from a plain timestamp has no interval to add, so
+            -- it runs once and is done. Feeding the number to getTime() indexed
+            -- it like a table and ended this thread, taking every other cron
+            -- job on the server down with it.
+            if type(job.date) == 'table' then
+                job.timestamp = getTime(timestamp, job.date)
+            else
+                table.remove(CronJobs, i)
+                CronJobUniqueIds[job.uniqueId] = nil
+            end
+
+            -- pcall so that one broken job cannot end the scheduler for all of
+            -- them. Before this, an error inside a callback killed the loop and
+            -- no cron job ran again until the next restart.
+            local ok, err = pcall(job.cb, job.uniqueId, job.data, {
+                timestamp = currTime, d = currD, h = currH, m = currM,
+            })
+
+            if not ok then
+                MSK.Logging('error', ('Cron job %s failed: %s'):format(job.uniqueId, err))
+            end
         end
     end
 
@@ -59,8 +81,18 @@ local function tickCronJobAt()
     local currM = tonumber(os.date('%M', currTime))
 
     for i = 1, #CronJobsAt do
-        if (not CronJobsAt[i].date.atD or CronJobsAt[i].date.atD and currD == CronJobsAt[i].date.atD) and currH == CronJobsAt[i].date.atH and currM == CronJobsAt[i].date.atM then
-            CronJobsAt[i].cb(CronJobsAt[i].uniqueId, CronJobsAt[i].data, {timestamp = currTime, d = currD, h = currH, m = currM})
+        local job = CronJobsAt[i]
+        local date = job.date
+
+        if (not date.atD or currD == date.atD) and currH == date.atH and currM == date.atM then
+            -- Same reasoning as above: one failing job must not stop the rest.
+            local ok, err = pcall(job.cb, job.uniqueId, job.data, {
+                timestamp = currTime, d = currD, h = currH, m = currM,
+            })
+
+            if not ok then
+                MSK.Logging('error', ('Cron job %s failed: %s'):format(job.uniqueId, err))
+            end
         end
     end
 
@@ -107,16 +139,25 @@ function MSK.Cron.Create(date, data, cb)
 end
 MSK.CreateCron = MSK.Cron.Create
 exports('CreateCron', MSK.Cron.Create)
-RegisterNetEvent('msk_core:createCron', MSK.Cron.Create)
+
+-- AddEventHandler, NOT RegisterNetEvent. As a net event any client could call
+-- TriggerServerEvent('msk_core:createCron', ...) and schedule jobs on the
+-- server. A client cannot send a function, so the `cb` would arrive as a string
+-- or table, and calling it a minute later ended the scheduler thread and with
+-- it every cron job on the server. Server-side TriggerEvent still reaches this.
+AddEventHandler('msk_core:createCron', MSK.Cron.Create)
 
 function MSK.Cron.Delete(id)
     if not id then return end
     if not CronJobUniqueIds[id] then return end
     local found = false
 
+    -- table.remove, not `= nil`. Setting an array slot to nil leaves a hole,
+    -- and the tick loops walk 1..#CronJobs, so the very next tick indexed that
+    -- hole and stopped the scheduler. Deleting a cron job used to break cron.
     for i = 1, #CronJobs do
         if CronJobs[i].uniqueId == id then
-            CronJobs[i] = nil
+            table.remove(CronJobs, i)
             CronJobUniqueIds[id] = nil
             found = true
             break
@@ -127,7 +168,7 @@ function MSK.Cron.Delete(id)
 
     for i = 1, #CronJobsAt do
         if CronJobsAt[i].uniqueId == id then
-            CronJobsAt[i] = nil
+            table.remove(CronJobsAt, i)
             CronJobUniqueIds[id] = nil
             found = true
             break

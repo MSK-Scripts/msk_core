@@ -17,11 +17,15 @@ MSK.RegisterItem = function(itemName, callback)
 
     RegisteredItems[itemName] = callback
 
-    if MSK.Bridge.Framework.Type == 'ESX' then
+    local framework = MSK.Bridge.Framework.Type
+
+    if framework == 'ESX' then
         ESX.RegisterUsableItem(itemName, callback)
-    elseif MSK.Bridge.Framework.Type == 'QBCore' then
+    elseif framework == 'QBCore' then
         QBCore.Functions.CreateUseableItem(itemName, callback)
-    elseif MSK.Bridge.Framework.Type == 'STANDALONE' then
+    elseif framework == 'Qbox' then
+        QBX:CreateUseableItem(itemName, callback)
+    elseif framework == 'STANDALONE' then
         -- Register the item here
     end
 end

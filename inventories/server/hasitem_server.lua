@@ -1,26 +1,47 @@
-MSK.HasItem = function(playerId, itemName, metadata)
+--------------------------------------------------------------------------------
+-- MSK.HasItem (server)
+--
+-- Goes straight to the inventory adapter. It used to build a whole player
+-- object first and call a function that had been glued onto it, which meant a
+-- framework lookup for every item check.
+--
+--   MSK.HasItem(playerId, 'bread')                  -> item or false
+--   MSK.HasItem(playerId, 'bread', 5)               -> item only with 5 or more
+--   MSK.HasItem(playerId, 'bread', { quality = 1 }) -> metadata match
+--   MSK.HasItem(playerId, { 'bread', 'water' })     -> first item found, or false
+--------------------------------------------------------------------------------
+MSK.HasItem = function(playerId, itemName, count, metadata)
     if not playerId then
-        MSK.Logging('error', 'Player on Function MSK.HasItem does not exist!')
+        MSK.Logging('error', 'Player on function MSK.HasItem does not exist!')
         return false
     end
 
     if MSK.Bridge.Framework.Type == 'STANDALONE' then
-        MSK.Logging('error', 'Function "MSK.HasItem" cannot be used without Framework!')
+        MSK.Logging('error', 'Function "MSK.HasItem" cannot be used without a framework!')
         return false
     end
 
-    local Player = MSK.GetPlayer({source = playerId})
-
-    if type(itemName) ~= 'table' then
-        return Player.HasItem(itemName, metadata)
+    -- Third argument may be the metadata table (short form without a count).
+    if type(count) == 'table' then
+        metadata, count = count, nil
     end
 
-    for i = 1, #itemName do
-        local item = itemName[i]
-        local hasItem = Player.HasItem(item, metadata)
+    count = tonumber(count) or 1
 
-        if hasItem then
-            return hasItem
+    local getItem = MSK.Bridge.InventoryAdapter.getItem
+    if not getItem then
+        MSK.Logging('error', ('Inventory "%s" does not support item lookups.'):format(MSK.Bridge.Inventory))
+        return false
+    end
+
+    local names = type(itemName) == 'table' and itemName or { itemName }
+
+    for i = 1, #names do
+        local item = getItem(playerId, names[i], metadata)
+
+        if item and (item.count or item.amount or 0) >= count then
+            item.count = item.count or item.amount
+            return item
         end
     end
 

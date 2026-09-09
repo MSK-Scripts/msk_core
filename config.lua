@@ -3,8 +3,8 @@ Config = {}
 Config.Debug = false
 Config.VersionChecker = true
 ----------------------------------------------------------------
--- Supported Frameworks: AUTO, ESX, QBCore, STANDALONE
--- AUTO will search for your framework
+-- Supported Frameworks: AUTO, ESX, QBCore, Qbox, STANDALONE
+-- AUTO will search for your framework (qbx_core > es_extended > qb-core)
 Config.Framework = 'AUTO'
 
 -- Supported Inventories: AUTO, default, custom, ox_inventory, jaksam_inventory, core_inventory

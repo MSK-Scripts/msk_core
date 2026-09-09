@@ -78,7 +78,11 @@ if IS_CORE then
 
         if anim then
             if anim.dict then
-                StopAnimTask(MSK.Player.ped, anim.dict, anim.clip, 1.0)
+                -- anim.clip does not exist: the animation is started from
+                -- anim.anim a few lines up. StopAnimTask was therefore handed
+                -- nil and stopped nothing, only the ClearPedTasks below ever
+                -- ended the animation.
+                StopAnimTask(MSK.Player.ped, anim.dict, anim.clip or anim.anim, 1.0)
                 ClearPedTasks(MSK.Player.ped)
             else
                 ClearPedTasks(MSK.Player.ped)

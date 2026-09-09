@@ -3,19 +3,26 @@ local Check = {}
 
 if IS_CORE then
     local function CheckResourceName(repo, resource)
+        -- Nothing to warn about when the name is right. The message used to be
+        -- printed unconditionally, so every resource using checkName claimed on
+        -- every single start that it had been renamed, even when it had not.
+        -- Only the repeating thread ever looked at the actual name.
+        if resource == repo.name then return end
+
         local notify = false
 
         if type(repo.checkName) == 'table' then
             notify = repo.checkName.notify
         end
 
-        print(("[^2%s^0] [^3WARNING^0] ^3This resource should not be renamed! This can lead to errors. Please rename it to '%s'"):format(resource, repo.name))
+        local message = ("[^2%s^0] [^3WARNING^0] ^3This resource should not be renamed! This can lead to errors. Please rename it to '%s'"):format(resource, repo.name)
+        print(message)
 
-        if notify and resource ~= repo.name then
+        if notify then
             CreateThread(function()
                 while true do
                     Wait(5000)
-                    print(("[^2%s^0] [^3WARNING^0] ^3This resource should not be renamed! This can lead to errors. Please rename it to '%s'"):format(resource, repo.name))
+                    print(message)
                 end
             end)
         end
@@ -92,11 +99,25 @@ if IS_CORE then
             local mV = MSK.String.Split(minimumVersion, '.')
             local errMsg = ("^1resource %s requires minimum version '%s' of resource '%s'! (current version: %s)^0"):format(GetInvokingResource() or GetCurrentResourceName(), minimumVersion, resource, currentVersion)
 
+            -- No readable version at all, which also covers a resource that is
+            -- not installed. That cannot satisfy a minimum, so say so instead
+            -- of comparing against nothing.
+            if currentVersion == 'unknown' then
+                if showMessage then
+                    MSK.Logging('error', errMsg)
+                end
+                return false, errMsg
+            end
+
             for i = 1, #cV do
-                local current, minimum = tonumber(cV[i]), tonumber(mV[i])
+                -- A missing part counts as 0, on both sides. Comparing against
+                -- a nil raised "attempt to compare number with nil" whenever
+                -- the two versions had a different number of parts, for example
+                -- current 1.2.3 against a required 1.2.
+                local current, minimum = tonumber(cV[i]) or 0, tonumber(mV[i]) or 0
 
                 if current ~= minimum then
-                    if not current or current < minimum then
+                    if current < minimum then
                         if showMessage then
                             MSK.Logging('error', errMsg)
                         end

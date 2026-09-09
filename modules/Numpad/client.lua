@@ -5,6 +5,21 @@ if IS_CORE then
     local isNumpadOpen = false
     local callback = nil
 
+    -- Same reasoning as in the Input module: held apart from `callback` so that
+    -- Close() can settle a waiting caller. Closing the numpad without entering
+    -- a code left the promise unresolved, and a blocking MSK.Numpad(...) call
+    -- waited forever, taking its thread with it.
+    local pendingPromise = nil
+
+    local function settle(value)
+        local waiting = pendingPromise
+        pendingPromise = nil
+
+        if waiting then
+            waiting:resolve(value)
+        end
+    end
+
     function Numpad.Open(pin, showPin, cb)
         if isNumpadOpen then return end
         isNumpadOpen = true
@@ -22,9 +37,10 @@ if IS_CORE then
 
         if not callback then
             local p = promise.new()
+            pendingPromise = p
 
             callback = function(response)
-                p:resolve(response)
+                settle(response)
             end
 
             return Citizen.Await(p)
@@ -37,6 +53,10 @@ if IS_CORE then
     function Numpad.Close()
         isNumpadOpen = false
         callback = nil
+
+        -- Anyone still waiting gets false, which reads as "code not entered".
+        settle(false)
+
         SetNuiFocus(false, false)
         SendNUIMessage({ action = 'closeNumpad' })
     end
@@ -54,7 +74,13 @@ if IS_CORE then
     exports('NumpadActive', Numpad.Active)
 
     RegisterNUICallback('submitNumpad', function(data)
-        callback(true)
+        -- The NUI can submit after the numpad was closed from Lua, leaving no
+        -- callback to call. Calling it unchecked raised "attempt to call a nil
+        -- value" out of a NUI callback.
+        if callback then
+            callback(true)
+        end
+
         Numpad.Close()
     end)
 

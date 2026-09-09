@@ -2,8 +2,8 @@ local IS_CORE = GetCurrentResourceName() == 'msk_core'
 local Menu = {}
 
 if IS_CORE then
-    -- Control-IDs (Pfeiltasten + Enter/Backspace). Bewusst KEIN SetNuiFocus,
-    -- damit der Spieler waehrend des Menues weiter laufen/fahren kann.
+    -- Control ids (arrow keys plus enter/backspace). Deliberately NO
+    -- SetNuiFocus, so the player can keep walking or driving while it is open.
     local CTRL_UP, CTRL_DOWN = 172, 173
     local CTRL_LEFT, CTRL_RIGHT = 174, 175
     local CTRL_SELECT, CTRL_BACK = 176, 177
@@ -11,9 +11,20 @@ if IS_CORE then
     local menus = {}          -- id -> data (title, items, position, canClose, disableInput, callbacks)
     local currentId = nil
     local isOpen = false
-    local threadRunning = false
 
-    -- Laufzeit-State getrennt von der Registry, damit ein erneutes Show frisch startet.
+    -- A generation counter instead of a threadRunning flag. Menu.Show calls
+    -- Menu.Hide, and Hide calls data.onClose. If that callback yields, the old
+    -- input thread sees isOpen == false in between, ends itself and clears the
+    -- flag even though the new menu is already open. After that no thread was
+    -- left and the menu stopped accepting keys. With a generation, every Show
+    -- starts its own thread and the older one ends on its own.
+    local threadGeneration = 0
+
+    -- Counter for inline menus without an id of their own, replacing
+    -- GetGameTimer(): two of them in the same millisecond shared one id.
+    local inlineCounter = 0
+
+    -- Runtime state kept apart from the registry, so a repeated Show starts fresh.
     local runtime = { selected = 1, valueIndex = {}, checked = {} }
 
     local function normalizeItems(items)
@@ -66,7 +77,7 @@ if IS_CORE then
         })
     end
 
-    -- Erste nicht-deaktivierte Zeile ab start in Richtung dir finden.
+    -- Finds the first row that is not disabled, from start in direction dir.
     local function firstSelectable(items, start, dir)
         local count = #items
         if count == 0 then return 1 end
@@ -90,8 +101,8 @@ if IS_CORE then
     MSK.RegisterMenu = Menu.Register
     exports('RegisterMenu', Menu.Register)
 
-    -- Navigation ist Modul-intern und gehoert NICHT auf die oeffentliche
-    -- MSK.Menu-Tabelle (der Consumer-Zweig kennt sie ohnehin nicht).
+    -- Navigation is module-internal and does NOT belong on the public
+    -- MSK.Menu table (the consumer branch does not know it anyway).
     local function move(dir)
         local data = menus[currentId]
         local count = #data.items
@@ -126,7 +137,7 @@ if IS_CORE then
         local item = data.items[runtime.selected]
         if not item or item.disabled then return end
 
-        -- Checkbox: umschalten, Menue bleibt offen
+        -- Checkbox: toggle it, the menu stays open
         if item.checked ~= nil then
             runtime.checked[runtime.selected] = not runtime.checked[runtime.selected]
             refresh()
@@ -145,15 +156,16 @@ if IS_CORE then
     end
 
     local function startThread()
-        if threadRunning then return end
-        threadRunning = true
+        threadGeneration = threadGeneration + 1
+        local myGeneration = threadGeneration
+
         CreateThread(function()
-            while isOpen do
+            while isOpen and threadGeneration == myGeneration do
                 Wait(0)
                 local data = menus[currentId]
                 if data and not data.disableInput then
-                    -- Nur die genutzten Nav-Controls sperren, alles andere
-                    -- (Laufen, Fahren, ...) bleibt aktiv.
+                    -- Only the navigation controls in use are blocked,
+                    -- everything else (walking, driving, ...) stays live.
                     DisableControlAction(0, CTRL_UP, true)
                     DisableControlAction(0, CTRL_DOWN, true)
                     DisableControlAction(0, CTRL_LEFT, true)
@@ -176,7 +188,6 @@ if IS_CORE then
                     end
                 end
             end
-            threadRunning = false
         end)
     end
 
@@ -186,7 +197,15 @@ if IS_CORE then
         local id, data
         if type(idOrData) == 'table' then
             data = idOrData
-            id = data.id or ('inline:' .. GetGameTimer())
+
+            if data.id then
+                id = data.id
+            else
+                inlineCounter = inlineCounter + 1
+                id = ('inline:%d'):format(inlineCounter)
+                data.isInline = true
+            end
+
             Menu.Register(id, data)
             data = menus[id]
         else
@@ -195,14 +214,14 @@ if IS_CORE then
         end
 
         if not data then
-            print(('[^3msk_core^0] ShowMenu: unbekanntes Menue "^1%s^0"'):format(tostring(id)))
+            print(('[^3msk_core^0] ShowMenu: unknown menu "^1%s^0"'):format(tostring(id)))
             return
         end
 
         currentId = id
         isOpen = true
 
-        -- Laufzeit-State frisch aufbauen
+        -- Build the runtime state from scratch
         runtime = { selected = 1, valueIndex = {}, checked = {} }
         for i, item in ipairs(data.items) do
             runtime.valueIndex[i] = item.defaultIndex or 1
@@ -226,11 +245,11 @@ if IS_CORE then
     MSK.ShowMenu = Menu.Show
     exports('ShowMenu', Menu.Show)
 
-    -- Merged updatedData in das Item mit id == dataId (partiell); live-Refresh falls offen.
+    -- Merges updatedData into the item with id == dataId (partial); refreshes live when open.
     function Menu.Update(menuId, dataId, updatedData)
         local data = menus[menuId]
         if not data or not data.items then
-            print(('[^3msk_core^0] UpdateMenu: unbekanntes Menue "^1%s^0"'):format(tostring(menuId)))
+            print(('[^3msk_core^0] UpdateMenu: unknown menu "^1%s^0"'):format(tostring(menuId)))
             return
         end
 
@@ -239,7 +258,7 @@ if IS_CORE then
             if item.id == dataId then idx, target = i, item break end
         end
         if not target then
-            print(('[^3msk_core^0] UpdateMenu: Item "^1%s^0" in "^1%s^0" nicht gefunden'):format(tostring(dataId), tostring(menuId)))
+            print(('[^3msk_core^0] UpdateMenu: item "^1%s^0" not found in "^1%s^0"'):format(tostring(dataId), tostring(menuId)))
             return
         end
 
@@ -259,9 +278,18 @@ if IS_CORE then
     function Menu.Hide(key)
         if not isOpen then return end
         local data = menus[currentId]
+        local closedId = currentId
         isOpen = false
         currentId = nil
         SendNUIMessage({ action = 'closeMenu' })
+
+        -- An inline menu belongs to nobody and is never opened by id again.
+        -- Without this cleanup, `menus` grew with every single call to
+        -- MSK.ShowMenu(table) and kept growing for the whole session.
+        if data and data.isInline then
+            menus[closedId] = nil
+        end
+
         if data and data.onClose then data.onClose(key or 'forced') end
     end
     Menu.Close = Menu.Hide -- Alias
@@ -275,8 +303,8 @@ if IS_CORE then
     MSK.GetOpenMenu = Menu.GetOpen
     exports('GetOpenMenu', Menu.GetOpen)
 
-    -- Server -> Client. Gleiche Serialisierungs-Einschraenkung wie beim Context:
-    -- Funktionen ueberleben das Netzwerk nicht -> event/serverEvent nutzen.
+    -- Server -> client. Same serialisation limit as the context menu:
+    -- functions do not survive the network, so use event/serverEvent.
     MSK.Register('msk_core:menu', function(source, idOrData)
         return Menu.Show(idOrData)
     end)

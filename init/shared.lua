@@ -130,15 +130,26 @@ end
 --------------------------------------------------------------------------------
 -- MSK.Call  =  pcall + Timeout.Await  (the Timeout module is loaded lazy-in-core)
 --------------------------------------------------------------------------------
+-- Returns nil when `fn` never produces a value within the time limit, it does
+-- not raise. The pcall around `fn` used to suggest that, but the raise came
+-- from Timeout.Await one level further out and went straight past it: whatever
+-- called MSK.Call was ended by an export that answered slowly or not at all.
+-- That is the opposite of what a function called Call with a built-in pcall is
+-- reached for, and it cost the client player mirror its thread.
 MSK.Call = function(fn, timeout)
     local Timeout = mountCore('Timeout')
     if not Timeout then
         error("msk_core: MSK.Call could not load the 'Timeout' module.", 2)
     end
-    return Timeout.Await(timeout or 1000, function()
-        local ok, result = pcall(fn)
-        if ok then return result end
+
+    local ok, result = pcall(Timeout.Await, timeout or 1000, function()
+        local called, value = pcall(fn)
+        if called then return value end
     end)
+
+    if not ok then return nil end
+
+    return result
 end
 
 --------------------------------------------------------------------------------

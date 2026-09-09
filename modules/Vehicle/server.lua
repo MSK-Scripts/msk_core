@@ -79,11 +79,14 @@ if IS_CORE then
     -- Table and columns per framework.
     --   ESX keeps the model INSIDE the `vehicle` JSON blob, normally as a hash.
     --   QBCore has the spawn name in `vehicle` and the hash in `hash`.
-    -- Frameworks that are not listed here (ox_core, STANDALONE) return nil,
-    -- same stance as the Offline module.
+    --   Qbox uses the same player_vehicles layout as QBCore, verified against
+    --   qbx_vehicles/vehicles.sql.
+    -- Frameworks that are not listed here (STANDALONE) return nil, same stance
+    -- as the Offline module.
     local vehicleTables = {
         ESX    = { tbl = 'owned_vehicles',  cols = '`vehicle`'          },
         QBCore = { tbl = 'player_vehicles', cols = '`vehicle`, `hash`'  },
+        Qbox   = { tbl = 'player_vehicles', cols = '`vehicle`, `hash`'  },
     }
 
     ---Reads the model for a plate out of the framework's vehicle table.
@@ -113,7 +116,7 @@ if IS_CORE then
 
         if not row then return nil end
 
-        if MSK.Bridge.Framework.Type == 'QBCore' then
+        if MSK.Bridge.Framework.Type == 'QBCore' or MSK.Bridge.Framework.Type == 'Qbox' then
             local name = row.vehicle
             return tonumber(row.hash) or (name and GetHashKey(name)) or nil, name
         end

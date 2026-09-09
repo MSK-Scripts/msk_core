@@ -13,9 +13,12 @@ if IS_CORE then
         return DoesPlayerExist(targetId)
     end)
 
-    MSK.Register('msk_core:getPlayerData', function(source, targetId)
-        return MSK.GetPlayer({source = targetId})
-    end)
+    -- msk_core:getPlayerData now lives in bridge/server.lua, because the client
+    -- bridge needs the same callback for the player's own data. Registering it
+    -- in both places meant the later registration silently replaced the other.
+    -- The version there answers about another player with identity and job
+    -- only; this one returned the complete player table, so any client could
+    -- read any other player's bank balance and metadata.
 end
 
 AddEventHandler('playerJoining', function()
@@ -142,8 +145,10 @@ function MSK.RegisterCommand(commandName, callback, properties, ...)
 
         local success, response
 
-        if returnPlayer and (MSK.Bridge.Framework.Type == 'ESX' or MSK.Bridge.Framework.Type == 'QBCore') then
-            local Player = MSK.GetPlayer({source = source})
+        -- Listing the frameworks by name used to leave Qbox out. Any framework
+        -- can hand over a player object, only STANDALONE cannot.
+        if returnPlayer and MSK.Bridge.Framework.Type ~= 'STANDALONE' then
+            local Player = MSK.GetPlayer(source)
             success, response = pcall(callback, Player, args, raw)
         else
             success, response = pcall(callback, source, args, raw)

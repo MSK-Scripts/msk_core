@@ -28,6 +28,15 @@ end
 exports('GetClosestPlayers', MSK.GetClosestPlayers)
 
 function MSK.AddWebhook(webhook, botColor, botName, botAvatar, title, description, fields, footer, time)
+    -- Both built-in callers ship with an empty webhook constant that the server
+    -- owner is meant to fill in. With Discord logging switched on and the link
+    -- still empty, every ban and every disconnect fired an HTTP request into
+    -- nothing, and nothing ever said why no message arrived.
+    if type(webhook) ~= 'string' or not webhook:find('^https://') then
+        MSK.Logging('error', 'AddWebhook was called without a valid webhook URL, so nothing was sent. Set the link before enabling Discord logging.')
+        return false
+    end
+
     local content = {}
 
     if footer then

@@ -5,6 +5,22 @@ if IS_CORE then
     local isInputOpen = false
     local callback = nil
 
+    -- Held apart from `callback` so that Close() can settle a waiting caller.
+    -- Without it, closing the input without submitting (escape, the closeInput
+    -- event, a resource stop) only cleared the callback and left the promise
+    -- unresolved: a blocking MSK.Input(...) then waited forever and its thread
+    -- was gone for the rest of the session.
+    local pendingPromise = nil
+
+    local function settle(value)
+        local waiting = pendingPromise
+        pendingPromise = nil
+
+        if waiting then
+            waiting:resolve(value)
+        end
+    end
+
     function Input.Open(header, placeholder, field, cb)
         if isInputOpen then return end
         isInputOpen = true
@@ -21,9 +37,10 @@ if IS_CORE then
 
         if not callback or callback and type(callback) == 'boolean' then
             local p = promise.new()
+            pendingPromise = p
 
             callback = function(response)
-                p:resolve(response)
+                settle(response)
             end
 
             return Citizen.Await(p)
@@ -36,6 +53,10 @@ if IS_CORE then
     function Input.Close()
         isInputOpen = false
         callback = nil
+
+        -- Anyone still waiting gets nil, which reads as "cancelled".
+        settle(nil)
+
         SetNuiFocus(false, false)
         SendNUIMessage({ action = 'closeInput' })
     end
@@ -55,7 +76,14 @@ if IS_CORE then
     RegisterNUICallback('submitInput', function(data)
         if data.input == '' then data.input = nil end
         if tonumber(data.input) then data.input = tonumber(data.input) end
-        callback(data.input)
+
+        -- The NUI can submit after the input was closed from Lua, in which case
+        -- there is no callback left to call. Calling it unchecked raised
+        -- "attempt to call a nil value" out of a NUI callback.
+        if callback then
+            callback(data.input)
+        end
+
         Input.Close()
     end)
 

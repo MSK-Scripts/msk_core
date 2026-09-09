@@ -51,3 +51,6 @@ CLAUDE.md
 
 # Node
 node_modules/
+
+# Local test harness, not shipped
+tests/

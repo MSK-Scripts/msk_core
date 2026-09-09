@@ -16,7 +16,14 @@ function MSK.Notification(title, message, typ, duration)
     elseif Config.Notification == 'okok' then
         exports.okokNotify:Alert(title, message, duration or 5000, typ or 'info')
     elseif Config.Notification == 'qb-core' then
-        QBCore.Functions.Notify(message, typ, duration)
+        -- 'qb-core' means "use the framework's own notification". On Qbox that
+        -- is the qbx_core export, and QBCore is not defined there at all, so
+        -- calling QBCore.Functions.Notify raised an error instead of notifying.
+        if MSK.Bridge.Framework.Type == 'Qbox' then
+            QBX:Notify(message, typ, duration)
+        else
+            QBCore.Functions.Notify(message, typ, duration)
+        end
     elseif Config.Notification == 'bulletin' then
         exports.bulletin:Send({
             message = message,
@@ -55,7 +62,9 @@ exports('HelpNotification', MSK.HelpNotification)
 exports('HelpNotify', MSK.HelpNotification)
 
 function MSK.AdvancedNotification(text, title, subtitle, icon, flash, icontype)
-    if not flash then flash = true end
+    -- `== nil`, not `not flash`: passing false explicitly turned flashing back
+    -- on, so the parameter could be set but never cleared.
+    if flash == nil then flash = true end
     if not icontype then icontype = 1 end
     if not icon then icon = 'CHAR_HUMANDEFAULT' end
 

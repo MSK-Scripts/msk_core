@@ -1,82 +1,78 @@
 if MSK.Bridge.Inventory ~= 'ox_inventory' then return end
 
-local Inventory
-AddEventHandler("ox_inventory:loadInventory", function(module)
-    Inventory = module
-end)
+--------------------------------------------------------------------------------
+-- ox_inventory adapter
+--
+-- Goes through the documented exports rather than the internal module handed
+-- out by the ox_inventory:loadInventory event. The event only arrives if
+-- ox_inventory starts after this resource, and until then every call through
+-- the module reference failed on a nil value.
+--------------------------------------------------------------------------------
+local Inventory = MSK.Bridge.InventoryAdapter
+local ox = exports.ox_inventory
 
-FunctionOverride = function(Player)
-    if GetResourceState('ox_inventory') ~= 'started' then return Player end
-    local playerId = MSK.GetServerId(Player)
+local function ready()
+    return GetResourceState('ox_inventory') == 'started'
+end
 
-    Player.inventory = exports.ox_inventory:GetInventoryItems(playerId)
-    Player.loadout = Player.inventory
+function Inventory.getInventory(playerId)
+    if not ready() then return {} end
+    return ox:GetInventoryItems(playerId) or {}
+end
 
-    Player.GetInventory = function()
-        return Player.inventory
-    end
+function Inventory.getItem(playerId, name, metadata)
+    if not ready() then return nil end
+    return ox:GetItem(playerId, name, metadata)
+end
 
-    Player.AddItem = function(item, count, metadata, slot)
-        return Inventory.AddItem(playerId, item, count or 1, metadata, slot)
-    end
+function Inventory.addItem(playerId, name, count, metadata, slot)
+    if not ready() then return false end
+    return ox:AddItem(playerId, name, count or 1, metadata, slot) and true or false
+end
 
-    Player.RemoveItem = function(item, count, metadata, slot)
-        return Inventory.RemoveItem(playerId, item, count or 1, metadata, slot)
-    end
+function Inventory.removeItem(playerId, name, count, metadata, slot)
+    if not ready() then return false end
+    return ox:RemoveItem(playerId, name, count or 1, metadata, slot) and true or false
+end
 
-    Player.HasItem = function(item, metadata)
-        return Inventory.GetItem(playerId, item, metadata)
-    end
+-- In ox_inventory a weapon is an item, ammo lives in its metadata.
+function Inventory.addWeapon(playerId, name, count, metadata, slot)
+    if not ready() then return false end
+    return ox:AddItem(playerId, name, 1, metadata or { ammo = count }, slot) and true or false
+end
 
-    Player.AddWeapon = function(weapon, count, metadata, slot)
-        return Inventory.AddItem(playerId, weapon, 1, metadata or {ammo = count}, slot)
-    end
+function Inventory.removeWeapon(playerId, name, count, metadata, slot)
+    if not ready() then return false end
+    return ox:RemoveItem(playerId, name, count or 1, metadata, slot) and true or false
+end
 
-    Player.RemoveWeapon = function(weapon, count, metadata, slot)
-        return Inventory.RemoveItem(playerId, weapon, count or 1, metadata, slot)
-    end
+function Inventory.getWeapon(playerId, name, metadata)
+    if not ready() then return nil end
+    return ox:GetItem(playerId, name, metadata)
+end
 
-    Player.HasWeapon = function(weapon, metadata)
-        return Inventory.GetItem(playerId, weapon, metadata)
-    end
+function Inventory.canCarryItem(playerId, name, count, metadata)
+    if not ready() then return nil end
+    return ox:CanCarryItem(playerId, name, count or 1, metadata)
+end
 
-    Player.CanSwapItem = function(firstItem, firstItemCount, secondItem, secondItemCount)
-        return Inventory.CanSwapItem(playerId, firstItem, firstItemCount, secondItem, secondItemCount)
-    end
+function Inventory.canSwapItem(playerId, firstItem, firstCount, secondItem, secondCount)
+    if not ready() then return nil end
+    return ox:CanSwapItem(playerId, firstItem, firstCount, secondItem, secondCount)
+end
 
-    Player.CanCarryItem = function(name, count, metadata)
-        return Inventory.CanCarryItem(playerId, name, count, metadata)
-    end
+function Inventory.setMaxWeight(playerId, maxWeight)
+    if not ready() then return nil end
 
-    Player.SetMaxWeight = function(maxWeight)
-        return Inventory.SetMaxWeight(playerId, maxWeight * 1000)
-    end
+    -- ox_inventory counts weight in grams, the unified signature takes
+    -- kilograms like every other adapter here.
+    ox:SetMaxWeight(playerId, maxWeight * 1000)
+    return true
+end
 
-    if MSK.Bridge.Framework.Type == 'OXCore' then
-        Player.AddMoney = function(accountName, money)
-            if money < 1 then return end
-            accountName = accountName:lower()
+function Inventory.clear(playerId, keep)
+    if not ready() then return false end
 
-            if Inventory.accounts[accountName] then
-                Inventory.AddItem(playerId, accountName, money)
-            elseif accountName == 'bank' then
-                local account = Player.getAccount()
-                return account and account.addBalance({ money }) or false
-            end
-        end
-
-        Player.RemoveMoney = function(accountName, money)
-            if money < 1 then return end
-            accountName = accountName:lower()
-
-            if Inventory.accounts[accountName] then
-                Inventory.RemoveItem(playerId, accountName, money)
-            elseif accountName == 'bank' then
-                local account = Player.getAccount()
-                return account and account.removeBalance({ money }) or false
-            end
-        end
-    end
-
-    return Player
+    ox:ClearInventory(playerId, keep)
+    return true
 end

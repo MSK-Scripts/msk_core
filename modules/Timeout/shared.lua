@@ -8,16 +8,21 @@ local TimeoutId = 0
 ---@param cb fun(data: any)
 ---@param data? any
 ---@return number requestId
+-- Timeouts holds the ids that are still PENDING. It used to hold the CANCELLED
+-- ones instead, so a Clear() that arrived after the callback had already run
+-- wrote an entry nothing ever removed again. In a resource calling Set in a
+-- loop, that table grew for the lifetime of the server.
 function Timeout.Set(ms, cb, data)
     assert(ms and tonumber(ms), 'Parameter "ms" has to be a number on function MSK.Timeout.Set')
     local requestId = TimeoutId + 1
 
-    SetTimeout(ms, function()
-        if Timeouts[requestId] then
-            Timeouts[requestId] = nil
-            return
-        end
+    Timeouts[requestId] = true
 
+    SetTimeout(ms, function()
+        -- No longer listed means cancelled in the meantime.
+        if not Timeouts[requestId] then return end
+
+        Timeouts[requestId] = nil
         cb(data)
     end)
 
@@ -25,11 +30,12 @@ function Timeout.Set(ms, cb, data)
     return requestId
 end
 
----Cancels a scheduled timeout (by requestId).
+---Cancels a scheduled timeout (by requestId). Calling this after it has already
+---run is harmless and leaves nothing behind.
 ---@param requestId number
 function Timeout.Clear(requestId)
     assert(requestId, 'Parameter "requestId" is nil on function MSK.Timeout.Clear')
-    Timeouts[requestId] = true
+    Timeouts[requestId] = nil
 end
 
 -- Polling pattern inspired by ox_lib (WaitFor), implemented independently here.

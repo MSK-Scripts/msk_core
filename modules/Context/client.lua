@@ -2,24 +2,29 @@ local IS_CORE = GetCurrentResourceName() == 'msk_core'
 local Context = {}
 
 if IS_CORE then
-    -- Registrierte Context-Menues (id -> data) sowie der aktuell offene State.
+    -- Registered context menus (id -> data) plus the currently open state.
     local contexts = {}
     local currentId = nil
     local isOpen = false
 
-    -- options koennen als Array ODER als Map (key = id) uebergeben werden.
-    -- Intern wird immer ein sauberes Array daraus.
+    -- Counter for inline menus that carry no id of their own. This used to be
+    -- GetGameTimer(), so two inline menus opened in the same millisecond got
+    -- the same id and overwrote each other.
+    local inlineCounter = 0
+
+    -- options may arrive as an array OR as a map (key = id). Internally it
+    -- always becomes a clean array.
     local function normalizeOptions(options)
         local out = {}
         if type(options) ~= 'table' then return out end
 
         if options[1] ~= nil or next(options) == nil then
-            -- Array (oder leer)
+            -- Array (or empty)
             for i = 1, #options do
                 if type(options[i]) == 'table' then out[#out + 1] = options[i] end
             end
         else
-            -- Map: der Key wird zur id, falls die Option keine eigene hat
+            -- Map: the key becomes the id when the option has none
             for k, opt in pairs(options) do
                 if type(opt) == 'table' then
                     if opt.id == nil and type(k) == 'string' then opt.id = k end
@@ -30,8 +35,8 @@ if IS_CORE then
         return out
     end
 
-    -- Baut die an die NUI gesendete (serialisierbare) Options-Liste.
-    -- Funktionen (onSelect etc.) bleiben in Lua, wandern NICHT in die NUI.
+    -- Builds the serialisable option list that goes to the NUI. Functions
+    -- (onSelect and the like) stay in Lua and do NOT cross over.
     local function serialize(data)
         local out = {}
         for i, opt in ipairs(data.options) do
@@ -69,9 +74,17 @@ if IS_CORE then
         local id, data
 
         if type(idOrData) == 'table' then
-            -- Inline-Menue: automatisch registrieren
+            -- Inline menu: register it on the fly
             data = idOrData
-            id = data.id or ('inline:' .. GetGameTimer())
+
+            if data.id then
+                id = data.id
+            else
+                inlineCounter = inlineCounter + 1
+                id = ('inline:%d'):format(inlineCounter)
+                data.isInline = true
+            end
+
             Context.Register(id, data)
             data = contexts[id]
         else
@@ -80,7 +93,7 @@ if IS_CORE then
         end
 
         if not data then
-            print(('[^3msk_core^0] ShowContext: unbekanntes Context-Menue "^1%s^0"'):format(tostring(id)))
+            print(('[^3msk_core^0] ShowContext: unknown context menu "^1%s^0"'):format(tostring(id)))
             return
         end
 
@@ -101,12 +114,12 @@ if IS_CORE then
     MSK.ShowContext = Context.Show
     exports('ShowContext', Context.Show)
 
-    -- Merged updatedData in die Option mit id == dataId (partiell).
-    -- Ist genau dieses Menue offen, wird die NUI live aktualisiert.
+    -- Merges updatedData into the option with id == dataId (partial update).
+    -- When that menu is the open one, the NUI is refreshed live.
     function Context.Update(contextId, dataId, updatedData)
         local data = contexts[contextId]
         if not data or not data.options then
-            print(('[^3msk_core^0] UpdateContext: unbekanntes Context-Menue "^1%s^0"'):format(tostring(contextId)))
+            print(('[^3msk_core^0] UpdateContext: unknown context menu "^1%s^0"'):format(tostring(contextId)))
             return
         end
 
@@ -115,7 +128,7 @@ if IS_CORE then
             if opt.id == dataId then target = opt break end
         end
         if not target then
-            print(('[^3msk_core^0] UpdateContext: Option "^1%s^0" in "^1%s^0" nicht gefunden'):format(tostring(dataId), tostring(contextId)))
+            print(('[^3msk_core^0] UpdateContext: option "^1%s^0" not found in "^1%s^0"'):format(tostring(dataId), tostring(contextId)))
             return
         end
 
@@ -133,11 +146,19 @@ if IS_CORE then
     function Context.Hide(fireExit)
         if not isOpen then return end
         local data = contexts[currentId]
+        local closedId = currentId
         isOpen = false
         currentId = nil
 
         SetNuiFocus(false, false)
         SendNUIMessage({ action = 'closeContext' })
+
+        -- An inline menu belongs to nobody and is never opened by id again.
+        -- Without this cleanup, `contexts` grew with every single call to
+        -- MSK.ShowContext(table) and kept growing for the whole session.
+        if data and data.isInline then
+            contexts[closedId] = nil
+        end
 
         if fireExit and data and data.onExit then data.onExit() end
     end
@@ -151,10 +172,10 @@ if IS_CORE then
     MSK.GetOpenContext = Context.GetOpen
     exports('GetOpenContext', Context.GetOpen)
 
-    -- Server -> Client: MSK.ShowContext(playerId, idOrData).
-    -- Hinweis: ueber das Netzwerk gehen nur serialisierbare Daten. Funktionen
-    -- (onSelect/onExit) ueberleben NICHT; dafuer event/serverEvent/args nutzen,
-    -- oder das Menue vorher client-seitig registrieren und per id oeffnen.
+    -- Server -> client: MSK.ShowContext(playerId, idOrData).
+    -- Only serialisable data crosses the network. Functions (onSelect/onExit)
+    -- do NOT survive it, so reach for event/serverEvent/args instead, or
+    -- register the menu on the client first and open it by id.
     MSK.Register('msk_core:context', function(source, idOrData)
         return Context.Show(idOrData)
     end)
@@ -167,12 +188,12 @@ if IS_CORE then
         if not opt or opt.disabled or opt.readOnly then return end
 
         if opt.menu then
-            -- Drilldown in Untermenue (Fokus bleibt bestehen)
+            -- Drill down into the submenu (focus stays where it is)
             Context.Show(opt.menu)
             return
         end
 
-        -- Terminale Auswahl: erst schliessen, dann feuern
+        -- Final selection: close first, then fire
         Context.Hide(false)
         if opt.onSelect then opt.onSelect(opt.args) end
         if opt.event then TriggerEvent(opt.event, opt.args) end

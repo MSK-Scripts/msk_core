@@ -7,7 +7,7 @@ description 'Shared library for MSK Scripts'
 author 'Musiker15 - MSK Scripts'
 license 'LGPL-3.0-or-later'
 repository 'https://github.com/MSK-Scripts/msk_core'
-version '3.3.1'
+version '4.0.0'
 
 shared_scripts {
     'config.lua',
@@ -15,16 +15,22 @@ shared_scripts {
     'init/shared.lua',
 }
 
+-- The bridge is listed file by file instead of with a glob: the framework
+-- adapters must run before the neutral layer that consumes them, and a glob
+-- gives no promise about that order.
 client_scripts {
     'init/client.lua',
-    'bridge/**/client.lua',
+    'bridge/client.lua',
     'inventories/client/*.lua',
 }
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'init/server.lua',
-    'bridge/**/server.lua',
+    'bridge/esx/server.lua',
+    'bridge/qbcore/server.lua',
+    'bridge/qbox/server.lua',
+    'bridge/server.lua',
     'inventories/server/*.lua',
 }
 

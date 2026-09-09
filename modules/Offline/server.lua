@@ -5,10 +5,26 @@ if IS_CORE then
     local fw = MSK.Bridge.Framework.Type
 
     -- table / id-column / json-column per framework
+    --
+    -- Qbox uses the same players table as QBCore: citizenid as the primary key
+    -- and money as a JSON text column. Verified against qbx_core.sql 1.24.0.
     local map = {
         ESX    = { tbl = 'users',   idCol = 'identifier', jsonCol = 'accounts' },
         QBCore = { tbl = 'players', idCol = 'citizenid',  jsonCol = 'money'    },
+        Qbox   = { tbl = 'players', idCol = 'citizenid',  jsonCol = 'money'    },
     }
+
+    ---Where the framework keeps its characters. Scripts that add their own
+    ---column to that table need the name and the key column, and guessing
+    ---'users' works on exactly one of the three frameworks.
+    ---@return table|nil { table = string, identifier = string }
+    function Offline.GetPlayerTable()
+        local m = map[fw]
+        if not m then return nil end
+
+        return { table = m.tbl, identifier = m.idCol }
+    end
+    exports('GetPlayerTable', Offline.GetPlayerTable)
 
     function Offline.GetBank(identifier)
         local m = map[fw]
@@ -55,6 +71,7 @@ if IS_CORE then
     MSK.Offline = Offline
     return Offline
 else
+    function Offline.GetPlayerTable(...) return exports.msk_core:GetPlayerTable(...) end
     function Offline.GetBank(...) return exports.msk_core:OfflineGetBank(...) end
     function Offline.AddBank(...) return exports.msk_core:OfflineAddBank(...) end
     function Offline.RemoveBank(...) return exports.msk_core:OfflineRemoveBank(...) end

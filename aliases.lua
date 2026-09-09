@@ -21,6 +21,15 @@
 ]]
 
 return {
+    -- Player --
+    -- These DO have exports of the same name, which normally disqualifies an alias.
+    ['GetPlayer']               = { module = 'Player', key = 'Get'               },
+    ['GetPlayerFromId']         = { module = 'Player', key = 'GetFromId'         },
+    ['GetPlayerFromIdentifier'] = { module = 'Player', key = 'GetFromIdentifier' },
+    ['GetPlayerByCitizenId']    = { module = 'Player', key = 'GetByCitizenId'    },
+    ['GetPlayerByPhone']        = { module = 'Player', key = 'GetByPhone'        },
+    ['GetPlayerByUserId']       = { module = 'Player', key = 'GetByUserId'       },
+
     -- core modules --
     -- Aliases WITHOUT their own export (module folder case-sensitive, exactly like the API key):
     ['AddTimeout']     = { module = 'Timeout', key = 'Set'        },
@@ -28,10 +37,8 @@ return {
     ['Table_Contains'] = { module = 'Table',   key = 'Contains'   },
     ['DumpTable']      = { module = 'Table',   key = 'Dump'       },
 
-    -- Special case: in v2 MSK.Trim has a DIFFERENT (inverted) bool semantic
-    -- than the 'Trim' export (= String.Trim). Since the alias takes precedence over
-    -- the export proxy, MSK.Trim thus returns the legacy variant, while
-    -- exports.msk_core:Trim remains String.Trim.
+    -- Special case: in MSK.Trim has a DIFFERENT (inverted) bool semantic
+    -- than the 'Trim' export (= String.Trim). 
     ['Trim']           = { module = 'String',  key = 'TrimLegacy' },
 
     -- Request --

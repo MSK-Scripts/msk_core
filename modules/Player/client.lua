@@ -63,30 +63,39 @@ if IS_CORE then
         MSK.Notification(title, message, typ, duration)
     end)
 
+    -- Death state comes from MSK.IsPlayerDead (bridge/client.lua) so that the
+    -- core thread and any consumer reading MSK.Player.isDead answer the same
+    -- question the same way. It used to be written twice and the two versions
+    -- disagreed: only this one asked visn_are and osp_ambulance, so a downed
+    -- player counted as alive everywhere else.
+    --
+    -- The old version also went through MSK.Call, which does not fail softly:
+    -- it polls via Timeout.Await, and Await raises an error once the time is
+    -- up (modules/Timeout/shared.lua:58). One slow or reloading visn_are was
+    -- therefore enough to end this thread, and every mirrored field (ped,
+    -- vehicle, seat, weapon) froze at its last value for the rest of the
+    -- session. The check now sits in one place and guards its results.
     local function getPlayerDeath()
-        local isDead = IsPlayerDead(Player.clientId) or IsEntityDead(Player.ped) or IsPedFatallyInjured(Player.ped)
-
-        if MSK.Bridge.isPlayerLoaded then
-            if GetResourceState("visn_are") == "started" then
-                local healthBuffer = MSK.Call(function()
-                    return exports.visn_are:GetHealthBuffer()
-                end)
-                isDead = healthBuffer.unconscious
-            end
-
-            if GetResourceState("osp_ambulance") == "started" then
-                local data = MSK.Call(function()
-                    return exports.osp_ambulance:GetAmbulanceData(Player.serverId)
-                end)
-                isDead = data.isDead or data.inLastStand
-            end
-        end
-
-        return isDead
+        return MSK.IsPlayerDead()
     end
 
     CreateThread(function()
         while true do
+            -- GetPlayerServerId answers -1 until the session is up. The three
+            -- lines above run at resource start, which on a client join is
+            -- before that point, and the wrong value was then kept for the rest
+            -- of the session: every MSK.Player.serverId, every state bag lookup
+            -- and every server event carrying that id was off.
+            if not Player.serverId or Player.serverId <= 0 then
+                local serverId = GetPlayerServerId(PlayerId())
+
+                if serverId > 0 then
+                    Player:set('clientId', PlayerId())
+                    Player:set('serverId', serverId)
+                    Player:set('playerId', serverId)
+                end
+            end
+
             Player:set('ped', PlayerPedId())
             Player:set('playerPed', Player.ped)
 
@@ -146,7 +155,10 @@ else
                 local hasWeapon, currentWeapon = GetCurrentPedWeapon(PlayerPedId(), true)
                 return hasWeapon and currentWeapon or false
             elseif key == 'isDead' then
-                return IsPlayerDead(PlayerId()) or IsEntityDead(PlayerPedId())
+                -- Same source as the core thread, including the ambulance
+                -- scripts. Reading the natives directly here reported a downed
+                -- player as alive while the core said otherwise.
+                return MSK.IsPlayerDead()
             elseif key == 'Notify' then
                 return function(title, message, typ, duration)
                     MSK.Notification(title, message, typ, duration)

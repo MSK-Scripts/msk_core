@@ -6,7 +6,7 @@
 
 [![Discord](https://img.shields.io/badge/Discord-MSK%20Scripts-5865F2?logo=discord&logoColor=white)](https://discord.gg/5hHSBRHvJE)
 [![Documentation](https://img.shields.io/badge/Docs-docu.msk--scripts.de-00E676)](https://docu.msk-scripts.de/docs/msk_core/)
-[![Version](https://img.shields.io/badge/version-3.3.1-blue)](https://github.com/MSK-Scripts/msk_core/releases)
+[![Version](https://img.shields.io/badge/version-4.0.0-blue)](https://github.com/MSK-Scripts/msk_core/releases)
 [![License](https://img.shields.io/badge/license-LGPL--3.0-green)](LICENSE)
 
 [Discord](https://discord.gg/5hHSBRHvJE) · [Documentation](https://docu.msk-scripts.de/docs/msk_core/) · [Releases](https://github.com/MSK-Scripts/msk_core/releases)
@@ -15,11 +15,11 @@
 
 ---
 
-**MSK Core** gives you a clean framework abstraction (ESX, QBCore, ox_core — or fully **STANDALONE**), a modern React-based NUI and a large set of helper functions, all exposed through a single global `MSK` table that any resource can import in one line.
+**MSK Core** gives you a clean framework abstraction (ESX, QBCore, Qbox — or fully **STANDALONE**), a modern React-based NUI and a large set of helper functions, all exposed through a single global `MSK` table that any resource can import in one line.
 
 ## ✨ Features
 
-- **Framework bridge** — write once, run on ESX / QBCore / ox_core / STANDALONE (`Config.Framework = 'AUTO'`)
+- **Framework bridge** — write once, run on ESX / QBCore / Qbox / STANDALONE (`Config.Framework = 'AUTO'`). One player shape everywhere, multijob included
 - **Inventory bridge** — `ox_inventory`, `core_inventory`, `jaksam_inventory`, ESX/Chezza `default`, or your own `custom`
 - **Lazy-loaded modules** — a module is compiled into your resource only when you first use it
 - **Modern NUI** — Notify, Input, Numpad, Progressbar & TextUI (React + Vite + TypeScript, fully offline/bundled)
@@ -32,7 +32,7 @@
 
 ### Optional
 
-* [ESX 1.9.2+](https://github.com/esx-framework/esx_core) / [QBCore](https://github.com/qbcore-framework/qb-core) / ox_core — for framework-based functions
+* [ESX 1.9.2+](https://github.com/esx-framework/esx_core) / [QBCore](https://github.com/qbcore-framework/qb-core) / [Qbox](https://github.com/Qbox-project/qbx_core) — for framework-based functions
 * [ox_inventory](https://github.com/overextended/ox_inventory) / core_inventory / [jaksam_inventory](https://forum.cfx.re/t/jaksams-inventory-create-items-in-game/5388694) — for inventory-based functions
 
 ## 🚀 Installation
@@ -42,7 +42,7 @@
 
 ```ini
 ensure oxmysql
-ensure es_extended      # or qb-core / ox_core (optional)
+ensure es_extended      # or qb-core / qbx_core (optional)
 ensure ox_inventory     # or another inventory (optional)
 ensure msk_core
 ```

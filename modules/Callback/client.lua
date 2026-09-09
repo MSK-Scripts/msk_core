@@ -39,24 +39,11 @@ if IS_CORE then
     ---@return any ...
     function Callback.Trigger(eventName, ...)
         local requestId = GenerateCallbackHandlerKey()
-        local p = promise.new()
         CallbackHandler[requestId] = 'request'
-
-        SetTimeout(5000, function()
-            CallbackHandler[requestId] = nil
-            p:reject(('Request Timed Out: [%s] [%s]'):format(eventName, requestId))
-        end)
 
         TriggerServerEvent('msk_core:server:triggerCallback', eventName, requestId, false, ...)
 
-        while CallbackHandler[requestId] == 'request' do Wait(0) end
-        if not CallbackHandler[requestId] then return end
-
-        p:resolve(CallbackHandler[requestId])
-        CallbackHandler[requestId] = nil
-
-        local result = Citizen.Await(p)
-        return table.unpack(result)
+        return awaitResponse(requestId, eventName)
     end
 
     ---Triggers a server callback (cb method) and waits blocking for the response.
@@ -65,24 +52,11 @@ if IS_CORE then
     ---@return any ...
     function Callback.TriggerCallback(eventName, ...)
         local requestId = GenerateCallbackHandlerKey()
-        local p = promise.new()
         CallbackHandler[requestId] = 'request'
-
-        SetTimeout(5000, function()
-            CallbackHandler[requestId] = nil
-            p:reject(('Request Timed Out: [%s] [%s]'):format(eventName, requestId))
-        end)
 
         TriggerServerEvent('msk_core:server:triggerCallback', eventName, requestId, true, ...)
 
-        while CallbackHandler[requestId] == 'request' do Wait(0) end
-        if not CallbackHandler[requestId] then return end
-
-        p:resolve(CallbackHandler[requestId])
-        CallbackHandler[requestId] = nil
-
-        local result = Citizen.Await(p)
-        return table.unpack(result)
+        return awaitResponse(requestId, eventName)
     end
 else
     -- Consumer view: route to the single responder inside msk_core.

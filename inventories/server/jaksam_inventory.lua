@@ -1,61 +1,65 @@
 if MSK.Bridge.Inventory ~= 'jaksam_inventory' then return end
 
-FunctionOverride = function(Player)
-    if GetResourceState('jaksam_inventory') ~= 'started' then return Player end
-    local playerId = MSK.GetServerId(Player)
+--------------------------------------------------------------------------------
+-- jaksam_inventory adapter
+--------------------------------------------------------------------------------
+local Inventory = MSK.Bridge.InventoryAdapter
+local jaksam = exports['jaksam_inventory']
 
-    Player.inventory = exports['jaksam_inventory']:getInventory(playerId)
-    Player.loadout = Player.inventory
+local function ready()
+    return GetResourceState('jaksam_inventory') == 'started'
+end
 
-    Player.GetInventory = function()
-        return Player.inventory
-    end
+-- jaksam returns `amount`, every other adapter here returns `count`. Normalise
+-- it so consumer code never has to ask which inventory is running.
+local function normalise(item)
+    if not item then return nil end
 
-    Player.AddItem = function(item, count, metadata, slot)
-        exports['jaksam_inventory']:addItem(playerId, item, count, metadata, slot)
-    end
+    item.count = item.count or item.amount
+    return item
+end
 
-    Player.RemoveItem = function(item, count, metadata, slot)
-        exports['jaksam_inventory']:removeItem(playerId, item, count, metadata, slot)
-    end
+function Inventory.getInventory(playerId)
+    if not ready() then return {} end
+    return jaksam:getInventory(playerId) or {}
+end
 
-    Player.HasItem = function(item, metadata)
-        local itemData = exports['jaksam_inventory']:getItemByName(playerId, item, metadata)
-        if itemData and (itemData.amount or 0) > 0 then
-            itemData.count = itemData.amount
-            return itemData
-        end
-        return false
-    end
+function Inventory.getItem(playerId, name, metadata)
+    if not ready() then return nil end
+    return normalise(jaksam:getItemByName(playerId, name, metadata))
+end
 
-    Player.AddWeapon = function(weapon, count, metadata, slot)
-        exports['jaksam_inventory']:addItem(playerId, weapon, count, metadata, slot)
-    end
+function Inventory.addItem(playerId, name, count, metadata, slot)
+    if not ready() then return false end
 
-    Player.RemoveWeapon = function(weapon, count, metadata, slot)
-        exports['jaksam_inventory']:removeItem(playerId, weapon, count, metadata, slot)
-    end
+    jaksam:addItem(playerId, name, count or 1, metadata, slot)
+    return true
+end
 
-    Player.HasWeapon = function(weapon, metadata)
-        local itemData = exports['jaksam_inventory']:getItemByName(playerId, weapon, metadata)
-        if itemData and (itemData.amount or 0) > 0 then
-            itemData.count = itemData.amount
-            return itemData
-        end
-        return false
-    end
+function Inventory.removeItem(playerId, name, count, metadata, slot)
+    if not ready() then return false end
 
-    Player.CanSwapItem = function(firstItem, firstItemCount, secondItem, secondItemCount)
-        return exports['jaksam_inventory']:canSwapItem(playerId, firstItem, firstItemCount, secondItem, secondItemCount)
-    end
+    jaksam:removeItem(playerId, name, count or 1, metadata, slot)
+    return true
+end
 
-    Player.CanCarryItem = function(name, count, metadata)
-        return exports['jaksam_inventory']:canCarryItem(playerId, name, count)
-    end
+Inventory.addWeapon = function(...) return Inventory.addItem(...) end
+Inventory.removeWeapon = function(...) return Inventory.removeItem(...) end
+Inventory.getWeapon = function(...) return Inventory.getItem(...) end
 
-    Player.SetMaxWeight = function(maxWeight)
-        exports['jaksam_inventory']:setInventoryMaxWeight(playerId, maxWeight)
-    end
+function Inventory.canCarryItem(playerId, name, count)
+    if not ready() then return nil end
+    return jaksam:canCarryItem(playerId, name, count or 1)
+end
 
-    return Player
+function Inventory.canSwapItem(playerId, firstItem, firstCount, secondItem, secondCount)
+    if not ready() then return nil end
+    return jaksam:canSwapItem(playerId, firstItem, firstCount, secondItem, secondCount)
+end
+
+function Inventory.setMaxWeight(playerId, maxWeight)
+    if not ready() then return nil end
+
+    jaksam:setInventoryMaxWeight(playerId, maxWeight)
+    return true
 end

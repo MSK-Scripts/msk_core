@@ -1,86 +1,93 @@
 if MSK.Bridge.Inventory ~= 'core_inventory' then return end
 
-local CoreInventoryData
-AddEventHandler("core_inventory:server:inventoryStarted", function(data)
-    CoreInventoryData = data
-end)
+--------------------------------------------------------------------------------
+-- core_inventory adapter
+--
+-- Ported, not fully maintained. ox_inventory and jaksam_inventory are the two
+-- inventories with guaranteed support.
+--
+-- core_inventory addresses an inventory by name, not by server id, and builds
+-- that name from the player identifier.
+--------------------------------------------------------------------------------
+local Inventory = MSK.Bridge.InventoryAdapter
+local core = exports.core_inventory
 
-FunctionOverride = function(Player)
-    if GetResourceState('core_inventory') ~= 'started' then return Player end
-    local playerId = MSK.GetServerId(Player)
-    local identifier = MSK.GetIdentifier(Player)
-    local inv = ('content-%s'):format(identifier:gsub(":", ""))
+local function ready()
+    return GetResourceState('core_inventory') == 'started'
+end
 
-    Player.inventory = exports.core_inventory:getInventory(inv)
-    Player.loadout = Player.inventory
+local function inventoryName(playerId)
+    local identifier = MSK.GetPlayerIdentifier(playerId)
+    if not identifier then return nil end
 
-    Player.GetInventory = function()
-        return Player.inventory
+    return ('content-%s'):format(identifier:gsub(':', ''))
+end
+
+function Inventory.getInventory(playerId)
+    local inv = ready() and inventoryName(playerId)
+    return inv and core:getInventory(inv) or {}
+end
+
+function Inventory.getItem(playerId, name)
+    local inv = ready() and inventoryName(playerId)
+    if not inv or not core:hasItem(inv, name) then return nil end
+
+    return {
+        name  = name,
+        count = core:getItemCount(inv, name),
+    }
+end
+
+function Inventory.addItem(playerId, name, count, metadata)
+    local inv = ready() and inventoryName(playerId)
+    if not inv then return false end
+
+    local result = core:addItem(inv, name, count or 1, metadata)
+
+    if result then
+        TriggerClientEvent('core_inventory:client:notification', playerId, name, 'add', tonumber(count) or 1)
     end
 
-    Player.AddItem = function(item, count, metadata, slot)
-        local result = exports.core_inventory:addItem(inv, item, count or 1, metadata)
+    return result and true or false
+end
 
-        if result then
-            TriggerClientEvent('core_inventory:client:notification', playerId, item, 'add', tonumber(count))
-        end
+function Inventory.removeItem(playerId, name, count)
+    local inv = ready() and inventoryName(playerId)
+    if not inv then return false end
 
-        return result
+    local result = core:removeItem(inv, name, count or 1)
+
+    if result then
+        TriggerClientEvent('core_inventory:client:notification', playerId, name, 'remove', tonumber(count) or 1)
     end
 
-    Player.RemoveItem = function(item, count, metadata, slot)
-        local result = exports.core_inventory:removeItem(inv, item, count or 1)
+    return result and true or false
+end
 
-        if result then
-            TriggerClientEvent('core_inventory:client:notification', playerId, item, 'remove', tonumber(count))
-        end
+Inventory.addWeapon = function(...) return Inventory.addItem(...) end
+Inventory.removeWeapon = function(...) return Inventory.removeItem(...) end
+Inventory.getWeapon = function(...) return Inventory.getItem(...) end
 
-        return result
-    end
+function Inventory.canCarryItem(playerId, name, count, metadata)
+    local inv = ready() and inventoryName(playerId)
+    if not inv then return nil end
 
-    Player.HasItem = function(item, metadata)
-        return exports.core_inventory:hasItem(inv, item) and {count = exports.core_inventory:getItemCount(inv, item)}
-    end
+    return core:canCarry(inv, name, count or 1, metadata)
+end
 
-    Player.AddWeapon = function(weapon, count, metadata, slot)
-        local result = exports.core_inventory:addItem(inv, weapon, count or 1, metadata)
+-- core_inventory has no swap check. The old adapter answered with a carry check
+-- on the second item, which is a different question, so this now says
+-- "cannot be checked" instead.
+function Inventory.canSwapItem()
+    return nil
+end
 
-        if result then
-            TriggerClientEvent('core_inventory:client:notification', playerId, weapon, 'add', tonumber(count))
-        end
+function Inventory.setMaxWeight(playerId, maxWeight)
+    if MSK.Bridge.Framework.Type ~= 'ESX' then return nil end
 
-        return result
-    end
+    local xPlayer = MSK.Bridge.Adapter.getBySource(playerId)
+    if not xPlayer or not xPlayer.setMaxWeight then return nil end
 
-    Player.RemoveWeapon = function(weapon, count, metadata, slot)
-        local result = exports.core_inventory:removeItem(inv, weapon, count or 1)
-
-        if result then
-            TriggerClientEvent('core_inventory:client:notification', playerId, weapon, 'remove', tonumber(count))
-        end
-
-        return result
-    end
-
-    Player.HasWeapon = function(weapon, metadata)
-        return exports.core_inventory:hasItem(inv, weapon, nil)
-    end
-
-    Player.CanSwapItem = function(firstItem, firstItemCount, secondItem, secondItemCount)
-        return exports.core_inventory:canCarry(inv, secondItem, secondItemCount)
-    end
-
-    Player.CanCarryItem = function(name, count, metadata)
-        return exports.core_inventory:canCarry(inv, name, count, metadata)
-    end
-
-    Player.SetMaxWeight = function(maxWeight)
-        -- No export found for that
-
-        if MSK.Bridge.Framework.Type == 'ESX' then
-            Player.setMaxWeight(maxWeight)
-        end
-    end
-
-    return Player
+    xPlayer.setMaxWeight(maxWeight)
+    return true
 end

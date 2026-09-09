@@ -1,22 +1,24 @@
-if MSK.Bridge.Framework.Type ~= 'QBCore' then return end
+if MSK.Bridge.Framework.Type ~= 'Qbox' then return end
 
 --------------------------------------------------------------------------------
--- QBCore server adapter
+-- Qbox server adapter
 --
--- Reads PlayerData and calls Player.Functions. It never writes to PlayerData:
--- the unified player object is built by bridge/server.lua on top of what read()
--- returns.
+-- Qbox has no core object. Everything runs through exports.qbx_core, which
+-- bridge/shared.lua exposes as QBX. Where a call needs the player, Qbox accepts
+-- `Source | string` (server id or citizenid) as its identifier argument, so the
+-- adapter passes PlayerData.source.
 --
--- Where qb-core moved a function between versions (items went to qb-inventory),
--- the adapter checks what is actually there instead of assuming one layout.
+-- This branch exists because Qbox declares `provide 'qb-core'`. Running it
+-- through the QBCore branch works, but flattens multijob: PlayerData.jobs is a
+-- table<string, integer> that the qb compatibility layer cannot express.
 --
--- API reference: https://qbcore.org/docs/qb-core/server-function-reference
---                https://qbcore.org/docs/qb-core/player-data
+-- API reference: https://docs.qbox.re/resources/qbx_core/exports/server
 --------------------------------------------------------------------------------
 local Adapter = MSK.Bridge.Adapter
 
--- Unified account name -> QBCore money type. QBCore has cash, bank and crypto,
--- there is no black money account.
+-- Unified account name -> Qbox money type. Qbox has cash, bank and crypto.
+-- There is no black money account, so 'black' resolves to nothing and the
+-- unified money table simply has no `black` key on this framework.
 local accountNames = {
     cash   = 'cash',
     money  = 'cash',
@@ -28,10 +30,11 @@ local function accountName(name)
     return accountNames[name] or name
 end
 
--- QBCore answers GetPermission with a table<string, boolean>, not with a name.
--- The unified `group` field is a string on every framework (ESX stores one
--- directly), so the highest level present wins. Passing the raw table through
--- produced "table: 0x..." wherever a consumer did tostring(player.group).
+-- Qbox answers GetPermission with a table<string, boolean>, not with a name,
+-- and marks it deprecated in favour of aces. The unified `group` field is a
+-- string on every framework (ESX stores one directly), so the highest level
+-- present wins. Handing the raw table through produced "table: 0x..." wherever
+-- a consumer did tostring(player.group).
 local groupRanking = { 'god', 'superadmin', 'admin', 'mod', 'moderator' }
 
 local function highestGroup(permissions)
@@ -51,40 +54,38 @@ end
 --------------------------------------------------------------------------------
 -- Events
 --
--- Both load events are bound on purpose. qb-core triggers the networked
--- QBCore:Server:OnPlayerLoaded, forks and older versions trigger the local
--- QBCore:Server:PlayerLoaded with the player object. bridge/server.lua ignores
--- a second load for a player it already holds, so binding both is safe.
+-- Verified against qbx_core 1.24.0:
+--   server/player.lua:1064  TriggerEvent('QBCore:Server:PlayerLoaded', self)
+--   server/player.lua:747   TriggerEvent('QBCore:Server:OnPlayerUnload', source)
+--   server/player.lua:266   TriggerEvent('QBCore:Server:OnJobUpdate', source, job)
+--   server/player.lua:477   TriggerEvent('QBCore:Server:OnGangUpdate', source, gang)
+--   server/player.lua:205   TriggerEvent('QBCore:Server:SetDuty', source, onduty)
+--
+-- Note that Qbox fires PlayerLoaded, not OnPlayerLoaded like qb-core does, and
+-- hands over the player object instead of a source.
 --------------------------------------------------------------------------------
 function Adapter.bindEvents(on)
     AddEventHandler('QBCore:Server:PlayerLoaded', function(player)
-        local playerId = player and player.PlayerData and player.PlayerData.source
-        if playerId then
-            on.loaded(playerId, player)
+        local source = player and player.PlayerData and player.PlayerData.source
+        if source then
+            on.loaded(source, player)
         end
     end)
 
-    AddEventHandler('QBCore:Server:OnPlayerLoaded', function()
-        local playerId = source
-        if playerId and playerId > 0 then
-            on.loaded(playerId)
-        end
+    AddEventHandler('QBCore:Server:OnPlayerUnload', function(source)
+        on.dropped(source)
     end)
 
-    AddEventHandler('QBCore:Server:OnPlayerUnload', function(playerId)
-        on.dropped(playerId or source)
+    AddEventHandler('QBCore:Server:OnJobUpdate', function(source)
+        on.jobChanged(source)
     end)
 
-    AddEventHandler('QBCore:Server:OnJobUpdate', function(playerId)
-        on.jobChanged(playerId)
+    AddEventHandler('QBCore:Server:OnGangUpdate', function(source)
+        on.gangChanged(source)
     end)
 
-    AddEventHandler('QBCore:Server:OnGangUpdate', function(playerId)
-        on.gangChanged(playerId)
-    end)
-
-    AddEventHandler('QBCore:Server:SetDuty', function(playerId, onDuty)
-        on.dutyChanged(playerId, onDuty)
+    AddEventHandler('QBCore:Server:SetDuty', function(source, onDuty)
+        on.dutyChanged(source, onDuty)
     end)
 end
 
@@ -93,26 +94,25 @@ end
 --------------------------------------------------------------------------------
 function Adapter.getBySource(playerId)
     playerId = tonumber(playerId)
-    return playerId and QBCore.Functions.GetPlayer(playerId) or nil
+    return playerId and QBX:GetPlayer(playerId) or nil
 end
 
 function Adapter.getByIdentifier(identifier)
-    return identifier and QBCore.Functions.GetPlayerByCitizenId(identifier) or nil
+    return identifier and QBX:GetPlayerByCitizenId(identifier) or nil
 end
 
 function Adapter.getByPhone(phone)
-    return phone and QBCore.Functions.GetPlayerByPhone(tostring(phone)) or nil
+    return phone and QBX:GetPlayerByPhone(tostring(phone)) or nil
 end
 
--- userId is a Qbox concept.
-function Adapter.getByUserId()
-    return nil
+function Adapter.getByUserId(userId)
+    return userId and QBX:GetPlayerByUserId(userId) or nil
 end
 
 function Adapter.getAll()
     local list = {}
 
-    for _, player in pairs(QBCore.Functions.GetQBPlayers() or {}) do
+    for _, player in pairs(QBX:GetQBPlayers() or {}) do
         list[#list + 1] = player
     end
 
@@ -122,8 +122,9 @@ end
 function Adapter.getAllByJob(jobName)
     local list = {}
 
-    for _, player in pairs(QBCore.Functions.GetQBPlayers() or {}) do
-        if player.PlayerData.job and player.PlayerData.job.name == jobName then
+    for _, player in pairs(QBX:GetQBPlayers() or {}) do
+        -- Multijob: match the whole job map, not just the primary job.
+        if player.PlayerData.jobs and player.PlayerData.jobs[jobName] then
             list[#list + 1] = player
         end
     end
@@ -134,8 +135,8 @@ end
 function Adapter.getAllByGang(gangName)
     local list = {}
 
-    for _, player in pairs(QBCore.Functions.GetQBPlayers() or {}) do
-        if player.PlayerData.gang and player.PlayerData.gang.name == gangName then
+    for _, player in pairs(QBX:GetQBPlayers() or {}) do
+        if player.PlayerData.gangs and player.PlayerData.gangs[gangName] then
             list[#list + 1] = player
         end
     end
@@ -145,29 +146,33 @@ end
 
 --------------------------------------------------------------------------------
 -- Job and gang definitions (not players)
---
--- QBCore keeps them in QBCore.Shared, not behind a function.
 --------------------------------------------------------------------------------
-local function readDefinitions(source)
-    local out = {}
+function Adapter.getJobs()
+    local jobs = {}
 
-    for name, entry in pairs(source or {}) do
-        out[name] = {
+    for name, job in pairs(QBX:GetJobs() or {}) do
+        jobs[name] = {
             name   = name,
-            label  = type(entry) == 'table' and entry.label or name,
-            grades = MSK.Bridge.NormaliseGrades(type(entry) == 'table' and entry.grades),
+            label  = type(job) == 'table' and job.label or name,
+            grades = MSK.Bridge.NormaliseGrades(type(job) == 'table' and job.grades),
         }
     end
 
-    return out
-end
-
-function Adapter.getJobs()
-    return readDefinitions(QBCore.Shared and QBCore.Shared.Jobs)
+    return jobs
 end
 
 function Adapter.getGangs()
-    return readDefinitions(QBCore.Shared and QBCore.Shared.Gangs)
+    local gangs = {}
+
+    for name, gang in pairs(QBX:GetGangs() or {}) do
+        gangs[name] = {
+            name   = name,
+            label  = type(gang) == 'table' and gang.label or name,
+            grades = MSK.Bridge.NormaliseGrades(type(gang) == 'table' and gang.grades),
+        }
+    end
+
+    return gangs
 end
 
 --------------------------------------------------------------------------------
@@ -192,27 +197,25 @@ function Adapter.read(player)
     local data = player.PlayerData
     local charinfo = data.charinfo or {}
     local money = data.money or {}
-    local job = readGroup(data.job)
-    local gang = readGroup(data.gang)
 
     return {
         source     = data.source,
         identifier = data.citizenid,
         license    = data.license,
+        userId     = data.userId,
         name       = ('%s %s'):format(charinfo.firstname or '', charinfo.lastname or ''):gsub('^%s+', ''),
         firstName  = charinfo.firstname,
         lastName   = charinfo.lastname,
         dob        = charinfo.birthdate,
-        -- 0 = male, matching the character creator every QBCore fork ships.
+        -- 0 = male. qbx_core/client/character.lua:323 builds it that way and
+        -- :382 reads it back the same, so the mapping is not a guess.
         sex        = tonumber(charinfo.gender) == 1 and 'female' or 'male',
         phone      = charinfo.phone,
-        group      = QBCore.Functions.GetPermission and highestGroup(QBCore.Functions.GetPermission(data.source)) or 'user',
-        job        = job,
-        -- QBCore knows one job per player. The map is still filled so consumer
-        -- code can read player.jobs on every framework without a branch.
-        jobs       = job and { [job.name] = job.grade } or {},
-        gang       = gang,
-        gangs      = gang and { [gang.name] = gang.grade } or {},
+        group      = highestGroup(QBX:GetPermission(data.source)),
+        job        = readGroup(data.job),
+        jobs       = data.jobs or {},
+        gang       = readGroup(data.gang),
+        gangs      = data.gangs or {},
         money      = {
             cash   = money.cash,
             bank   = money.bank,
@@ -239,34 +242,25 @@ function Adapter.setDuty(player, onDuty)
     return true
 end
 
--- QBCore holds one job per player, so adding one means replacing the current
--- one. Only Qbox stores several.
+-- Real multijob: the player keeps every job already held.
 function Adapter.addJob(player, name, grade)
-    return Adapter.setJob(player, name, grade)
+    return QBX:AddPlayerToJob(player.PlayerData.citizenid, name, grade or 0) and true or false
 end
 
 function Adapter.removeJob(player, name)
-    if not player.PlayerData.job or player.PlayerData.job.name ~= name then return false end
-    return Adapter.setJob(player, 'unemployed', 0)
+    return QBX:RemovePlayerFromJob(player.PlayerData.citizenid, name) and true or false
 end
 
 function Adapter.addGang(player, name, grade)
-    return Adapter.setGang(player, name, grade)
+    return QBX:AddPlayerToGang(player.PlayerData.citizenid, name, grade or 0) and true or false
 end
 
 function Adapter.removeGang(player, name)
-    if not player.PlayerData.gang or player.PlayerData.gang.name ~= name then return false end
-    return Adapter.setGang(player, 'none', 0)
+    return QBX:RemovePlayerFromGang(player.PlayerData.citizenid, name) and true or false
 end
 
 function Adapter.getMoney(player, account)
-    local name = accountName(account)
-
-    if player.Functions.GetMoney then
-        return player.Functions.GetMoney(name) or 0
-    end
-
-    return player.PlayerData.money[name] or 0
+    return player.Functions.GetMoney(accountName(account)) or 0
 end
 
 function Adapter.addMoney(player, account, amount, reason)
@@ -278,29 +272,11 @@ function Adapter.removeMoney(player, account, amount, reason)
 end
 
 function Adapter.setMoney(player, account, amount, reason)
-    if player.Functions.SetMoney then
-        return player.Functions.SetMoney(accountName(account), amount, reason) and true or false
-    end
-
-    -- Older qb-core has no SetMoney. Fall back to the difference.
-    local current = Adapter.getMoney(player, account)
-    local diff = amount - current
-
-    if diff > 0 then
-        return Adapter.addMoney(player, account, diff, reason)
-    elseif diff < 0 then
-        return Adapter.removeMoney(player, account, -diff, reason)
-    end
-
-    return true
+    return player.Functions.SetMoney(accountName(account), amount, reason) and true or false
 end
 
 function Adapter.getMeta(player, key)
-    if player.Functions.GetMetaData then
-        return player.Functions.GetMetaData(key)
-    end
-
-    return player.PlayerData.metadata and player.PlayerData.metadata[key]
+    return player.Functions.GetMetaData(key)
 end
 
 function Adapter.setMeta(player, key, value)

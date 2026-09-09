@@ -74,16 +74,28 @@ end)
 local function formatTime(time)
     local banTime = 0
 
-    if time:find('P') then
+    -- The amount is read with tonumber instead of being multiplied straight
+    -- away. "1M" works either way, but "M" or "abcM" produced 60 * nil and
+    -- ended the command, and a value that did not match any unit silently left
+    -- banTime at 0, which is 1970 and therefore a ban that had already expired
+    -- the moment it was written.
+    local amount = tonumber(time:match('^(%d+)'))
+    local unit = time:upper()
+
+    if unit:find('P') then
         banTime = os.time() + (60 * 60 * 24 * 7 * 52 * 100)
-    elseif time:find('M') then
-        banTime = os.time() + (60 * MSK.String.Split(time, 'M')[1])
-    elseif time:find('H') then
-        banTime = os.time() + (60 * 60 * MSK.String.Split(time, 'H')[1])
-    elseif time:find('D') then
-        banTime = os.time() + (60 * 60 * 24 * MSK.String.Split(time, 'D')[1])
-    elseif time:find('W') then
-        banTime = os.time() + (60 * 60 * 24 * 7 * MSK.String.Split(time, 'W')[1])
+    elseif not amount then
+        return nil
+    elseif unit:find('M') then
+        banTime = os.time() + (60 * amount)
+    elseif unit:find('H') then
+        banTime = os.time() + (60 * 60 * amount)
+    elseif unit:find('D') then
+        banTime = os.time() + (60 * 60 * 24 * amount)
+    elseif unit:find('W') then
+        banTime = os.time() + (60 * 60 * 24 * 7 * amount)
+    else
+        return nil
     end
 
     return banTime, os.date('%d-%m-%Y %H:%M', banTime)
@@ -132,18 +144,36 @@ function MSK.IsPlayerBanned(playerId)
     end
 
     for i = 1, #bannedPlayers do
-        local timeUntil = bannedPlayers[i].time
-        local isTokenBanned = IsTokenBanned(playerId, bannedPlayers[i].tokens)
-        local isIdBanned = IsIdBanned(player, bannedPlayers[i].ids)
+        local ban = bannedPlayers[i]
+        local timeUntil = ban.time
+        local isTokenBanned = IsTokenBanned(playerId, ban.tokens)
+        local isIdBanned = IsIdBanned(player, ban.ids)
 
         if isTokenBanned or isIdBanned then
-            local day, month, year, hour, minute = timeUntil:match("(%d+)-(%d+)-(%d+) (%d+):(%d+)")
-            local time = os.time({day = day, month = month, year = year, hour = hour, min = minute})
+            -- A row whose time column is empty or in another format used to
+            -- take this function down: :match on nil, or os.time() on a table
+            -- of nils ("field 'day' missing in date table"). That happens
+            -- inside playerConnecting, before CancelEvent(), so a single
+            -- damaged row let every banned player back in.
+            local day, month, year, hour, minute
+
+            if type(timeUntil) == 'string' then
+                day, month, year, hour, minute = timeUntil:match('(%d+)-(%d+)-(%d+) (%d+):(%d+)')
+            end
+
+            if not day then
+                MSK.Logging('error', ('Ban %s has an unreadable time value (%s), treating it as active.')
+                    :format(tostring(ban.id), tostring(timeUntil)))
+                return ban, false
+            end
+
+            local time = os.time({ day = tonumber(day), month = tonumber(month), year = tonumber(year), hour = tonumber(hour), min = tonumber(minute) })
 
             if os.time() > time then
-                return bannedPlayers[i], true
+                return ban, true
             end
-            return bannedPlayers[i], false
+
+            return ban, false
         end
     end
 
@@ -161,6 +191,16 @@ function MSK.BanPlayer(playerId, targetId, time, reason)
 
     local identifiers = GetPlayerIdentifiers(targetId)
     local timestamp, banTime = formatTime(time)
+
+    -- An unusable duration must not turn into a ban that is already over. Say
+    -- what is wrong instead of writing a row nobody will understand later.
+    if not timestamp then
+        local message = ("Invalid ban duration '%s'. Use 1M, 1H, 1D, 1W or P."):format(tostring(time))
+
+        if playerId then MSK.Notification(playerId, 'MSK Bansystem', message) end
+        return MSK.Logging('error', message)
+    end
+
     local player, tokens = {}, {}
 
     player.name = targetName
@@ -205,13 +245,19 @@ function MSK.UnbanPlayer(playerId, banId)
     MySQL.query('DELETE FROM msk_bansystem WHERE id = @id', {
         ['@id'] = banId
     }, function(response)
-        if response.affectedRows > 0 then
+        if response and (response.affectedRows or 0) > 0 then
             logging('debug', ('Player with BanID ^3%s^0 was unbanned.'):format(banId))
             if playerId then MSK.Notification(playerId, 'MSK Bansystem', ('Player with BanID ~y~%s~s~ was unbanned.'):format(banId)) end
 
+            -- table.remove, not `= nil`. A nil in the middle of an array leaves
+            -- a hole, and MSK.IsPlayerBanned walks 1..#bannedPlayers. The next
+            -- player to connect hit that hole, the playerConnecting handler
+            -- died before reaching its CancelEvent(), and every banned player
+            -- could join again. A single unban disabled the ban system until
+            -- the next restart.
             for i = 1, #bannedPlayers do
                 if bannedPlayers[i].id == banId then
-                    bannedPlayers[i] = nil
+                    table.remove(bannedPlayers, i)
                     break
                 end
             end

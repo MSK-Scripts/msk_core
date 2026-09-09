@@ -19,13 +19,18 @@ if IS_CORE then
 
     function Coords.Copy(playerId, targetId)
         if not playerId or playerId == 0 then return end
-        local coords
 
-        if targetId then
-            coords = MSK.Player[targetId].coords
-        else
-            coords = MSK.Player[playerId].coords
+        -- MSK.Player[id] is filled from what a client reports about itself. A
+        -- player who just connected, or whose client has not reported yet, is
+        -- not in there at all, and indexing that nil ended the command with
+        -- "attempt to index a nil value".
+        local mirrored = MSK.Player[targetId or playerId]
+
+        if not mirrored then
+            return MSK.Logging('error', ('No mirrored data for player %s yet.'):format(tostring(targetId or playerId)))
         end
+
+        local coords = mirrored.coords
 
         if coords then
             TriggerClientEvent('msk_core:copyCoords', playerId, coords)
