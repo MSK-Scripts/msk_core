@@ -1,8 +1,4 @@
 local IS_CORE = GetCurrentResourceName() == 'msk_core'
-
--- Core-owned singleton: only msk_core handles playerDropped, otherwise a consumer
--- that eager-loads this module would log every disconnect twice (console + webhook)
--- and broadcast the marker event more than once.
 if IS_CORE then
 AddEventHandler('playerDropped', function(reason)
     -- Insert the Webhook Link here
@@ -14,7 +10,7 @@ AddEventHandler('playerDropped', function(reason)
     local coords = GetEntityCoords(GetPlayerPed(src))
     local time = os.date('%d.%m.%Y %H:%M', os.time())
 
-    TriggerClientEvent('msk_core:discLogger', -1, {
+    MSK.Events.TriggerClientsInRange('msk_core:discLogger', coords, 250.0, {
         playerId = src,
         playerName = playerName,
         coords = coords,

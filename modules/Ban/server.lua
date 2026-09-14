@@ -127,7 +127,10 @@ end
 
 local function IsIdBanned(player, playerIds)
     for name, id in pairs(playerIds) do
-        if player[name] and player[name] == id then
+        -- The player name is stored next to the identifiers for the log, but it
+        -- is no identifier. Matching on it kicked everyone who happened to use
+        -- the display name of a banned player.
+        if name ~= 'name' and player[name] and player[name] == id then
             return true
         end
     end
@@ -142,6 +145,10 @@ function MSK.IsPlayerBanned(playerId)
     for _, v in pairs(identifiers) do
         player[MSK.String.Split(v, ':')[1]] = v
     end
+
+    -- Every matching ban is looked at. Returning on the first match let a player
+    -- in whenever that one had expired, even with a second, active ban on file.
+    local expiredBan
 
     for i = 1, #bannedPlayers do
         local ban = bannedPlayers[i]
@@ -169,23 +176,42 @@ function MSK.IsPlayerBanned(playerId)
 
             local time = os.time({ day = tonumber(day), month = tonumber(month), year = tonumber(year), hour = tonumber(hour), min = tonumber(minute) })
 
-            if os.time() > time then
-                return ban, true
+            if os.time() <= time then
+                return ban, false
             end
 
-            return ban, false
+            expiredBan = expiredBan or ban
         end
+    end
+
+    if expiredBan then
+        return expiredBan, true
     end
 
     return false, true
 end
 exports('IsPlayerBanned', MSK.IsPlayerBanned)
 
+-- Who issued a ban or unban. A command run from the server console arrives
+-- with id 0, which is truthy in Lua: GetPlayerName(0) returned nil, the row
+-- could not be written (bannedby is NOT NULL) and nothing said why.
+local function resolveIssuer(playerId)
+    local id = tonumber(playerId)
+
+    if not id then return nil, 'System' end
+    if id <= 0 then return nil, 'Console' end
+
+    return id, GetPlayerName(id) or ('ID %s'):format(id)
+end
+
 function MSK.BanPlayer(playerId, targetId, time, reason)
+    local issuerId, bannedby = resolveIssuer(playerId)
+    playerId = issuerId
+
     local targetName = GetPlayerName(targetId)
 
     if not targetName then
-        if playerId then MSK.Notification(playerId, 'MSK Bansystem', ('Player with ID ~y~%s~s~ not found!'):format(targetId)) end
+        if playerId then MSK.Notification(playerId, { title = 'MSK Bansystem', message = ('Player with ID ~y~%s~s~ not found!'):format(targetId), type = 'error' }) end
         return logging('debug', ('Player with ^2ID %s^0 not found!'):format(targetId))
     end
 
@@ -197,7 +223,7 @@ function MSK.BanPlayer(playerId, targetId, time, reason)
     if not timestamp then
         local message = ("Invalid ban duration '%s'. Use 1M, 1H, 1D, 1W or P."):format(tostring(time))
 
-        if playerId then MSK.Notification(playerId, 'MSK Bansystem', message) end
+        if playerId then MSK.Notification(playerId, { title = 'MSK Bansystem', message = message, type = 'error' }) end
         return MSK.Logging('error', message)
     end
 
@@ -213,9 +239,6 @@ function MSK.BanPlayer(playerId, targetId, time, reason)
         tokens[#tokens + 1] = GetPlayerToken(targetId, i)
     end
 
-    local bannedby = 'System'
-    if playerId then bannedby = GetPlayerName(playerId) end
-
     MySQL.query('INSERT INTO msk_bansystem (ids, time, reason, bannedby, tokens) VALUES (@ids, @time, @reason, @bannedby, @tokens)', {
         ['@ids'] = json.encode(player),
         ['@time'] = banTime,
@@ -228,7 +251,11 @@ function MSK.BanPlayer(playerId, targetId, time, reason)
 
             logging('debug', ('Player with ID ^3%s^0 was banned until ^3%s^0 for Reason ^3%s^0. BanID: ^3%s^0'):format(targetId, banTime, reason, banId))
             if playerId then
-                MSK.Notification(playerId, 'MSK Bansystem', ('Player with ID ~y~%s~s~ was banned until ~y~%s~s~ for Reason ~y~%s~s~. BanID: ~y~%s~s~'):format(targetId, banTime, reason, banId))
+                MSK.Notification(playerId, {
+                    title = 'MSK Bansystem',
+                    message = ('Player with ID ~y~%s~s~ was banned until ~y~%s~s~ for Reason ~y~%s~s~. BanID: ~y~%s~s~'):format(targetId, banTime, reason, banId),
+                    type = 'success',
+                })
             end
 
             bannedPlayers[#bannedPlayers + 1] = {id = banId, ids = player, reason = reason, time = banTime, from = bannedby, tokens = tokens}
@@ -240,6 +267,8 @@ end
 exports('BanPlayer', MSK.BanPlayer)
 
 function MSK.UnbanPlayer(playerId, banId)
+    local issuerId, unbannedby = resolveIssuer(playerId)
+    playerId = issuerId
     banId = tonumber(banId)
 
     MySQL.query('DELETE FROM msk_bansystem WHERE id = @id', {
@@ -247,7 +276,7 @@ function MSK.UnbanPlayer(playerId, banId)
     }, function(response)
         if response and (response.affectedRows or 0) > 0 then
             logging('debug', ('Player with BanID ^3%s^0 was unbanned.'):format(banId))
-            if playerId then MSK.Notification(playerId, 'MSK Bansystem', ('Player with BanID ~y~%s~s~ was unbanned.'):format(banId)) end
+            if playerId then MSK.Notification(playerId, { title = 'MSK Bansystem', message = ('Player with BanID ~y~%s~s~ was unbanned.'):format(banId), type = 'success' }) end
 
             -- table.remove, not `= nil`. A nil in the middle of an array leaves
             -- a hole, and MSK.IsPlayerBanned walks 1..#bannedPlayers. The next
@@ -262,12 +291,10 @@ function MSK.UnbanPlayer(playerId, banId)
                 end
             end
 
-            local unbannedby = 'System'
-            if playerId then unbannedby = GetPlayerName(playerId) end
             unbanLog(playerId, unbannedby, banId)
         else
             logging('debug', ('BanId ^3%s^0 not found'):format(banId))
-            if playerId then MSK.Notification(playerId, 'MSK Bansystem', ('BanId ~y~%s~s~ not found'):format(banId)) end
+            if playerId then MSK.Notification(playerId, { title = 'MSK Bansystem', message = ('BanId ~y~%s~s~ not found'):format(banId), type = 'error' }) end
         end
     end)
 end
@@ -289,7 +316,8 @@ if Config.BanSystem.enable and Config.BanSystem.commands.enable then
         params = {
             {name = "playerId", type = 'playerId', help = "Target players server id"},
             {name = "time", type = 'string', help = "1M = 1 Minute / 1H = 1 Hour / 1D = 1 Day / 1W = 1 Week / P = Permanent"},
-            {name = "reason", type = 'string', help = "Ban Reason", optional = true},
+            -- longString: 'string' kept only the first word of the reason.
+            {name = "reason", type = 'longString', help = "Ban Reason", optional = true},
         }
     })
 

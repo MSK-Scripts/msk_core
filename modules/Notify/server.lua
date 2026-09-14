@@ -1,6 +1,27 @@
-function MSK.Notification(src, title, message, info, time)
+-- One warning per resource, not per call.
+local warnedResources = {}
+
+local function warnDeprecated(resource)
+    resource = resource or 'msk_core'
+    if warnedResources[resource] then return end
+    warnedResources[resource] = true
+
+    MSK.Logging('warn', ('Resource "%s" calls MSK.Notification(playerId, title, message, type, duration), which is deprecated and will be removed in a future version. Pass a table instead: MSK.Notification(playerId, { title = ..., message = ..., type = ... })'):format(resource))
+end
+
+---Sends a notification to a player (-1 for everyone). The fields of the table
+---are described in modules/Notify/client.lua.
+---@param src number
+---@param titleOrData table|string a table (the string form is deprecated)
+function MSK.Notification(src, titleOrData, message, info, time)
     if not src or src == 0 then return end
-    TriggerClientEvent('msk_core:notification', src, title, message, info, time)
+
+    if type(titleOrData) ~= 'table' then
+        warnDeprecated(GetInvokingResource())
+        titleOrData = { title = titleOrData, message = message, type = info, duration = time }
+    end
+
+    TriggerClientEvent('msk_core:notification', src, titleOrData)
 end
 MSK.Notify = MSK.Notification
 exports('Notification', MSK.Notification)

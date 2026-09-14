@@ -40,6 +40,12 @@ local function parseArgs(source, args, raw, params)
             value = tonumber(arg)
         elseif param.type == 'string' then
             value = not tonumber(arg) and arg
+        elseif param.type == 'longString' then
+            -- The rest of the line. Has to be the last parameter.
+            value = args[i] and table.concat(args, ' ', i) or nil
+            if value == '' then value = nil end
+
+            for j = i + 1, #args do args[j] = nil end
         elseif param.type == 'playerId' then
             value = arg == 'me' and source or tonumber(arg)
 
@@ -62,7 +68,11 @@ local function parseArgs(source, args, raw, params)
 
         if not value and (not param.optional or param.optional and arg) then
             MSK.Logging('error', ("Command '%s' received an invalid %s for argument %s (%s), received '%s'^0"):format(MSK.String.Split(raw, ' ')[1] or raw, param.type, i, param.name, arg))
-            MSK.Notification('Command Error', ("Command '%s' received an invalid %s for argument %s (%s), received '%s'"):format(MSK.String.Split(raw, ' ')[1] or raw, param.type, i, param.name, arg), 'error')
+            MSK.Notification({
+                title = 'Command Error',
+                message = ("Command '%s' received an invalid %s for argument %s (%s), received '%s'"):format(MSK.String.Split(raw, ' ')[1] or raw, param.type, i, param.name, arg),
+                type = 'error',
+            })
             return
         end
 
@@ -73,6 +83,27 @@ local function parseArgs(source, args, raw, params)
     return args
 end
 
+-- Same reason as on the server: the code below strips fields from the
+-- properties, so every name of an alias list needs its own copy.
+local function copyProperties(properties)
+    if type(properties) ~= 'table' then return properties end
+
+    local copy = {}
+    for key, value in pairs(properties) do copy[key] = value end
+
+    if type(properties.params) == 'table' then
+        copy.params = {}
+
+        for i, param in ipairs(properties.params) do
+            local paramCopy = {}
+            for key, value in pairs(param) do paramCopy[key] = value end
+            copy.params[i] = paramCopy
+        end
+    end
+
+    return copy
+end
+
 function MSK.RegisterCommand(commandName, callback, restricted, properties)
     if type(commandName) == 'table' then
         for _, v in ipairs(commandName) do
@@ -80,6 +111,8 @@ function MSK.RegisterCommand(commandName, callback, restricted, properties)
         end
         return
     end
+
+    properties = copyProperties(properties)
 
     if RegisteredCommands[commandName] then
         MSK.Logging('info', ('Command ^3%s^0 is already registerd. Overriding Command...'):format(commandName))

@@ -20,16 +20,21 @@ function Scaleform.TrafficMovie(playerId, duration)
     TriggerClientEvent('msk_core:trafficMovie', playerId, duration)
 end
 
--- Deprecated (kept only for legacy)
+-- Deprecated, kept for old scripts
+local warnedResources = {}
+
 function Scaleform.ScaleformAnnounce(playerId, title, text, typ, duration)
+    -- Once per resource like the other deprecations, it used to log an error
+    -- on every single call.
+    local resource = GetInvokingResource() or GetCurrentResourceName()
+
+    if not warnedResources[resource] then
+        warnedResources[resource] = true
+        MSK.Logging('warn', ('Resource "%s" calls MSK.ScaleformAnnounce, which is deprecated and will be removed in a future version. Use MSK.Scaleform.FreemodeMessage or MSK.Scaleform.PopupWarning instead.'):format(resource))
+    end
+
     if not playerId or playerId == 0 then return end
     TriggerClientEvent('msk_core:scaleformNotification', playerId, title, text, typ, duration)
-
-    if typ == 1 then
-        MSK.Logging('error', "function MSK.ScaleformAnnounce is deprecated! Please use MSK.Scaleform.FreemodeMessage")
-    elseif typ == 2 then
-        MSK.Logging('error', "function MSK.ScaleformAnnounce is deprecated! Please use MSK.Scaleform.PopupWarning")
-    end
 end
 
 return Scaleform

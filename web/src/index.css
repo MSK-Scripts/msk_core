@@ -116,3 +116,32 @@ body.msk-dev {
   from { width: 100%; }
   to { width: 0%; }
 }
+
+/* Spiegelbild von msk-slide-in/out für Notifications am rechten Rand */
+@keyframes msk-slide-in-right {
+  from { opacity: 0; transform: translateX(2.5vh); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes msk-slide-out-right {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(2.5vh); }
+}
+
+/* Nur scale + opacity: die Tailwind-Klassen -translate-* setzen die CSS-Property
+   `translate`, ein transform im Keyframe würde sonst doppelt verschieben. */
+@keyframes msk-zoom-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes msk-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* --msk-circle = Umfang des Kreises, gesetzt im Style der Komponente */
+@keyframes msk-circle-fill {
+  from { stroke-dashoffset: var(--msk-circle); }
+  to { stroke-dashoffset: 0; }
+}

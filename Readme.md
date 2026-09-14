@@ -6,7 +6,7 @@
 
 [![Discord](https://img.shields.io/badge/Discord-MSK%20Scripts-5865F2?logo=discord&logoColor=white)](https://discord.gg/5hHSBRHvJE)
 [![Documentation](https://img.shields.io/badge/Docs-docu.msk--scripts.de-00E676)](https://docu.msk-scripts.de/docs/msk_core/)
-[![Version](https://img.shields.io/badge/version-4.0.0-blue)](https://github.com/MSK-Scripts/msk_core/releases)
+[![Version](https://img.shields.io/badge/version-4.1.0-blue)](https://github.com/MSK-Scripts/msk_core/releases)
 [![License](https://img.shields.io/badge/license-LGPL--3.0-green)](LICENSE)
 
 [Discord](https://discord.gg/5hHSBRHvJE) · [Documentation](https://docu.msk-scripts.de/docs/msk_core/) · [Releases](https://github.com/MSK-Scripts/msk_core/releases)
@@ -22,7 +22,7 @@
 - **Framework bridge** — write once, run on ESX / QBCore / Qbox / STANDALONE (`Config.Framework = 'AUTO'`). One player shape everywhere, multijob included
 - **Inventory bridge** — `ox_inventory`, `core_inventory`, `jaksam_inventory`, ESX/Chezza `default`, or your own `custom`
 - **Lazy-loaded modules** — a module is compiled into your resource only when you first use it
-- **Modern NUI** — Notify, Input, Numpad, Progressbar & TextUI (React + Vite + TypeScript, fully offline/bundled)
+- **Modern NUI** — Notify, Input dialog, Alert, Numpad, Progressbar and circle, TextUI, Context menu, Menu, Radial menu, Skill check and a player settings menu (React + Vite + TypeScript, fully offline/bundled)
 - **Dual API** — every function is available as `MSK.Function(...)` **and** `exports.msk_core:Function(...)`
 - **Utilities** — callbacks, cron jobs, ace permissions, commands, Discord webhooks, version & dependency checks, math/string/table/vector helpers and more
 

@@ -3,6 +3,7 @@ import { useNuiEvent } from '../hooks/useNuiEvent'
 import { fetchNui } from '../lib/fetchNui'
 import { playSound } from '../lib/sound'
 import { parseColorCodes } from '../lib/colorCodes'
+import { iconAnimationClass } from '../lib/iconAnimation'
 import type {
   ContextMetaItem,
   ContextOption,
@@ -88,6 +89,10 @@ export default function ContextMenu() {
 
   if (!state) return null
 
+  // Steht das Menü links, klappt die Metadata-Box nach rechts auf, sonst läge
+  // sie außerhalb des Bildschirms.
+  const metaOnRight = (state.position ?? 'center').includes('left')
+
   return (
     <MenuShell position={state.position}>
       <MenuHeader
@@ -103,6 +108,7 @@ export default function ContextMenu() {
             <ContextRow
               key={opt.id ?? i}
               opt={opt}
+              metaOnRight={metaOnRight}
               active={i === selected}
               onHover={() => {
                 if (!opt.disabled && !opt.readOnly) setSelected(i)
@@ -124,11 +130,13 @@ function normalizeMeta(meta?: ContextMetaItem[] | Record<string, string>): Conte
 
 function ContextRow({
   opt,
+  metaOnRight,
   active,
   onHover,
   onClick,
 }: {
   opt: ContextOption
+  metaOnRight: boolean
   active: boolean
   onHover: () => void
   onClick: () => void
@@ -158,7 +166,7 @@ function ContextRow({
           <img src={opt.image} alt="" className="h-[3.6vh] w-[3.6vh] shrink-0 rounded-sm object-cover" />
         ) : icon ? (
           <i
-            className={`${icon} shrink-0 text-[1.8vh]`}
+            className={`${icon} ${iconAnimationClass(opt.iconAnimation)} shrink-0 text-[1.8vh]`}
             style={{ color: opt.iconColor || 'var(--color-accent)' }}
           />
         ) : null}
@@ -184,11 +192,25 @@ function ContextRow({
       </button>
 
       {meta.length > 0 ? (
-        <div className="pointer-events-none absolute right-full top-0 z-10 mr-[1vh] hidden w-[22vh] flex-col gap-[0.4vh] rounded-sm border border-border bg-panel/95 p-[1vh] shadow-msk backdrop-blur-md group-hover:flex">
+        <div
+          className={`pointer-events-none absolute top-0 z-10 hidden w-[22vh] flex-col gap-[0.6vh] rounded-sm border border-border bg-panel/95 p-[1vh] shadow-msk backdrop-blur-md group-hover:flex ${
+            metaOnRight ? 'left-full ml-[1vh]' : 'right-full mr-[1vh]'
+          }`}
+        >
           {meta.map((m, idx) => (
-            <div key={idx} className="flex items-baseline justify-between gap-[1vh] text-[1.3vh]">
-              <span className="font-mono uppercase tracking-[0.06em] text-text-muted">{m.label}</span>
-              {m.value ? <span className="text-right text-text-primary">{m.value}</span> : null}
+            <div key={idx} className="flex flex-col gap-[0.3vh]">
+              <div className="flex items-baseline justify-between gap-[1vh] text-[1.3vh]">
+                <span className="font-mono uppercase tracking-[0.06em] text-text-muted">{parseColorCodes(m.label)}</span>
+                {m.value ? <span className="text-right text-text-primary">{parseColorCodes(m.value)}</span> : null}
+              </div>
+              {typeof m.progress === 'number' ? (
+                <span className="block h-[0.5vh] w-full overflow-hidden rounded-full bg-input">
+                  <span
+                    className="block h-full rounded-full"
+                    style={{ width: `${clamp(m.progress)}%`, background: m.colorScheme || 'var(--color-accent)' }}
+                  />
+                </span>
+              ) : null}
             </div>
           ))}
         </div>

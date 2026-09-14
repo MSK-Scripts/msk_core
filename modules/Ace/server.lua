@@ -6,14 +6,20 @@ local function checkParams(str)
 end
 
 local function normalizePrincipal(principal)
-    if not checkParams(principal) then
-        if type(principal) == 'string' then
-            local result = MSK.String.Split(principal, ':')
-            principal = result[2] and ('identifier.' .. principal) or ('group.' .. principal)
-        elseif tonumber(principal) then
-            principal = 'player.' .. tostring(principal)
-        end
+    -- A number is a server id. It has to be handled before checkParams, which
+    -- only takes strings: MSK.AddAce(5, ...) used to fail its assert, and the
+    -- player branch below it could never be reached.
+    if type(principal) == 'number' then
+        return 'player.' .. math.floor(principal)
     end
+
+    principal = tostring(principal)
+
+    if not checkParams(principal) then
+        local result = MSK.String.Split(principal, ':')
+        principal = result[2] and ('identifier.' .. principal) or ('group.' .. principal)
+    end
+
     return principal
 end
 
@@ -135,8 +141,35 @@ if IS_CORE then
         return MSK.IsAceAllowed(source, command)
     end)
 
+    -- A client may ask about groups and about itself, not about other players.
+    -- Answering for any principal let a client probe identifier.license:... of
+    -- every player on the server and find out who is staff.
+    local function isOwnPrincipal(source, principal)
+        local player = principal:match('^player%.(.+)$')
+        if player then
+            return tonumber(player) == tonumber(source)
+        end
+
+        local identifier = principal:match('^identifier%.(.+)$')
+        if identifier then
+            for _, own in ipairs(GetPlayerIdentifiers(source)) do
+                if own == identifier then return true end
+            end
+            return false
+        end
+
+        return true
+    end
+
     MSK.Register('msk_core:isPrincipalAceAllowed', function(source, principal, ace)
-        return MSK.IsPrincipalAceAllowed(principal, ace)
+        if (type(principal) ~= 'string' and type(principal) ~= 'number') or type(ace) ~= 'string' then
+            return false
+        end
+
+        local normalized = normalizePrincipal(principal)
+        if not isOwnPrincipal(source, normalized) then return false end
+
+        return IsPrincipalAceAllowed(normalized, ace)
     end)
 end
 

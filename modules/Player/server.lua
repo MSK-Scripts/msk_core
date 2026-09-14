@@ -325,6 +325,24 @@ function Player.GetServerId(id)
     return data and data.source or nil
 end
 
+---Calls `cb(playerId, value, oldValue)` whenever `key` changes in the mirror of
+---any player, e.g. vehicle, seat, weapon, isDead or a custom key. Returns the
+---event handler, pass it to RemoveEventHandler to stop listening.
+---  MSK.OnPlayer('isDead', function(playerId, isDead) ... end)
+---@param key string
+---@param cb fun(playerId: number, value: any, oldValue: any)
+---@return table eventData
+function Player.OnChange(key, cb)
+    assert(type(key) == 'string', 'Parameter "key" has to be a string on function MSK.OnPlayer')
+    assert(cb ~= nil, 'Parameter "cb" is nil on function MSK.OnPlayer')
+
+    return AddEventHandler('msk_core:OnPlayer', function(playerId, changedKey, value, oldValue)
+        if changedKey == key then
+            cb(playerId, value, oldValue)
+        end
+    end)
+end
+
 if IS_CORE then
     --------------------------------------------------------------------------------
     -- Mirrored player table (core only)
@@ -353,42 +371,171 @@ if IS_CORE then
         end
     }
 
-    local function onPlayer(key, value, oldValue)
-        local playerId = tonumber(source)
+    --------------------------------------------------------------------------------
+    -- What a client may report about itself
+    --
+    -- The client used to be trusted with any key and any value. Sending `coords`
+    -- stored a plain field that hid the computed getter, so the server handed out
+    -- whatever position the client made up. isDead, vehicle and serverId could be
+    -- faked the same way, and unlimited custom keys meant unlimited memory.
+    --
+    -- Known keys are checked or taken from the server's own view. Custom keys
+    -- (MSK.Player(key, value, true)) stay possible, within limits.
+    --------------------------------------------------------------------------------
+    local COMPUTED = { coords = true, heading = true, state = true, vehNetId = true }
+    local MAX_CUSTOM_KEYS = 64
+    local MAX_KEY_LENGTH = 64
+    local MAX_STRING_LENGTH = 1024
+    local MAX_TABLE_SIZE = 4096
+    local VEHICLE_RANGE = 15.0
 
-        if not Player[playerId] then
-            Player[playerId] = {}
-            setmetatable(Player[playerId], playerMeta)
-        end
+    local function isSeat(value)
+        return math.type(value) == 'integer' and value >= -1 and value <= 16
+    end
 
-        if Player[playerId][key] ~= value then
-            Player[playerId][key] = value
-
-            if key == 'ped' or key == 'playerPed' then
-                Player[playerId][key] = GetPlayerPed(playerId)
-            elseif key == 'Notify' then
-                Player[playerId][key] = function(...)
-                    MSK.Notification(playerId, ...)
-                end
-            elseif key == 'vehicle' then
-                Player[playerId][key] = NetworkGetEntityFromNetworkId(value)
-                Player[playerId]['vehNetId'] = value
+    local KNOWN = {
+        clientId = function(_, value)
+            return math.type(value) == 'integer', value
+        end,
+        serverId = function(playerId) return true, playerId end,
+        playerId = function(playerId) return true, playerId end,
+        ped = function(playerId) return true, GetPlayerPed(playerId) end,
+        playerPed = function(playerId) return true, GetPlayerPed(playerId) end,
+        Notify = function(playerId)
+            return true, function(...)
+                MSK.Notification(playerId, ...)
             end
+        end,
+        seat = function(_, value)
+            return value == false or isSeat(value), value
+        end,
+        weapon = function(_, value)
+            return value == false or math.type(value) == 'integer', value
+        end,
+        isDead = function(_, value)
+            return type(value) == 'boolean', value
+        end,
+    }
 
-            TriggerEvent('msk_core:OnPlayer', playerId, key, Player[playerId][key], oldValue)
+    local function acceptVehicle(playerId, netId)
+        if netId == false or netId == nil then return false, nil end
+        if math.type(netId) ~= 'integer' then return nil end
+
+        local vehicle = NetworkGetEntityFromNetworkId(netId)
+        if vehicle == 0 or not DoesEntityExist(vehicle) then return false, nil end
+
+        -- A vehicle far away from the player is not the one they sit in.
+        local ped = GetPlayerPed(playerId)
+        if ped ~= 0 and #(GetEntityCoords(ped) - GetEntityCoords(vehicle)) > VEHICLE_RANGE then
+            return nil
         end
+
+        return vehicle, netId
+    end
+
+    local function acceptCustom(data, key, value)
+        if #key > MAX_KEY_LENGTH then return false end
+
+        local kind = type(value)
+
+        if kind == 'string' then
+            if #value > MAX_STRING_LENGTH then return false end
+        elseif kind == 'table' then
+            local ok, encoded = pcall(json.encode, value)
+            if not ok or #encoded > MAX_TABLE_SIZE then return false end
+        elseif kind ~= 'number' and kind ~= 'boolean' and value ~= nil then
+            return false
+        end
+
+        if rawget(data, key) == nil and value ~= nil then
+            local count = 0
+            for _ in pairs(data) do count = count + 1 end
+            if count >= MAX_CUSTOM_KEYS + 16 then return false end
+        end
+
+        return true
+    end
+
+    local function onPlayer(key, value)
+        local playerId = tonumber(source)
+        if not playerId or type(key) ~= 'string' or COMPUTED[key] then return end
+
+        local data = Player[playerId]
+
+        if not data then
+            data = setmetatable({}, playerMeta)
+            Player[playerId] = data
+        end
+
+        local oldValue = rawget(data, key)
+        local stored
+
+        if key == 'vehicle' then
+            local vehicle, netId = acceptVehicle(playerId, value)
+            if vehicle == nil then return end
+
+            stored = vehicle
+            data.vehNetId = netId
+        elseif KNOWN[key] then
+            local ok, checked = KNOWN[key](playerId, value)
+            if not ok then return end
+
+            stored = checked
+        else
+            if not acceptCustom(data, key, value) then return end
+
+            stored = value
+        end
+
+        -- A new function is never equal to the old one, so Notify is only set once.
+        if key == 'Notify' and oldValue ~= nil then return end
+        if oldValue == stored then return end
+
+        data[key] = stored
+        TriggerEvent('msk_core:OnPlayer', playerId, key, stored, oldValue)
     end
     RegisterNetEvent('msk_core:onPlayer', onPlayer)
+
+    -- The mirror is cleared on disconnect. It used to stay forever, and a reused
+    -- server id started out with the values of whoever had it before.
+    AddEventHandler('playerDropped', function()
+        local playerId = tonumber(source)
+        if playerId then Player[playerId] = nil end
+    end)
 
     -- Callback for the client-side MSK.Player[targetId] / MSK.Player.Get(targetId, key)
     MSK.Register('msk_core:player', function(source, targetId, key)
         targetId = tonumber(targetId)
 
-        if DoesPlayerExist(targetId) then
-            return key and Player[targetId][key] or Player[targetId]
+        if not targetId or not DoesPlayerExist(targetId) then
+            return false
         end
 
-        return false
+        local data = Player[targetId]
+
+        -- Written out on purpose: `key and data[key] or data` returned the whole
+        -- table for every value that is false (vehicle, isDead), and indexed nil
+        -- for a player who had not reported anything yet.
+        if key ~= nil then
+            if not data then return nil end
+
+            local value = data[key]
+            if type(value) == 'function' then return nil end
+
+            return value
+        end
+
+        local copy = {}
+
+        if data then
+            for field, value in pairs(data) do
+                if type(value) ~= 'function' then
+                    copy[field] = value
+                end
+            end
+        end
+
+        return copy
     end)
 
     -- Fetches MSK.Player[id] through this.

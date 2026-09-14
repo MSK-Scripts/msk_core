@@ -14,14 +14,25 @@ end
 local Callback = MSK.LoadModule('Callback')
 if not Callback then error('msk_core: Callback module could not be loaded.', 0) end
 
-exports('Register', Callback.Register)
+-- Registered through an export, the callback belongs to the calling resource
+-- and is removed again when that resource stops.
+local function registerFromExport(eventName, cb)
+    return Callback.Register(eventName, cb, GetInvokingResource())
+end
+
+exports('Register', registerFromExport)
 exports('Trigger', Callback.Trigger)
-exports('RegisterCallback', Callback.Register)       -- Backwards compatibility (server only)
-exports('RegisterServerCallback', Callback.Register) -- Backwards compatibility (server only)
+exports('RegisterCallback', registerFromExport)       -- Backwards compatibility (server only)
+exports('RegisterServerCallback', registerFromExport) -- Backwards compatibility (server only)
 
 -- Also provide on the core MSK table (for core code like HasItem, ACE …).
 MSK.Register = Callback.Register
 MSK.Trigger = Callback.Trigger
+
+--------------------------------------------------------------------------------
+-- Hooks — the registry has to exist before any module could trigger a hook.
+--------------------------------------------------------------------------------
+MSK.LoadModule('Hook')
 
 --------------------------------------------------------------------------------
 -- Player — core: mirrored player table, msk_core:onPlayer handler,
@@ -30,6 +41,7 @@ MSK.Trigger = Callback.Trigger
 local PlayerModule = MSK.LoadModule('Player')
 if not PlayerModule then error('msk_core: Player module could not be loaded.', 0) end
 MSK.Player = PlayerModule
+MSK.OnPlayer = PlayerModule.OnChange
 
 --------------------------------------------------------------------------------
 -- Entities + Vehicle. Entities BEFORE Vehicle (Vehicle uses
@@ -85,6 +97,18 @@ MSK.LoadModule('Offline')
 -- before any script asks about an owned vehicle.
 --------------------------------------------------------------------------------
 MSK.LoadModule('VehicleStore')
+
+-- The handler that clears the property state bag once the owner applied it.
+MSK.LoadModule('VehicleProperties')
+
+--------------------------------------------------------------------------------
+-- Logger (batching thread only runs when a log service is configured),
+-- txAdmin messages and the zone creator command. The zone creator needs the
+-- Command module, which is loaded above.
+--------------------------------------------------------------------------------
+MSK.LoadModule('Logger')
+MSK.LoadModule('TxAdmin')
+MSK.LoadModule('ZoneCreator')
 
 --------------------------------------------------------------------------------
 -- MarkLoaded — the core is the last to load, so mark the resource as loaded.

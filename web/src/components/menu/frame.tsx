@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { parseColorCodes } from '../../lib/colorCodes'
 
 // Wandelt einen Icon-String in eine FontAwesome-Klasse um.
 // "car" -> "fas fa-car"; vollstaendige Angaben ("fas fa-car", "fa-brands fa-...")
@@ -74,7 +75,7 @@ export function MenuHeader({
     <div className="flex items-center gap-[1vh] border-b border-border px-[1.2vh] py-[1.2vh]">
       {onBack ? <IconBtn icon="fa-arrow-left" onClick={onBack} /> : <span className="h-[3.4vh] w-[3.4vh] shrink-0" />}
       <div className="flex flex-1 items-center justify-center gap-[0.8vh] overflow-hidden">
-        <span className="truncate font-head text-[1.9vh] font-semibold text-text-primary">{title}</span>
+        <span className="truncate font-head text-[1.9vh] font-semibold text-text-primary">{parseColorCodes(title)}</span>
         {counter ? (
           <span className="shrink-0 font-mono text-[1.2vh] tracking-[0.06em] text-text-muted">{counter}</span>
         ) : null}

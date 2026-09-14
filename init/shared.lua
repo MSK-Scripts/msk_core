@@ -45,13 +45,21 @@ local function mountCore(name)
         error(("^1msk_core: in-core import of module '%s' failed — %s^0"):format(name, err), 2)
     end
 
-    local ok, value = pcall(chunk)
+    -- xpcall with a traceback, a plain pcall kept only the message.
+    local ok, value = xpcall(chunk, debug.traceback)
     if not ok then
         error(("^1msk_core: runtime error in in-core module '%s' — %s^0"):format(name, value), 2)
     end
 
-    coreCache[name] = value == nil and false or value
-    return coreCache[name]
+    -- A module that returns nothing is cached as false, so the next lookup is a
+    -- cache hit instead of running the module again. Written out on purpose:
+    -- `value == nil and false or value` stores nil, because the false in the
+    -- middle hands over to the `or`, and that led to the module running on
+    -- every single lookup.
+    if value == nil then value = false end
+
+    coreCache[name] = value
+    return value
 end
 MSK.LoadModule = mountCore
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNuiEvent } from '../hooks/useNuiEvent'
 import { playSound } from '../lib/sound'
 import { parseColorCodes } from '../lib/colorCodes'
+import { iconAnimationClass } from '../lib/iconAnimation'
 import type { MenuItem, OpenMenuMessage, UpdateMenuMessage } from '../types'
 import { EmptyRow, MenuHeader, MenuShell, faClass } from './menu/frame'
 
@@ -84,7 +85,7 @@ function MenuListRow({ item, active }: { item: MenuItem; active: boolean }) {
     >
       {icon ? (
         <i
-          className={`${icon} shrink-0 text-[1.8vh]`}
+          className={`${icon} ${iconAnimationClass(item.iconAnimation)} shrink-0 text-[1.8vh]`}
           style={{ color: item.iconColor || (active ? 'var(--color-accent)' : 'var(--color-text-secondary)') }}
         />
       ) : null}

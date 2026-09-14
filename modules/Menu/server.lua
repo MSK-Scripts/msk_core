@@ -4,9 +4,10 @@ local Menu = {}
 if IS_CORE then
     -- Opens a menu for a player: either one registered on the client, by id, or
     -- an inline menu (serialisable fields only, so event/serverEvent/args).
-    function Menu.Show(playerId, idOrData)
+    -- startIndex picks the item the selection starts on.
+    function Menu.Show(playerId, idOrData, startIndex)
         if not playerId or playerId <= 0 then return end
-        return MSK.Trigger('msk_core:menu', playerId, idOrData)
+        return MSK.Trigger('msk_core:menu', playerId, idOrData, startIndex)
     end
     MSK.ShowMenu = Menu.Show
     exports('ShowMenu', Menu.Show)

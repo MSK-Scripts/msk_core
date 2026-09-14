@@ -55,7 +55,15 @@ if IS_CORE then
                     return print(("[^2msk_core^0] [^1ERROR^0] ^1Versioncheck failed for repository %s! Http Error: %s^0"):format(repo.name, status))
                 end
 
-                response = json.decode(response)
+                -- Guarded: an unexpected answer (rate limit page, empty body,
+                -- a repository without releases) used to raise an error here.
+                local ok, decoded = pcall(json.decode, response)
+
+                if not ok or type(decoded) ~= 'table' or type(decoded.tag_name) ~= 'string' then
+                    return print(("[^2msk_core^0] [^1ERROR^0] ^1Versioncheck failed for repository %s! Unexpected answer from GitHub.^0"):format(repo.name))
+                end
+
+                response = decoded
                 if response.prerelease then return end
 
                 local latestVersion = response.tag_name:match('%d+%.%d+%.%d+')
@@ -161,7 +169,13 @@ if IS_CORE then
                 return print(("%s [^1ERROR^0] ^1Version Check failed! Http Error: %s^0"):format(NAME_COLORED, status))
             end
 
-            response = json.decode(response)
+            local ok, decoded = pcall(json.decode, response)
+
+            if not ok or type(decoded) ~= 'table' or type(decoded[1]) ~= 'table' or type(decoded[1].version) ~= 'string' then
+                return print(("%s [^1ERROR^0] ^1Version Check failed! Unexpected answer from GitHub.^0"):format(NAME_COLORED))
+            end
+
+            response = decoded
             local latestVersion = response[1].version
             local currentVersion = GetResourceMetadata(GetCurrentResourceName(), 'version', 0)
 

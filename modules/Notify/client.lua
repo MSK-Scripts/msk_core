@@ -8,13 +8,90 @@
 -- Callback module.
 local IS_CORE = GetCurrentResourceName() == 'msk_core'
 
-function MSK.Notification(title, message, typ, duration)
+--------------------------------------------------------------------------------
+-- MSK.Notification
+--
+--   MSK.Notification({
+--       id = 'garage_full',          -- a visible notification with this id is updated instead of stacked
+--       title = 'Garage',            -- optional, without a title the notification is compact
+--       message = 'Your garage is ~r~full~s~.',
+--       type = 'error',              -- general, info, success, warning, error (Config.NotifyTypes)
+--       duration = 6000,
+--       icon = 'warehouse',          -- overrides the icon of the type
+--       iconColor = '#f43f5e',
+--       iconAnimation = 'shake',     -- spin, spinPulse, spinReverse, beat, beatFade, bounce, fade, flip, shake
+--       position = 'top-right',      -- only used while the player's setting is "Automatic"
+--       showDuration = false,        -- hides the progress bar
+--       sound = true,                -- false = silent, or { bank =, set =, name = } for a GTA sound
+--   })
+--
+-- The old form MSK.Notification(title, message, type, duration) still works,
+-- but is deprecated and logs a warning once per resource.
+--
+-- Everything beyond title, message, type and duration only applies to the MSK
+-- UI. The external adapters (okok, qb-core, bulletin, native, custom) get what
+-- they understand.
+--------------------------------------------------------------------------------
+local POSITIONS = {
+    ['top-left'] = true, ['top'] = true, ['top-right'] = true,
+    ['center-left'] = true, ['center-right'] = true,
+    ['bottom-left'] = true, ['bottom'] = true, ['bottom-right'] = true,
+}
+
+local ANIMATIONS = {
+    spin = true, spinPulse = true, spinReverse = true, beat = true, beatFade = true,
+    bounce = true, fade = true, flip = true, shake = true,
+}
+
+-- One warning per resource, not per call.
+local warnedResources = {}
+
+local function warnDeprecated(resource)
+    resource = resource or 'msk_core'
+    if warnedResources[resource] then return end
+    warnedResources[resource] = true
+
+    MSK.Logging('warn', ('Resource "%s" calls MSK.Notification(title, message, type, duration), which is deprecated and will be removed in a future version. Pass a table instead: MSK.Notification({ title = ..., message = ..., type = ... })'):format(resource))
+end
+
+local function toData(titleOrData, message, typ, duration)
+    if type(titleOrData) == 'table' then return titleOrData end
+    return { title = titleOrData, message = message, type = typ, duration = duration }
+end
+
+local function soundEnabled()
+    return not (MSK.Settings and MSK.Settings.Get('notifySound') == false)
+end
+
+local function playGameSound(sound)
+    CreateThread(function()
+        local bank = sound.bank
+
+        if bank and not pcall(MSK.Request.AudioBank, bank) then
+            return
+        end
+
+        PlaySoundFrontend(-1, sound.name, sound.set, true)
+
+        if bank then
+            Wait(5000)
+            ReleaseNamedScriptAudioBank(bank)
+        end
+    end)
+end
+
+local function show(data)
+    local title = data.title
+    local message = data.message or data.description or ''
+    local typ = data.type or 'info'
+    local duration = tonumber(data.duration) or 5000
+
     if Config.Notification == 'native' then
         BeginTextCommandThefeedPost('STRING')
         AddTextComponentSubstringPlayerName(message)
         EndTextCommandThefeedPostTicker(false, true)
     elseif Config.Notification == 'okok' then
-        exports.okokNotify:Alert(title, message, duration or 5000, typ or 'info')
+        exports.okokNotify:Alert(title, message, duration, typ)
     elseif Config.Notification == 'qb-core' then
         -- 'qb-core' means "use the framework's own notification". On Qbox that
         -- is the qbx_core export, and QBCore is not defined there at all, so
@@ -27,20 +104,51 @@ function MSK.Notification(title, message, typ, duration)
     elseif Config.Notification == 'bulletin' then
         exports.bulletin:Send({
             message = message,
-            timeout = duration or 5000,
-            theme = typ or 'info'
+            timeout = duration,
+            theme = typ
         })
     elseif Config.Notification == 'custom' then
-        Config.customNotification(title, message, typ or 'info', duration or 5000)
+        Config.customNotification(title, message, typ, duration, data)
     else
+        -- A GTA sound replaces the NUI sound; the player's sound setting
+        -- silences both.
+        local nuiSound = data.sound ~= false
+
+        if type(data.sound) == 'table' and data.sound.name and data.sound.set then
+            nuiSound = false
+            if soundEnabled() then playGameSound(data.sound) end
+        end
+
         SendNUIMessage({
             action = 'notify',
+            id = data.id ~= nil and tostring(data.id) or nil,
             title = title,
             message = message,
             type = Config.NotifyTypes[typ] or {icon = 'fas fa-info-circle', color = '#75D6FF'},
-            time = duration or 5000
+            time = duration,
+            icon = type(data.icon) == 'string' and data.icon or nil,
+            iconColor = type(data.iconColor) == 'string' and data.iconColor or nil,
+            iconAnimation = ANIMATIONS[data.iconAnimation] and data.iconAnimation or nil,
+            position = POSITIONS[data.position] and data.position or nil,
+            showDuration = data.showDuration ~= false,
+            sound = nuiSound,
         })
     end
+end
+
+---@param titleOrData table|string a table with the fields above (the string form is deprecated)
+function MSK.Notification(titleOrData, message, typ, duration)
+    -- Only msk_core has the NUI page. A consumer that eager-loaded this module
+    -- would send its SendNUIMessage into a page that does not exist.
+    if not IS_CORE then
+        return exports.msk_core:Notification(titleOrData, message, typ, duration)
+    end
+
+    if type(titleOrData) ~= 'table' then
+        warnDeprecated(GetInvokingResource())
+    end
+
+    return show(toData(titleOrData, message, typ, duration))
 end
 MSK.Notify = MSK.Notification
 exports('Notification', MSK.Notification)
@@ -54,7 +162,7 @@ function MSK.HelpNotification(text, key)
     elseif Config.HelpNotification == 'custom' then
         Config.customHelpNotification(text)
     else
-        MSK.TextUI.ShowThread(key, text)
+        MSK.TextUI.ShowThread({ key = key, text = text })
     end
 end
 MSK.HelpNotify = MSK.HelpNotification
@@ -156,7 +264,11 @@ exports('DrawGenericText', MSK.DrawGenericText)
 -- only msk_core may listen here, so notifications are not duplicated across
 -- consumers that eager-load this module.
 if IS_CORE then
-    RegisterNetEvent("msk_core:notification", MSK.Notification)
+    -- The server already warned about the old argument form on its side, so
+    -- the transport normalises without warning again.
+    RegisterNetEvent("msk_core:notification", function(titleOrData, message, typ, duration)
+        show(toData(titleOrData, message, typ, duration))
+    end)
     RegisterNetEvent("msk_core:helpNotification", MSK.HelpNotification)
     RegisterNetEvent("msk_core:advancedNotification", MSK.AdvancedNotification)
     RegisterNetEvent("msk_core:subtitle", MSK.Subtitle)

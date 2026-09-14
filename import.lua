@@ -88,7 +88,9 @@ local function mount(store, name)
     local chunk = compile(name)
     if not chunk then return nil end
 
-    local ok, value = pcall(chunk)
+    -- xpcall with a traceback: a plain pcall kept only the message, and where
+    -- inside the module the error came from was lost.
+    local ok, value = xpcall(chunk, debug.traceback)
     if not ok then
         error(("^1msk_core: runtime error while executing module '%s' — %s^0"):format(name, value), 3)
     end

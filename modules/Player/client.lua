@@ -17,6 +17,24 @@ function Player.Get(playerId, key)
     return MSK.Trigger('msk_core:player', playerId, key)
 end
 
+---Calls `cb(value, oldValue)` whenever `key` of the local player changes, e.g.
+---ped, vehicle, seat, weapon, isDead or a custom key. Returns the event handler,
+---pass it to RemoveEventHandler to stop listening.
+---  MSK.OnPlayer('vehicle', function(vehicle) ... end)
+---@param key string
+---@param cb fun(value: any, oldValue: any)
+---@return table eventData
+function Player.OnChange(key, cb)
+    assert(type(key) == 'string', 'Parameter "key" has to be a string on function MSK.OnPlayer')
+    assert(cb ~= nil, 'Parameter "cb" is nil on function MSK.OnPlayer')
+
+    return AddEventHandler('msk_core:onPlayer', function(changedKey, value, oldValue)
+        if changedKey == key then
+            cb(value, oldValue)
+        end
+    end)
+end
+
 if IS_CORE then
     ----------------------------------------------------------------------------
     -- CORE: thread + events (exactly once)

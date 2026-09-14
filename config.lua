@@ -17,13 +17,13 @@ Config.Inventory = 'AUTO'
 Config.showCoords = {
     enable = true,
     command = 'coords',
-    groups = {'superadmin', 'admin'}
+    groups = {'superadmin', 'god', 'admin'}
 }
 
 Config.copyCoords = {
     enable = true,
     command = 'copyCoords',
-    groups = {'superadmin', 'admin'}
+    groups = {'superadmin', 'god', 'admin'}
 }
 ----------------------------------------------------------------
 -- Set to 'msk' for MSK UI Notification
@@ -71,6 +71,44 @@ end
 Config.ProgressColor = "#00e676" -- Default Color for ProgressBar (MSK Grün)
 Config.TextUIColor = "#00e676" -- Default Color for TextUI (MSK Grün)
 ----------------------------------------------------------------
+-- Radial menu. Scripts add their entries with MSK.Radial.Add
+-- Players can change the key in the FiveM key bindings (Settings -> Key Bindings -> FiveM)
+Config.Radial = {
+    enable = true,
+    key = 'Z', -- Default key
+    hold = true, -- true = open while the key is held, false = press to open and close
+}
+----------------------------------------------------------------
+-- Settings menu for players: language, notification position and sound
+Config.Settings = {
+    enable = true,
+    command = 'mskSettings',
+
+    -- Languages a player can choose. The empty value follows the server language (convar msk:locale)
+    locales = {
+        {value = '', label = 'Server language'},
+        {value = 'en', label = 'English'},
+        {value = 'de', label = 'Deutsch'},
+    },
+}
+----------------------------------------------------------------
+-- In-game zone creator, copies the finished MSK.Zones code to the clipboard
+-- Usage: /zoneCreator box | sphere | poly
+Config.ZoneCreator = {
+    enable = true,
+    command = 'zoneCreator',
+    groups = {'superadmin', 'god', 'admin'}
+}
+----------------------------------------------------------------
+-- Show txAdmin messages as MSK notifications
+-- txAdmin shows its own message too, see modules/TxAdmin/server.lua to hide it
+Config.TxAdmin = {
+    announcements = false,
+    directMessages = false,
+    restartWarnings = false,
+    duration = 15000,
+}
+----------------------------------------------------------------
 Config.LoggingTypes = {
     ['debug'] = '[^3DEBUG^0]',
     ['info'] = '[^4Info^0]',
@@ -108,7 +146,7 @@ Config.BanSystem = {
 
     commands = {
         enable = true,
-        groups = {'superadmin', 'admin', 'god'},
+        groups = {'superadmin', 'god', 'admin'},
         ban = 'banPlayer',
         unban = 'unbanPlayer'
     }

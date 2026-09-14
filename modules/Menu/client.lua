@@ -1,3 +1,36 @@
+--------------------------------------------------------------------------------
+-- MSK.Menu (client)
+--
+-- A keyboard menu (arrow keys, Enter, Backspace) without NUI focus, so the
+-- player can keep walking or driving while it is open.
+--
+--   MSK.Menu.Register('tuning', {
+--       title = 'Tuning',
+--       position = 'top-left',
+--       onSelected = function(index, item, args) end,       -- selection moved
+--       onSideScroll = function(index, scrollIndex, args) end,
+--       onCheck = function(index, checked, args) end,
+--       onClose = function(key) end,                        -- 'cancel', 'select', 'replace', 'forced' or your own key
+--       items = {
+--           { label = 'Color', values = { 'Black', 'White' }, defaultIndex = 1, args = { mod = 'color' } },
+--           { label = 'Neon', checked = false },
+--           { label = 'Engine', icon = 'gear', iconAnimation = 'spin', progress = 80, close = false },
+--       },
+--   }, function(selected, scrollIndex, args, checked)
+--       -- runs when an item is chosen with Enter (also possible as data.onSelect)
+--   end)
+--
+--   MSK.Menu.Show('tuning', 2)                        -- start on the second item
+--   MSK.Menu.SetOptions('tuning', { label = 'Engine' }, 3)   -- replace one item (or all without index)
+--   MSK.Menu.Hide(false)                              -- close without onClose
+--
+-- Items may also carry their own onSelect(args), event and serverEvent.
+-- Choosing an item closes the menu first (unless close = false) and runs the
+-- callbacks afterwards, so a callback can open the next menu.
+--
+-- A menu belongs to the resource that registered it: it is removed when that
+-- resource stops, and closed if it is open at that moment.
+--------------------------------------------------------------------------------
 local IS_CORE = GetCurrentResourceName() == 'msk_core'
 local Menu = {}
 
@@ -8,7 +41,15 @@ if IS_CORE then
     local CTRL_LEFT, CTRL_RIGHT = 174, 175
     local CTRL_SELECT, CTRL_BACK = 176, 177
 
-    local menus = {}          -- id -> data (title, items, position, canClose, disableInput, callbacks)
+    -- Back (177) includes Escape, which would open the pause menu on top.
+    local CTRL_PAUSE, CTRL_PAUSE_ALTERNATE = 199, 200
+
+    local ANIMATIONS = {
+        spin = true, spinPulse = true, spinReverse = true, beat = true, beatFade = true,
+        bounce = true, fade = true, flip = true, shake = true,
+    }
+
+    local menus = {}          -- id -> data (title, items, position, canClose, disableInput, callbacks, owner)
     local currentId = nil
     local isOpen = false
 
@@ -27,13 +68,31 @@ if IS_CORE then
     -- Runtime state kept apart from the registry, so a repeated Show starts fresh.
     local runtime = { selected = 1, valueIndex = {}, checked = {} }
 
+    local function copy(tbl)
+        local result = {}
+        for key, value in pairs(tbl) do result[key] = value end
+        return result
+    end
+
+    -- Copies, so the caller's tables are never changed by the menu.
     local function normalizeItems(items)
         local out = {}
         if type(items) ~= 'table' then return out end
         for i = 1, #items do
-            if type(items[i]) == 'table' then out[#out + 1] = items[i] end
+            if type(items[i]) == 'table' then out[#out + 1] = copy(items[i]) end
         end
         return out
+    end
+
+    -- Runs a callback of a menu. An error in one of them used to end the input
+    -- thread: the menu stayed on screen and never reacted to a key again.
+    local function safeCall(data, name, fn, ...)
+        if fn == nil then return end
+
+        local ok, err = pcall(fn, ...)
+        if not ok then
+            MSK.Logging('error', ('Menu "%s" of "%s": %s failed: %s'):format(tostring(data.id), tostring(data.owner), name, err))
+        end
     end
 
     local function serializeItems(data)
@@ -49,7 +108,16 @@ if IS_CORE then
                         values[vi] = { label = tostring(v) }
                     end
                 end
+
+                -- The values can shrink through Update or SetOptions; a stored
+                -- index past the end showed an empty value.
+                local count = #values
+                if count > 0 then
+                    local index = math.min(math.max(runtime.valueIndex[i] or 1, 1), count)
+                    runtime.valueIndex[i] = index
+                end
             end
+
             out[i] = {
                 index = i,
                 id = item.id,
@@ -57,6 +125,7 @@ if IS_CORE then
                 description = item.description,
                 icon = item.icon,
                 iconColor = item.iconColor,
+                iconAnimation = ANIMATIONS[item.iconAnimation] and item.iconAnimation or nil,
                 disabled = item.disabled,
                 checked = runtime.checked[i],
                 progress = item.progress,
@@ -90,13 +159,49 @@ if IS_CORE then
         return start
     end
 
-    function Menu.Register(id, data)
+    local function buildRuntime(data, startIndex)
+        local state = { selected = 1, valueIndex = {}, checked = {} }
+
+        for i, item in ipairs(data.items) do
+            state.valueIndex[i] = item.defaultIndex or 1
+            state.checked[i] = item.checked
+        end
+
+        local count = #data.items
+        local start = tonumber(startIndex) or data.startIndex or data.defaultSelected or 1
+        if start > count then start = count end
+        if start < 1 then start = 1 end
+
+        state.selected = firstSelectable(data.items, start, 1)
+        return state
+    end
+
+    local function register(id, data, cb, owner)
+        local entry = copy(data or {})
+        entry.id = id
+        entry.items = normalizeItems(entry.items or entry.options)
+        entry.options = nil
+        entry.cb = cb or entry.onSelect
+        entry.owner = owner
+        menus[id] = entry
+        return entry
+    end
+
+    ---@param id string
+    ---@param data table
+    ---@param cb? fun(selected: number, scrollIndex?: number, args?: any, checked?: boolean)
+    function Menu.Register(id, data, cb)
         if type(id) ~= 'string' then return end
-        data = data or {}
-        data.id = id
-        data.items = normalizeItems(data.items or data.options)
-        menus[id] = data
-        return data
+
+        local entry = register(id, data, cb, GetInvokingResource() or 'msk_core')
+
+        -- Re-registering the open menu shows the new version right away.
+        if isOpen and currentId == id then
+            runtime = buildRuntime(entry, runtime.selected)
+            refresh()
+        end
+
+        return entry
     end
     MSK.RegisterMenu = Menu.Register
     exports('RegisterMenu', Menu.Register)
@@ -117,7 +222,7 @@ if IS_CORE then
         runtime.selected = i
         refresh()
         local item = data.items[i]
-        if data.onSelected then data.onSelected(i, item, item.args) end
+        safeCall(data, 'onSelected', data.onSelected, i, item, item.args)
     end
 
     local function sideScroll(dir)
@@ -129,30 +234,36 @@ if IS_CORE then
         if vi < 1 then vi = n elseif vi > n then vi = 1 end
         runtime.valueIndex[runtime.selected] = vi
         refresh()
-        if data.onSideScroll then data.onSideScroll(runtime.selected, vi, item.args) end
+        safeCall(data, 'onSideScroll', data.onSideScroll, runtime.selected, vi, item.args)
     end
 
     local function selectRow()
         local data = menus[currentId]
-        local item = data.items[runtime.selected]
+        local selected = runtime.selected
+        local item = data.items[selected]
         if not item or item.disabled then return end
 
         -- Checkbox: toggle it, the menu stays open
         if item.checked ~= nil then
-            runtime.checked[runtime.selected] = not runtime.checked[runtime.selected]
+            runtime.checked[selected] = not runtime.checked[selected]
             refresh()
-            if data.onCheck then data.onCheck(runtime.selected, runtime.checked[runtime.selected], item.args) end
+            safeCall(data, 'onCheck', data.onCheck, selected, runtime.checked[selected], item.args)
             return
         end
 
-        local shouldClose = item.close ~= false
-        if item.onSelect then item.onSelect(item.args) end
-        if item.event then TriggerEvent(item.event, item.args) end
-        if item.serverEvent then TriggerServerEvent(item.serverEvent, item.args) end
+        local scrollIndex = type(item.values) == 'table' and runtime.valueIndex[selected] or nil
+        local checked = runtime.checked[selected]
 
-        if shouldClose then
+        -- Close first, then run the callbacks. The other way round, a callback
+        -- that opened the next menu saw it closed again by this very line.
+        if item.close ~= false then
             Menu.Hide('select')
         end
+
+        safeCall(data, 'onSelect', item.onSelect, item.args)
+        safeCall(data, 'menu callback', data.cb, selected, scrollIndex, item.args, checked)
+        if item.event then TriggerEvent(item.event, item.args) end
+        if item.serverEvent then TriggerServerEvent(item.serverEvent, item.args) end
     end
 
     local function startThread()
@@ -163,7 +274,7 @@ if IS_CORE then
             while isOpen and threadGeneration == myGeneration do
                 Wait(0)
                 local data = menus[currentId]
-                if data and not data.disableInput then
+                if isOpen and threadGeneration == myGeneration and data and not data.disableInput then
                     -- Only the navigation controls in use are blocked,
                     -- everything else (walking, driving, ...) stays live.
                     DisableControlAction(0, CTRL_UP, true)
@@ -172,6 +283,11 @@ if IS_CORE then
                     DisableControlAction(0, CTRL_RIGHT, true)
                     DisableControlAction(0, CTRL_SELECT, true)
                     DisableControlAction(0, CTRL_BACK, true)
+
+                    if data.canClose ~= false then
+                        DisableControlAction(0, CTRL_PAUSE, true)
+                        DisableControlAction(0, CTRL_PAUSE_ALTERNATE, true)
+                    end
 
                     if IsDisabledControlJustPressed(0, CTRL_UP) then
                         move(-1)
@@ -191,45 +307,38 @@ if IS_CORE then
         end)
     end
 
-    function Menu.Show(idOrData)
-        if isOpen then Menu.Hide('replace') end
-
+    ---@param idOrData string|table
+    ---@param startIndex? number
+    function Menu.Show(idOrData, startIndex)
         local id, data
-        if type(idOrData) == 'table' then
-            data = idOrData
 
-            if data.id then
-                id = data.id
+        if type(idOrData) == 'table' then
+            if idOrData.id then
+                id = idOrData.id
             else
                 inlineCounter = inlineCounter + 1
                 id = ('inline:%d'):format(inlineCounter)
-                data.isInline = true
             end
 
-            Menu.Register(id, data)
-            data = menus[id]
+            data = register(id, idOrData, nil, GetInvokingResource() or 'msk_core')
+            data.isInline = idOrData.id == nil
         else
             id = idOrData
             data = menus[id]
         end
 
+        -- Checked before closing the current menu: a typo in the id no longer
+        -- closes a menu the player is using.
         if not data then
             print(('[^3msk_core^0] ShowMenu: unknown menu "^1%s^0"'):format(tostring(id)))
             return
         end
 
+        if isOpen then Menu.Hide('replace') end
+
         currentId = id
         isOpen = true
-
-        -- Build the runtime state from scratch
-        runtime = { selected = 1, valueIndex = {}, checked = {} }
-        for i, item in ipairs(data.items) do
-            runtime.valueIndex[i] = item.defaultIndex or 1
-            runtime.checked[i] = item.checked
-        end
-        local start = data.startIndex or data.defaultSelected or 1
-        if start < 1 then start = 1 elseif start > #data.items then start = #data.items end
-        runtime.selected = firstSelectable(data.items, math.max(start, 1), 1)
+        runtime = buildRuntime(data, startIndex)
 
         SendNUIMessage({
             action = 'openMenu',
@@ -247,6 +356,8 @@ if IS_CORE then
 
     -- Merges updatedData into the item with id == dataId (partial); refreshes live when open.
     function Menu.Update(menuId, dataId, updatedData)
+        updatedData = updatedData or {}
+
         local data = menus[menuId]
         if not data or not data.items then
             print(('[^3msk_core^0] UpdateMenu: unknown menu "^1%s^0"'):format(tostring(menuId)))
@@ -262,7 +373,7 @@ if IS_CORE then
             return
         end
 
-        for k, v in pairs(updatedData or {}) do
+        for k, v in pairs(updatedData) do
             target[k] = v
         end
 
@@ -275,6 +386,54 @@ if IS_CORE then
     MSK.UpdateMenu = Menu.Update
     exports('UpdateMenu', Menu.Update)
 
+    ---Replaces all items, or with `index` only that one. An open menu updates
+    ---right away and keeps its selection where possible.
+    ---@param menuId string
+    ---@param options table a list of items, or one item when index is given
+    ---@param index? number
+    function Menu.SetOptions(menuId, options, index)
+        local data = menus[menuId]
+        if not data then
+            print(('[^3msk_core^0] SetMenuOptions: unknown menu "^1%s^0"'):format(tostring(menuId)))
+            return
+        end
+
+        if type(options) ~= 'table' then
+            print(('[^3msk_core^0] SetMenuOptions: options for "^1%s^0" have to be a table'):format(tostring(menuId)))
+            return
+        end
+
+        if index ~= nil then
+            index = tonumber(index)
+
+            if not index or index < 1 or index > #data.items + 1 then
+                print(('[^3msk_core^0] SetMenuOptions: index "^1%s^0" is out of range for "^1%s^0"'):format(tostring(index), tostring(menuId)))
+                return
+            end
+
+            data.items[index] = copy(options)
+        else
+            data.items = normalizeItems(options)
+        end
+
+        if isOpen and currentId == menuId then
+            if index then
+                runtime.valueIndex[index] = data.items[index].defaultIndex or 1
+                runtime.checked[index] = data.items[index].checked
+                runtime.selected = firstSelectable(data.items, math.min(runtime.selected, #data.items), 1)
+            else
+                runtime = buildRuntime(data, runtime.selected)
+            end
+
+            refresh()
+        end
+    end
+    MSK.SetMenuOptions = Menu.SetOptions
+    exports('SetMenuOptions', Menu.SetOptions)
+
+    ---Closes the open menu. `key` is handed to onClose; false closes without
+    ---calling onClose at all.
+    ---@param key? string|false
     function Menu.Hide(key)
         if not isOpen then return end
         local data = menus[currentId]
@@ -290,7 +449,9 @@ if IS_CORE then
             menus[closedId] = nil
         end
 
-        if data and data.onClose then data.onClose(key or 'forced') end
+        if data and key ~= false then
+            safeCall(data, 'onClose', data.onClose, key or 'forced')
+        end
     end
     Menu.Close = Menu.Hide -- Alias
     MSK.HideMenu = Menu.Hide
@@ -305,13 +466,28 @@ if IS_CORE then
 
     -- Server -> client. Same serialisation limit as the context menu:
     -- functions do not survive the network, so use event/serverEvent.
-    MSK.Register('msk_core:menu', function(source, idOrData)
-        return Menu.Show(idOrData)
+    MSK.Register('msk_core:menu', function(source, idOrData, startIndex)
+        return Menu.Show(idOrData, startIndex)
     end)
 
     AddEventHandler('onResourceStop', function(resource)
-        if GetCurrentResourceName() ~= resource then return end
-        Menu.Hide('forced')
+        if GetCurrentResourceName() == resource then
+            Menu.Hide('forced')
+            return
+        end
+
+        -- Menus of a stopped resource point their callbacks into a resource
+        -- that no longer runs. Close the open one and forget all of them.
+        local open = menus[currentId]
+        if isOpen and open and open.owner == resource then
+            Menu.Hide('forced')
+        end
+
+        for id, data in pairs(menus) do
+            if data.owner == resource then
+                menus[id] = nil
+            end
+        end
     end)
 
     MSK.Menu = setmetatable(Menu, {
@@ -322,6 +498,7 @@ else
     function Menu.Register(...) return exports.msk_core:RegisterMenu(...) end
     function Menu.Show(...) return exports.msk_core:ShowMenu(...) end
     function Menu.Update(...) return exports.msk_core:UpdateMenu(...) end
+    function Menu.SetOptions(...) return exports.msk_core:SetMenuOptions(...) end
     function Menu.Hide(...) return exports.msk_core:HideMenu(...) end
     function Menu.GetOpen() return exports.msk_core:GetOpenMenu() end
     Menu.Close = Menu.Hide -- Alias

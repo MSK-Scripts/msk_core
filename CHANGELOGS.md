@@ -2,6 +2,238 @@
 
 All notable changes to msk_core are documented in this file.
 
+## [4.1.0] - 2026-09-14
+
+A big feature release. Most of what scripts used to pull in ox_lib for is now
+part of msk_core, written from scratch in the MSK style, and every existing
+module was read again on the way. That turned up a number of security issues
+and bugs, which are fixed here too.
+
+**Nothing breaks.** Old call forms keep working and log a deprecation warning
+once per resource, so the console does not fill up.
+
+### Added
+
+- **New UI:** `MSK.Input.Dialog` with eleven field types and validation in the
+  NUI, on the client and on the server. `MSK.Alert` (with `timeout`, which
+  returns `'timeout'`), `MSK.Radial` (`Config.Radial`), `MSK.Skillcheck`,
+  `MSK.Progress.Circle`, `MSK.Clipboard` and a settings menu for players
+  (`Config.Settings`: language, notification position, sound).
+
+- **New client modules:** `MSK.Zones` (sphere, box, poly) with an in-game
+  `/zoneCreator` that copies the finished code, `MSK.Keybind` (incl.
+  `allowInPauseMenu`), `MSK.Controls`, `MSK.Dui`, `MSK.Marker`, `MSK.Anim` and
+  `MSK.VehicleProperties`. The property field names match the format other
+  garages already store, so existing rows stay readable.
+
+- **New server modules:** `MSK.Events` (trigger a list of players or everyone
+  in range), `MSK.Files`, `MSK.Logger` for Loki, Datadog and Fivemanage, and
+  txAdmin messages as MSK notifications (`Config.TxAdmin`).
+
+- **`MSK.SpawnVehicle(model, coords, options)`** on the server, built on
+  `CreateVehicleServerSetter`. Options: `heading`, `type`, `plate`, `props`,
+  `bucket`, `warp`, `playerId`. Without `type` a client is asked once per
+  model. Trailers cannot be told apart by their model and need
+  `type = 'trailer'`.
+
+- **New shared modules:** `MSK.Class`, `MSK.Array`, `MSK.Selector`,
+  `MSK.Timer`, `MSK.Grid`, `MSK.Print`, `MSK.Locale` (incl.
+  `Locale.GetFrom(resource, key, ...)`), `MSK.Require`, `MSK.Hook` and
+  `MSK.Cache(key, fn, ttl)`.
+
+- **Helpers:** Math `Clamp`, `Lerp`, `InverseLerp`, `Remap`, `HexToRgb`,
+  `RgbToHex`, `ToScalars`, `ToVector`, `NormalToRotation`, `ToHex`, `ToRgba`.
+  Table `Freeze`, `IsFrozen`, `Merge`, `Matches`, `Keys`, `Values`, `Wipe`.
+  `String.RandomPattern`, `Vector.GetRelativeCoords`.
+
+- **Request:** `AudioBank`, `WeaponAsset`, `CameraRaycast`,
+  `RaycastFromCoords`, and `StartCameraRaycast` / `ReadRaycast` for code that
+  must not wait inside a frame.
+
+- **Entities:** `GetNearbyPeds`, `GetNearbyObjects`, `GetNearbyVehicles`,
+  `GetNearbyPlayers`, `GetClosestPed`, `GetClosestObject`. `GetClosestEntity`,
+  `GetClosestVehicle` and `GetClosestPlayer` take an optional `maxDistance` on
+  both sides. Nothing found still returns `-1, -1`.
+
+- **Cron expressions:** `MSK.Cron.Schedule`, `Unschedule`, `GetNextRun`,
+  `IsValid`.
+
+- **`MSK.TriggerAwait`** waits for a client or server callback with its own
+  timeout: `(event, timeout, ...)` on the client, `(event, playerId, timeout,
+  ...)` on the server. The default timeout of every callback is now the convar
+  `msk:callbackTimeout` (5000 ms).
+
+- **`MSK.OnPlayer(key, cb)`** reacts to changes in the player mirror:
+  `cb(value, oldValue)` on the client, `cb(playerId, value, oldValue)` on the
+  server.
+
+- **Points:** a `nearby` callback that runs every frame while the player is
+  inside, and `MSK.Points.GetNearbyPoints()`.
+
+- **Scaleform:** `MSK.Scaleform.New(name, options)` with render targets
+  (`SetRenderTarget`, `ReleaseRenderTarget`), `IsRendering()` and a clear error
+  after `Dispose()`.
+
+- **Commands:** parameter type `longString`, which takes the rest of the line.
+
+### Changed
+
+- **Table forms for the UI.** `MSK.Notification`, `MSK.Progress.Start`,
+  `MSK.TextUI.Show` and `MSK.Numpad.Open` take a table. Notifications got an
+  `id` to replace an open one, icons with animation, a position per call and an
+  optional title. TextUI updates while it is open, has an icon and four
+  positions. Progress supports props and a bar position, and the server waits
+  for the result. Context got `iconAnimation` and metadata as text or bars. Menu
+  got a menu callback, `Show(id, startIndex)`, `SetOptions` and `Hide(false)`.
+
+- **A player's notification position beats the script's.** The setting starts
+  on automatic, and only then does `position` from the script apply.
+
+- **All loaders in `MSK.Request` have a `timeout`**, default 30 s instead of
+  5 s. Large addon models need longer than 5 s on a busy client.
+
+- **`MSK.Request.Raycast` is a line-of-sight probe.** It returns the entity or
+  `false` on a miss, instead of raising an error after a second.
+
+- **`MSK.Cron.Create` returns the job id** for `MSK.Cron.Delete`, or nil on
+  invalid arguments. A time-of-day job without a valid `atH` (0 to 23), with an
+  `atM` outside 0 to 59 or an `atD` outside 1 to 7 is rejected with a message.
+  Before, it was stored and stopped the scheduler on the next tick, or silently
+  never ran. Without `atM` the job runs at the full hour, it used to never run
+  at all. Without `atD` it runs every day.
+
+- **Documentation, not code: cron weekdays.** The docs said `atD = 1` is
+  Monday. msk_core compares against `os.date('*t').wday`, where 1 is Sunday.
+  Check jobs that use `atD`.
+
+- **`MSK.Math.Round`** rounds halves away from zero (`Round(2.5) = 3`) and
+  supports negative decimal places (`Round(1234, -2) = 1200`).
+
+- **`MSK.String.Split`** searches the whole separator as plain text. A
+  separator like `', '` no longer splits on every single character. Empty
+  pieces are still dropped.
+
+- **Server `MSK.GetPedVehicleSeat`** returns `false` instead of `-1` when the
+  ped is in no seat.
+
+- **`bulletProofTyres`** in vehicle properties means "tyres can burst", stored
+  as the game reports it.
+
+- `IsSpawnPointClear` uses a default radius of 5.0, `GetPedMugshot` has a
+  timeout, `Table.Contains` accepts `false` as a value, and `MSK.Call` returns
+  nil in a consumer instead of raising.
+
+- `Config.showCoords`, `Config.copyCoords` and the ban commands include the
+  `god` group.
+
+### Deprecated
+
+These still work and log a warning once per resource:
+
+- `MSK.Notification(title, message, type, duration)`, use the table form
+- `MSK.Progress(duration, text, color)`, use `MSK.Progress.Start({ ... })`
+- `MSK.TextUI.Show(key, text, color)`, use the table form
+- `MSK.Numpad(pin, showPin, cb)`, use `MSK.Numpad.Open({ ... })`
+- `MSK.Input` / `MSK.OpenInput`, use `MSK.Input.Dialog`
+- `MSK.ScaleformAnnounce`
+
+### Security
+
+- **The numpad code no longer reaches the NUI.** It was sent to the browser in
+  plain text and the check ran on the client, so it could be skipped. The
+  server form checks the code itself and supports `maxAttempts`.
+
+- **Callbacks accept an answer only from the player they asked.** Before, any
+  client could answer a request that was meant for somebody else. Handlers run
+  protected, and a failing handler reaches the caller right away instead of
+  after the timeout. Callbacks belong to the resource that registered them,
+  cannot be overwritten by another resource and are removed when it stops.
+
+- **The player mirror on the server validates what clients send.** Only known
+  keys with the right type are accepted, `coords`, `heading` and `state` are
+  never taken from the client, a vehicle is only accepted within 15 m, custom
+  keys are limited, and the data is cleared when the player leaves.
+
+- **Ace:** the ace callback only answers for groups and the caller's own
+  principals.
+
+- **Ban:** a ban is no longer matched by player name, an active ban wins over an
+  expired one, and bans from the console are stored as `Console`.
+
+- **Commands:** an alias used to lose `restricted`, so a restricted command was
+  open under its second name.
+
+- **Logger:** API keys are read from convars only. Use `set`, never `setr`,
+  which would send the key to every client.
+
+### Fixed
+
+- Server-side `MSK.Input` and `MSK.Numpad` gave up with nil after 5 seconds.
+- Context and Numpad NUI callbacks never answered, so every input left an open
+  request behind.
+- An error in a menu callback froze the menu, and a menu opened from `onSelect`
+  closed again right away.
+- Progress: `playEnter = false` turned into `true`, and `forceOverride` left the
+  old wait running, so a late end stopped the next progress bar.
+- TextUI stayed on screen after the resource that opened it stopped.
+- Cron: a job that deleted itself killed the scheduler, old jobs compared only
+  part of their timestamp, jobs could run twice, and jobs of a stopped resource
+  kept running. Ticks now start on the full minute.
+- Points: an error in a callback broke all points, `onExit` did not run on
+  remove, and points of a stopped resource stayed.
+- `Anim.Play` with `wait` waited forever on a looping animation without a
+  duration.
+- Vehicle properties from the server: up to ten tries to become owner, and the
+  state bag is cleared once the client applied them.
+- Searching a vehicle by plate crashed on vehicles that no longer existed and
+  ignored differently padded plates.
+- `MSK.VehicleStore.Insert` without a model now stops with a log line on QBCore
+  and Qbox.
+- `MSK.Offline` reads online players through the framework and handles `NULL`
+  JSON columns.
+- `MSK.Society` no longer caches "no provider" forever.
+- `GetClosestEntity` on the server: player entities, excluding yourself and
+  searches without a distance were wrong.
+- The disconnect logger marker is sent to players within 250 m instead of 20 m,
+  because it stays for 60 s and players walk into it.
+- The version check survives an invalid JSON answer from GitHub.
+- `MSK.Files.List` works on Linux.
+- A logger entry that cannot be encoded no longer throws away the whole batch.
+- The module loader keeps the stack trace of an error.
+- The ZoneCreator no longer waits in the middle of a frame, which lost key
+  presses and let E act in the world.
+
+### Changed files
+
+- `fxmanifest.lua` (version bump), `Readme.md`
+- `config.lua` (new: `Config.Radial`, `Config.Settings`, `Config.ZoneCreator`,
+  `Config.TxAdmin`)
+- `import.lua`, `aliases.lua`
+- `init/shared.lua`, `init/client.lua`, `init/server.lua`
+- new modules: `modules/Alert/`, `Anim/`, `Array/`, `Cache/`, `Class/`,
+  `Clipboard/`, `Controls/`, `Dui/`, `Events/`, `Files/`, `Grid/`, `Hook/`,
+  `Keybind/`, `Locale/`, `Logger/`, `Marker/`, `Print/`, `Radial/`,
+  `Require/`, `Selector/`, `Settings/`, `Skillcheck/`, `Timer/`, `TxAdmin/`,
+  `VehicleProperties/`, `ZoneCreator/`, `Zones/`, `modules/Input/shared.lua`
+- `modules/Ace/server.lua`, `modules/Ban/server.lua`, `modules/Call/shared.lua`
+- `modules/Callback/shared.lua`, `client.lua`, `server.lua`
+- `modules/Check/server.lua`, `modules/Command/client.lua`, `server.lua`
+- `modules/Context/client.lua`, `modules/Cron/server.lua`,
+  `modules/DisconnectLogger/server.lua`
+- `modules/Entities/client.lua`, `server.lua`
+- `modules/Input/client.lua`, `server.lua`, `modules/Menu/client.lua`, `server.lua`
+- `modules/Notify/client.lua`, `server.lua`, `modules/Numpad/client.lua`, `server.lua`
+- `modules/Progress/client.lua`, `server.lua`, `modules/TextUI/client.lua`, `server.lua`
+- `modules/Math/shared.lua`, `modules/String/shared.lua`,
+  `modules/Table/shared.lua`, `modules/Vector/shared.lua`
+- `modules/Offline/server.lua`, `modules/Society/server.lua`,
+  `modules/VehicleStore/server.lua`
+- `modules/Player/client.lua`, `server.lua`, `modules/Points/client.lua`,
+  `modules/Request/client.lua`
+- `modules/Scaleform/client.lua`, `server.lua`
+- `modules/Vehicle/client.lua`, `server.lua`, `modules/World/client.lua`, `server.lua`
+- `web/dist/` (rebuilt NUI)
+
 ## [4.0.0] - 2026-09-09
 
 A rewrite of the framework bridge, plus the bug hunt that came with reading

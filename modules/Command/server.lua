@@ -58,6 +58,13 @@ local function parseArgs(source, args, raw, params)
             value = tonumber(arg)
         elseif param.type == 'string' then
             value = not tonumber(arg) and arg
+        elseif param.type == 'longString' then
+            -- The rest of the line, for reasons and messages. Has to be the
+            -- last parameter, it swallows every argument after it.
+            value = args[i] and table.concat(args, ' ', i) or nil
+            if value == '' then value = nil end
+
+            for j = i + 1, #args do args[j] = nil end
         elseif param.type == 'playerId' then
             value = arg == 'me' and source or tonumber(arg)
 
@@ -82,7 +89,11 @@ local function parseArgs(source, args, raw, params)
             if source == 0 then
                 return MSK.Logging('error', ("Command '%s' received an invalid %s for argument %s (%s), received '%s'^0"):format(MSK.String.Split(raw, ' ')[1] or raw, param.type, i, param.name, arg))
             else
-                return MSK.Notification(source, 'Command Error', ("Command '%s' received an invalid %s for argument %s (%s), received '%s'"):format(MSK.String.Split(raw, ' ')[1] or raw, param.type, i, param.name, arg), 'error')
+                return MSK.Notification(source, {
+                    title = 'Command Error',
+                    message = ("Command '%s' received an invalid %s for argument %s (%s), received '%s'"):format(MSK.String.Split(raw, ' ')[1] or raw, param.type, i, param.name, arg),
+                    type = 'error',
+                })
             end
         end
 
@@ -91,6 +102,31 @@ local function parseArgs(source, args, raw, params)
     end
 
     return args
+end
+
+-- Every registration works on its own copy. The code below strips restricted,
+-- allowConsole and returnPlayer from the properties before sending them as a
+-- chat suggestion. On the caller's table that meant the second name of
+-- RegisterCommand({'ban', 'b'}, cb, { restricted = 'admin' }) was registered
+-- without any restriction, and every name appended another "(type: x)" to the
+-- parameter help.
+local function copyProperties(properties)
+    if type(properties) ~= 'table' then return properties end
+
+    local copy = {}
+    for key, value in pairs(properties) do copy[key] = value end
+
+    if type(properties.params) == 'table' then
+        copy.params = {}
+
+        for i, param in ipairs(properties.params) do
+            local paramCopy = {}
+            for key, value in pairs(param) do paramCopy[key] = value end
+            copy.params[i] = paramCopy
+        end
+    end
+
+    return copy
 end
 
 function MSK.RegisterCommand(commandName, callback, properties, ...)
@@ -106,6 +142,8 @@ function MSK.RegisterCommand(commandName, callback, properties, ...)
         end
         return
     end
+
+    properties = copyProperties(properties)
 
     if RegisteredCommands[commandName] then
         MSK.Logging('info', ('Command ^3%s^0 is already registerd. Overriding Command...'):format(commandName))

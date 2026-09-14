@@ -26,9 +26,28 @@ if IS_CORE then
     end
     exports('GetPlayerTable', Offline.GetPlayerTable)
 
+    ----------------------------------------------------------------------------
+    -- Online players
+    --
+    -- A player who is online is changed through the framework. Writing the
+    -- database directly was overwritten by the framework's next save: added
+    -- money vanished again, removed money came back.
+    ----------------------------------------------------------------------------
+    local function isOnline(identifier)
+        return MSK.Bridge.ResolveRaw ~= nil and MSK.Bridge.ResolveRaw({ identifier = identifier }) ~= nil
+    end
+
+    local function onlineCall(identifier, method, ...)
+        return MSK.Bridge.PlayerCall({ identifier = identifier }, method, ...)
+    end
+
     function Offline.GetBank(identifier)
         local m = map[fw]
         if not m or not identifier then return nil end
+
+        if isOnline(identifier) then
+            return tonumber(onlineCall(identifier, 'GetMoney', 'bank')) or 0
+        end
 
         local raw = MySQL.scalar.await(('SELECT `%s` FROM `%s` WHERE `%s` = ?'):format(m.jsonCol, m.tbl, m.idCol), { identifier })
         if not raw then return nil end
@@ -44,8 +63,15 @@ if IS_CORE then
         amount = tonumber(amount)
         if not m or not identifier or not amount or amount <= 0 then return false end
 
+        if isOnline(identifier) then
+            -- The ESX adapter returns nothing on success, only an explicit false is a no.
+            return onlineCall(identifier, 'AddMoney', 'bank', math.floor(amount), 'msk_core offline') ~= false
+        end
+
+        -- COALESCE: JSON_SET on a NULL column stays NULL, yet the row counted as
+        -- changed and the function reported success.
         local affected = MySQL.update.await(
-            ('UPDATE `%s` SET `%s` = JSON_SET(`%s`, "$.bank", COALESCE(JSON_EXTRACT(`%s`, "$.bank"), 0) + ?) WHERE `%s` = ?')
+            ('UPDATE `%s` SET `%s` = JSON_SET(COALESCE(`%s`, \'{}\'), "$.bank", COALESCE(JSON_EXTRACT(`%s`, "$.bank"), 0) + ?) WHERE `%s` = ?')
                 :format(m.tbl, m.jsonCol, m.jsonCol, m.jsonCol, m.idCol),
             { math.floor(amount), identifier }
         )
@@ -57,6 +83,14 @@ if IS_CORE then
         local m = map[fw]
         amount = tonumber(amount)
         if not m or not identifier or not amount or amount <= 0 then return false end
+
+        if isOnline(identifier) then
+            if (tonumber(onlineCall(identifier, 'GetMoney', 'bank')) or 0) < math.floor(amount) then
+                return false
+            end
+
+            return onlineCall(identifier, 'RemoveMoney', 'bank', math.floor(amount), 'msk_core offline') ~= false
+        end
 
         -- Atomic: only deduct if sufficient funds (WHERE guard).
         local affected = MySQL.update.await(

@@ -229,7 +229,21 @@ function VehicleStore.Insert(data)
         -- QB and Qbox want the spawn name in its own column and the hash beside
         -- it. Without the hash their garages cannot spawn the vehicle.
         local model = data.model
+
+        -- Without a model the row cannot be built: tostring(nil) stored the
+        -- text 'nil', and the missing hash left a hole in the value list, so
+        -- the query failed or shifted values into the wrong columns.
+        if model == nil or model == '' then
+            MSK.Logging('error', ('Could not store vehicle %s: QBCore and Qbox need data.model (spawn name or hash).'):format(plate))
+            return false
+        end
+
         local hash = tonumber(model) or (type(model) == 'string' and joaat(model)) or props.model
+
+        if hash == nil then
+            MSK.Logging('error', ('Could not store vehicle %s: no model hash could be derived from %s.'):format(plate, tostring(model)))
+            return false
+        end
 
         columns[#columns + 1] = schema.model
         values[#values + 1] = type(model) == 'string' and model or tostring(model)

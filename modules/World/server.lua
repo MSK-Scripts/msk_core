@@ -17,8 +17,12 @@ function MSK.IsSpawnPointClear(coords, maxDistance)
 end
 exports('IsSpawnPointClear', MSK.IsSpawnPointClear)
 
-function MSK.GetClosestPlayer(playerId, coords)
-    return MSK.GetClosestEntity(playerId, coords)
+---@param playerId? number search around this player, who is never returned himself
+---@param coords? vector3 required when no player id is given
+---@param maxDistance? number only players within this range count
+---@return string player, number distance -1, -1 when none was found
+function MSK.GetClosestPlayer(playerId, coords, maxDistance)
+    return MSK.GetClosestEntity(playerId, coords, nil, maxDistance)
 end
 exports('GetClosestPlayer', MSK.GetClosestPlayer)
 

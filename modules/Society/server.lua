@@ -88,8 +88,10 @@ if IS_CORE then
         },
     }
 
+    local warnedMissing = false
+
     local function getProvider()
-        if provider ~= nil then return provider end
+        if provider then return provider end
 
         for i = 1, #providers do
             if providers[i].available() then
@@ -103,10 +105,15 @@ if IS_CORE then
             end
         end
 
-        provider = false
-        MSK.Logging('info', 'No supported banking resource found, company account functions return 0.')
+        -- "Nothing found" is not cached. The banking resource may simply start
+        -- after msk_core, and a cached result kept every call at 0 until the
+        -- next restart.
+        if not warnedMissing then
+            warnedMissing = true
+            MSK.Logging('info', 'No supported banking resource found, company account functions return 0.')
+        end
 
-        return provider
+        return false
     end
 
     ---@param society string society name without the society_ prefix

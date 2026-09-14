@@ -1,7 +1,10 @@
 local IS_CORE = GetCurrentResourceName() == 'msk_core'
 
-function MSK.GetClosestVehicle(coords)
-    return MSK.GetClosestEntity(false, coords)
+---@param coords? vector3 default the player's position
+---@param maxDistance? number only vehicles within this range count
+---@return number vehicle, number distance -1, -1 when none was found
+function MSK.GetClosestVehicle(coords, maxDistance)
+    return MSK.GetClosestEntity(false, coords, maxDistance)
 end
 exports('GetClosestVehicle', MSK.GetClosestVehicle)
 
@@ -11,14 +14,18 @@ end
 exports('GetClosestVehicles', MSK.GetClosestVehicles)
 
 function MSK.GetVehicleWithPlate(plate, coords, distance)
+    plate = normalizePlate(plate)
+    if not plate then return false end
+
+    -- GetClosestEntities already limits the distance and falls back to the
+    -- player's position. The extra check here subtracted from a nil coords.
     local vehicles = MSK.GetClosestEntities(false, coords, distance)
-    plate = MSK.String.Trim(plate)
 
     for i = 1, #vehicles do
-        if DoesEntityExist(vehicles[i]) then
-            if MSK.String.Trim(GetVehicleNumberPlateText(vehicles[i])) == plate and #(coords - GetEntityCoords(vehicles[i])) <= distance then
-                return vehicles[i]
-            end
+        -- Normalised on both sides, the plain Trim compared "abc 123" and
+        -- "ABC 123" as different plates.
+        if DoesEntityExist(vehicles[i]) and normalizePlate(GetVehicleNumberPlateText(vehicles[i])) == plate then
+            return vehicles[i]
         end
     end
 
@@ -80,7 +87,7 @@ exports('GetModelFromPlate', MSK.GetModelFromPlate)
 function MSK.GetVehicleInDirection(distance)
     local entity = MSK.Request.Raycast(distance, 2)
 
-    if DoesEntityExist(entity) then
+    if entity and DoesEntityExist(entity) then
         local entityCoords = GetEntityCoords(entity)
         return entity, entityCoords, ('%.2f'):format(#(MSK.Player.coords - entityCoords))
     end
@@ -178,6 +185,25 @@ exports('CloseVehicleDoors', MSK.CloseVehicleDoors)
 -- otherwise spin up a second thread and every enter/exit would be reported twice.
 -- The helper functions above stay available to consumers on eager-load.
 if IS_CORE then
+-- Answers MSK.SpawnVehicle on the server, which needs the vehicle type and
+-- cannot read it from a model itself. Trailers are not recognisable by model
+-- and come back as automobile, the server side documents that.
+MSK.Register('msk_core:getVehicleType', function(_, model)
+    model = tonumber(model)
+    if not model or not IsModelInCdimage(model) or not IsModelAVehicle(model) then return nil end
+
+    if IsThisModelATrain(model) then return 'train' end
+    if IsThisModelAHeli(model) then return 'heli' end
+    if IsThisModelAPlane(model) then return 'plane' end
+    if IsThisModelABoat(model) or IsThisModelAJetski(model) then return 'boat' end
+    if IsThisModelABike(model) or IsThisModelABicycle(model) then return 'bike' end
+
+    -- Class 14 is boats. What IsThisModelABoat does not claim there are submarines.
+    if GetVehicleClassFromName(model) == 14 then return 'submarine' end
+
+    return 'automobile'
+end)
+
 local currentVehicle = {}
 local isInVehicle, isEnteringVehicle = false, false
 CreateThread(function()

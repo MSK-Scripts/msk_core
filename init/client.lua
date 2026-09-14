@@ -14,15 +14,26 @@ end
 local Callback = MSK.LoadModule('Callback')
 if not Callback then error('msk_core: Callback module could not be loaded.', 0) end
 
-exports('Register', Callback.Register)
+-- Registered through an export, the callback belongs to the calling resource
+-- and is removed again when that resource stops.
+exports('Register', function(eventName, cb)
+    return Callback.Register(eventName, cb, GetInvokingResource())
+end)
 exports('Trigger', Callback.Trigger)
 exports('TriggerCallback', Callback.TriggerCallback)
+exports('TriggerAwait', Callback.TriggerAwait)
 
 -- Also provide on the core MSK table, so core code (e.g. HasItem,
 -- later Input/Numpad) can use MSK.Register/Trigger directly.
 MSK.Register = Callback.Register
 MSK.Trigger = Callback.Trigger
 MSK.TriggerCallback = Callback.TriggerCallback
+MSK.TriggerAwait = Callback.TriggerAwait
+
+--------------------------------------------------------------------------------
+-- Hooks — the registry has to exist before any module could trigger a hook.
+--------------------------------------------------------------------------------
+MSK.LoadModule('Hook')
 
 --------------------------------------------------------------------------------
 -- Player — core singleton: the 100ms thread + msk_core:onPlayer run
@@ -31,6 +42,7 @@ MSK.TriggerCallback = Callback.TriggerCallback
 local PlayerModule = MSK.LoadModule('Player')
 if not PlayerModule then error('msk_core: Player module could not be loaded.', 0) end
 MSK.Player = PlayerModule
+MSK.OnPlayer = PlayerModule.OnChange
 
 --------------------------------------------------------------------------------
 -- Client module exports: Request + Points (lazy-in-core via registry)
@@ -44,11 +56,13 @@ MSK.RegisterExport('RequestAnimSet',       'Request', 'AnimSet')
 MSK.RegisterExport('RequestPtfxAsset',     'Request', 'PtfxAsset')
 MSK.RegisterExport('RequestTextureDict',   'Request', 'TextureDict')
 MSK.RegisterExport('RequestRaycast',       'Request', 'Raycast')
+MSK.RegisterExport('RequestRaycastFromCoords', 'Request', 'RaycastFromCoords')
 -- Points
 MSK.RegisterExport('AddPoint',        'Points', 'Add')
 MSK.RegisterExport('RemovePoint',     'Points', 'Remove')
 MSK.RegisterExport('GetAllPoints',    'Points', 'GetAllPoints')
 MSK.RegisterExport('GetClosestPoint', 'Points', 'GetClosestPoint')
+MSK.RegisterExport('GetNearbyPoints', 'Points', 'GetNearbyPoints')
 
 --------------------------------------------------------------------------------
 -- Scaleform — NetEvent handlers only in the core -> load eager.
@@ -80,6 +94,21 @@ MSK.LoadModule('Input')
 MSK.LoadModule('Numpad')
 MSK.LoadModule('Context')
 MSK.LoadModule('Menu')
+
+-- Clipboard and Settings first: the zone creator copies with Clipboard, and
+-- Settings pushes the player's choices to the NUI.
+MSK.LoadModule('Clipboard')
+MSK.LoadModule('Settings')
+MSK.LoadModule('Alert')
+MSK.LoadModule('Skillcheck')
+MSK.LoadModule('Radial')
+
+--------------------------------------------------------------------------------
+-- Vehicle properties — the state bag handler that applies properties sent from
+-- the server must exist exactly once, in the core.
+--------------------------------------------------------------------------------
+MSK.LoadModule('VehicleProperties')
+MSK.LoadModule('ZoneCreator')
 
 --------------------------------------------------------------------------------
 -- World + Disconnect-Logger — eager. World sets its own MSK.*

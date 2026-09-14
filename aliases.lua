@@ -29,6 +29,8 @@ return {
     ['GetPlayerByCitizenId']    = { module = 'Player', key = 'GetByCitizenId'    },
     ['GetPlayerByPhone']        = { module = 'Player', key = 'GetByPhone'        },
     ['GetPlayerByUserId']       = { module = 'Player', key = 'GetByUserId'       },
+    -- No export: the event handler has to live in the resource that listens.
+    ['OnPlayer']                = { module = 'Player', key = 'OnChange'          },
 
     -- core modules --
     -- Aliases WITHOUT their own export (module folder case-sensitive, exactly like the API key):
