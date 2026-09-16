@@ -9,7 +9,7 @@
 [![Version](https://img.shields.io/badge/version-4.1.0-blue)](https://github.com/MSK-Scripts/msk_core/releases)
 [![License](https://img.shields.io/badge/license-LGPL--3.0-green)](LICENSE)
 
-[Discord](https://discord.gg/5hHSBRHvJE) · [Documentation](https://docu.msk-scripts.de/docs/msk_core/) · [Releases](https://github.com/MSK-Scripts/msk_core/releases)
+[Discord](https://discord.gg/5hHSBRHvJE) · [Documentation](https://docu.msk-scripts.de/docs/msk_core/) · [Releases](https://github.com/MSK-Scripts/msk_core/releases) · [VS Code Extension](https://marketplace.visualstudio.com/items?itemName=musiker15.msk-core-lua)
 
 </div>
 
@@ -88,6 +88,19 @@ shared_script '@msk_core/import.lua'
 msk_core 'Callback'
 msk_core 'Player'
 ```
+
+## 🧩 VS Code IntelliSense
+
+Get autocompletion, signatures and type checking for the whole `MSK.*` API with the **MSK Core (FiveM) IntelliSense** extension:
+
+- [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=musiker15.msk-core-lua) for Visual Studio Code
+- [Open VSX](https://open-vsx.org/extension/musiker15/msk-core-lua) for Cursor, VSCodium and Windsurf
+
+```
+ext install musiker15.msk-core-lua
+```
+
+More in the [documentation](https://docu.msk-scripts.de/docs/msk_core/vscode-extension) and the [extension repository](https://github.com/MSK-Scripts/msk_core-vscode).
 
 ## 🖼️ UI
 
