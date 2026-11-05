@@ -48,6 +48,7 @@ graphify-out/*
 DISCORD_CHANGELOGS.md
 .claude/
 CLAUDE.md
+CFX_POST.md
 
 # Node
 node_modules/
